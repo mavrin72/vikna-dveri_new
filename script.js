@@ -272,8 +272,11 @@ function calc() {
   const area          = (w / 100) * (h / 100);
   const REFERENCE     = (1.2 * 1.4);
   const areaFactor    = Math.max(0.5, Math.min(2.5, area / REFERENCE));
-  let   base          = basePrices[currentType] * profileMult[currentProfile] * glassMult[currentGlass] * areaFactor;
-  base = Math.max(basePrices[currentType], Math.round(base / 50) * 50);
+  const typePrice     = basePrices[currentType]    || basePrices['window'];
+  const profMult      = profileMult[currentProfile] || 1;
+  const glsMult       = glassMult[currentGlass]     || 1;
+  let   base          = typePrice * profMult * glsMult * areaFactor;
+  base = Math.max(typePrice, Math.round(base / 50) * 50);
 
   let options = 0;
   if ((document.getElementById('opt_sill')     || {}).checked) options += Math.round(base * 0.12);
