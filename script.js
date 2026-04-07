@@ -236,9 +236,9 @@ let currentType    = 'window';
 let currentProfile = 'standard';
 let currentGlass   = 'double';
 
-const basePrices  = { window: 4500, door: 8200, balcony: 12500 };
+const basePrices  = { window: 4500, window_open: 5500, door: 8200, balcony: 12500 };
 const profileMult = { standard: 1, comfort: 1.25, premium: 1.6 };
-const glassMult   = { double: 1, triple: 1.18, lowe: 1.32 };
+const glassMult   = { double: 1, triple: 1.18 };
 
 function setType(el, val) {
   currentType = val;
@@ -276,9 +276,9 @@ function calc() {
   base = Math.max(basePrices[currentType], Math.round(base / 50) * 50);
 
   let options = 0;
-  if ((document.getElementById('opt_sill')     || {}).checked) options += Math.round(w * 18);
+  if ((document.getElementById('opt_sill')     || {}).checked) options += Math.round(base * 0.12);
   if ((document.getElementById('opt_mosquito') || {}).checked) options += 680;
-  if ((document.getElementById('opt_color')    || {}).checked) options += Math.round(base * 0.12);
+  if ((document.getElementById('opt_color')    || {}).checked) options += Math.round(w * 18);
 
   let install = 0;
   if ((document.getElementById('opt_install')  || {}).checked) install = Math.max(800, Math.round(area * 800));
