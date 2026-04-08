@@ -315,7 +315,7 @@ function calc() {
   let options = 0;
   if ((document.getElementById('opt_sill')     || {}).checked) options += Math.round(base * 0.12);
   if ((document.getElementById('opt_mosquito') || {}).checked) options += 680;
-  if ((document.getElementById('opt_color')    || {}).checked) options += Math.round(base * 0.20);
+  if ((document.getElementById('opt_color')    || {}).checked) options += Math.round(base * 0.25);
 
   let install = 0;
   if ((document.getElementById('opt_install')  || {}).checked) install = Math.max(800, Math.round(area * 800));
