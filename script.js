@@ -255,10 +255,10 @@ const priceMx = {
 };
 // Балконний блок — та сама структура що й вікна, база 100×100 = 3000
 const balconyMx = {
-  standard:     { single: 3000, double: 3300 },
-  comfort:      { single: 3450, double: 3800 },
-  premium:      { double: 4600 },
-  premium_plus: { double: 6650 }
+  standard:     { single: 3900, double: 4300 },
+  comfort:      { single: 4500, double: 4950 },
+  premium:      { double: 6000 },
+  premium_plus: { double: 8650 }
 };
 const otherPrices = { door: 8200 };
 
