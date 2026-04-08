@@ -375,7 +375,16 @@ function calc() {
 calc();
 
 function fillFormFromCalc() {
-  const typeLabels    = { window: 'Вікно (глухе)', window_open: 'Вікно з відкриванням', door: 'Двері', balcony: 'Балконний блок' };
+  const comment = document.getElementById('clientComment');
+  const productEl = document.getElementById('clientProduct');
+
+  if (currentType === 'entry_door') {
+    if (comment) comment.value = 'Вхідні двері металеві';
+    if (productEl) productEl.value = 'Вхідні двері';
+    return;
+  }
+
+  const typeLabels    = { window: 'Вікно (глухе)', window_open: 'Вікно з відкриванням', door: 'Металопластикові двері', balcony: 'Балконний блок' };
   const profileLabels = { standard: 'Стандарт', comfort: 'Comfort', premium: 'Premium', premium_plus: 'Premium+' };
   const glassLabels   = { single: '1-камерний', double: '2-камерний' };
 
@@ -400,13 +409,11 @@ function fillFormFromCalc() {
   ];
   if (opts.length) lines.push(`Опції: ${opts.join(', ')}`);
   lines.push(`Орієнтовна вартість: ${price}`);
-
-  const comment = document.getElementById('clientComment');
   if (comment) comment.value = lines.join('\n');
 
   // Вибір типу продукту у формі
-  const productMap = { window: 'Металопластикові вікна', window_open: 'Металопластикові вікна', door: 'Вхідні двері', balcony: 'Балконний блок' };
-  const productEl = document.getElementById('clientProduct');
+  const productMap = { window: 'Металопластикові вікна', window_open: 'Металопластикові вікна', door: 'Металопластикові вікна', balcony: 'Балконний блок' };
+  if (comment) comment.value = lines.join('\n');
   if (productEl && productMap[currentType]) productEl.value = productMap[currentType];
 }
 
