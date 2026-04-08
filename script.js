@@ -325,8 +325,9 @@ function calc() {
     const unitPrice = profile[currentGlass]     || profile['double'];
     base = Math.max(unitPrice, Math.round(unitPrice * areaFactor / 50) * 50);
   } else {
-    const unitPrice = doorMx[currentProfile] || doorMx['standard'];
-    base = Math.max(unitPrice, Math.round(unitPrice * areaFactor / 50) * 50);
+    const glassFactor = currentGlass === 'double' ? 1.10 : 1;
+    const unitPrice   = (doorMx[currentProfile] || doorMx['standard']) * glassFactor;
+    base = Math.max(Math.round(unitPrice), Math.round(unitPrice * areaFactor / 50) * 50);
   }
 
   let options = 0;
