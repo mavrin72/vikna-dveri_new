@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f1923"/>
+      <stop offset="100%" style="stop-color:#1a2535"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c9a84c"/>
+      <stop offset="100%" style="stop-color:#e8c96d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Фон -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Декоративні лінії зліва -->
+  <rect x="0" y="0" width="4" height="630" fill="#c9a84c" opacity="0.6"/>
+
+  <!-- Декоративна рамка вікна справа -->
+  <g opacity="0.25" stroke="#c9a84c" stroke-width="2" fill="none">
+    <rect x="720" y="80" width="380" height="470"/>
+    <line x1="910" y1="80" x2="910" y2="550"/>
+    <line x1="720" y1="315" x2="1100" y2="315"/>
+    <rect x="740" y="100" width="150" height="195"/>
+    <rect x="910" y="100" width="170" height="195"/>
+    <rect x="740" y="320" width="150" height="210"/>
+    <rect x="910" y="320" width="170" height="210"/>
+  </g>
+
+  <!-- Локація -->
+  <rect x="80" y="100" width="340" height="36" rx="18" fill="none" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+  <circle cx="102" cy="118" r="5" fill="#c9a84c"/>
+  <text x="118" y="123" font-family="Arial, sans-serif" font-size="13" fill="#c9a84c" letter-spacing="2" opacity="0.9">М. БУЧА ТА СМТ БОРОДЯНКА</text>
+
+  <!-- Заголовок -->
+  <text x="80" y="230" font-family="Georgia, serif" font-size="96" fill="white" font-weight="300">Вікна</text>
+  <text x="80" y="320" font-family="Georgia, serif" font-size="72" fill="#8899aa" font-style="italic" font-weight="300">і двері</text>
+  <text x="80" y="420" font-family="Georgia, serif" font-size="72" fill="url(#gold)" font-style="italic">преміум якості</text>
+
+  <!-- Підзаголовок -->
+  <text x="80" y="475" font-family="Arial, sans-serif" font-size="20" fill="#8899aa">Металопластикові конструкції · Буча та Бородянка</text>
+
+  <!-- Кнопка -->
+  <rect x="80" y="510" width="240" height="52" rx="4" fill="#c9a84c"/>
+  <text x="200" y="542" font-family="Arial, sans-serif" font-size="15" fill="#0f1923" font-weight="700" text-anchor="middle" letter-spacing="2">ВІД 4 500 ₴</text>
+
+  <!-- Домен -->
+  <text x="1120" y="600" font-family="Arial, sans-serif" font-size="18" fill="#c9a84c" opacity="0.7" text-anchor="end">vikna-dveri.store</text>
+</svg>
