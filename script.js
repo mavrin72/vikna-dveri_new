@@ -253,7 +253,14 @@ const priceMx = {
     double: { window: 5942, window_open: 9441 }
   }
 };
-const otherPrices = { door: 8200, balcony: 12500 };
+// Балконний блок — та сама структура що й вікна, база 100×100 = 3000
+const balconyMx = {
+  standard:     { single: 3000, double: 3300 },
+  comfort:      { single: 3450, double: 3800 },
+  premium:      { double: 4600 },
+  premium_plus: { double: 6650 }
+};
+const otherPrices = { door: 8200 };
 
 function setType(el, val) {
   currentType = val;
@@ -303,9 +310,13 @@ function calc() {
 
   let base;
   if (currentType === 'window' || currentType === 'window_open') {
-    const profile = priceMx[currentProfile] || priceMx['standard'];
-    const glass   = profile[currentGlass]   || profile['double'];
-    const unitPrice = glass[currentType]    || glass['window'];
+    const profile   = priceMx[currentProfile] || priceMx['standard'];
+    const glass     = profile[currentGlass]   || profile['double'];
+    const unitPrice = glass[currentType]      || glass['window'];
+    base = Math.max(unitPrice, Math.round(unitPrice * areaFactor / 50) * 50);
+  } else if (currentType === 'balcony') {
+    const profile   = balconyMx[currentProfile] || balconyMx['standard'];
+    const unitPrice = profile[currentGlass]     || profile['double'];
     base = Math.max(unitPrice, Math.round(unitPrice * areaFactor / 50) * 50);
   } else {
     const unitPrice = otherPrices[currentType] || otherPrices['door'];
