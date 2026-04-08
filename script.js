@@ -348,6 +348,42 @@ function calc() {
 }
 calc();
 
+function fillFormFromCalc() {
+  const typeLabels    = { window: 'Вікно (глухе)', window_open: 'Вікно з відкриванням', door: 'Двері', balcony: 'Балконний блок' };
+  const profileLabels = { standard: 'Стандарт', comfort: 'Comfort', premium: 'Premium', premium_plus: 'Premium+' };
+  const glassLabels   = { single: '1-камерний', double: '2-камерний' };
+
+  const w   = (document.getElementById('width')  || {}).value || 100;
+  const h   = (document.getElementById('height') || {}).value || 100;
+  const qty = (document.getElementById('qty')    || {}).value || 1;
+
+  const opts = [];
+  if ((document.getElementById('opt_install')  || {}).checked) opts.push('Монтаж');
+  if ((document.getElementById('opt_sill')     || {}).checked) opts.push('Підвіконня');
+  if ((document.getElementById('opt_mosquito') || {}).checked) opts.push('Москітна сітка');
+  if ((document.getElementById('opt_color')    || {}).checked) opts.push('Кольоровий профіль');
+
+  const price = (document.getElementById('resultPrice') || {}).textContent || '';
+
+  const lines = [
+    `Тип: ${typeLabels[currentType] || currentType}`,
+    `Профіль: ${profileLabels[currentProfile] || currentProfile}`,
+    `Склопакет: ${glassLabels[currentGlass] || currentGlass}`,
+    `Розміри: ${w}×${h} см`,
+    `Кількість: ${qty} шт.`,
+  ];
+  if (opts.length) lines.push(`Опції: ${opts.join(', ')}`);
+  lines.push(`Орієнтовна вартість: ${price}`);
+
+  const comment = document.getElementById('clientComment');
+  if (comment) comment.value = lines.join('\n');
+
+  // Вибір типу продукту у формі
+  const productMap = { window: 'Металопластикові вікна', window_open: 'Металопластикові вікна', door: 'Вхідні двері', balcony: 'Балконний блок' };
+  const productEl = document.getElementById('clientProduct');
+  if (productEl && productMap[currentType]) productEl.value = productMap[currentType];
+}
+
 /* ═══════════════════════════════════════════════════════════════
    FORM SUBMIT (webhook до Google Sheets)
 ═══════════════════════════════════════════════════════════════ */
