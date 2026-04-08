@@ -773,6 +773,8 @@
       <label>Коментар (необов'язково)</label>
       <textarea id="clientComment" placeholder="Опишіть ваш запит..."></textarea>
     </div>
+    <!-- honeypot: приховане поле, людина не заповнює -->
+    <input type="text" id="_hp" name="_hp" style="display:none;" tabindex="-1" autocomplete="off">
     <button class="form-submit" onclick="handleSubmit(this)">Надіслати заявку</button>
     <p style="color: rgba(245,242,237,0.3); font-size: 0.78rem; margin-top: 16px; line-height: 1.5;">
       Натискаючи кнопку, ви погоджуєтесь з обробкою персональних даних.
@@ -805,6 +807,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=12"></script>
+<script src="script.js?v=13"></script>
 </body>
 </html>

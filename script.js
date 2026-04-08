@@ -420,7 +420,22 @@ function fillFormFromCalc() {
 /* ═══════════════════════════════════════════════════════════════
    FORM SUBMIT (webhook до Google Sheets)
 ═══════════════════════════════════════════════════════════════ */
+const _formLoadTime = Date.now();
+
 async function handleSubmit(btn) {
+  // Honeypot: якщо бот заповнив приховане поле — ігноруємо
+  const hp = (document.getElementById('_hp') || {}).value || '';
+  if (hp) return;
+
+  // Rate limit: не частіше 1 разу на 60 секунд
+  const lastSent = parseInt(localStorage.getItem('_lastFormSent') || '0');
+  if (Date.now() - lastSent < 60000) {
+    alert('Заявку вже надіслано. Зачекайте хвилину перед повторним відправленням.');
+    return;
+  }
+
+  // Мінімальний час на сторінці: 3 секунди
+  if (Date.now() - _formLoadTime < 3000) return;
   const nameEl    = document.getElementById('clientName');
   const phoneEl   = document.getElementById('clientPhone');
   const productEl = document.getElementById('clientProduct');
@@ -450,6 +465,7 @@ async function handleSubmit(btn) {
     });
     btn.textContent = '✓ Заявку надіслано!';
     btn.style.background = '#4caf50';
+    localStorage.setItem('_lastFormSent', Date.now().toString());
     if (nameEl)    nameEl.value    = '';
     if (phoneEl)   phoneEl.value   = '';
     if (productEl) productEl.value = '';
