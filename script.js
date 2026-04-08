@@ -272,7 +272,12 @@ function setType(el, val) {
   currentType = val;
   document.querySelectorAll('#typeTabs .calc-tab').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
-  calc();
+  const isEntryDoor = val === 'entry_door';
+  const priceBlock  = document.getElementById('calcPriceBlock');
+  const entryBlock  = document.getElementById('entryDoorBlock');
+  if (priceBlock) priceBlock.style.display = isEntryDoor ? 'none' : '';
+  if (entryBlock) entryBlock.style.display = isEntryDoor ? '' : 'none';
+  if (!isEntryDoor) calc();
 }
 function setProfile(el, val) {
   currentProfile = val;
