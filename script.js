@@ -253,14 +253,20 @@ const priceMx = {
     double: { window: 5942, window_open: 9441 }
   }
 };
-// Балконний блок — та сама структура що й вікна, база 100×100 = 3000
+// Двері — профільна матриця, база 85×205 = 9300 (100×100 = 5338), +25% кожен профіль
+const doorMx = {
+  standard:     5338,
+  comfort:      6650,
+  premium:      8350,
+  premium_plus: 10450
+};
+// Балконний блок — та сама структура що й вікна, база 100×100 = 3870
 const balconyMx = {
   standard:     { single: 3870, double: 4250 },
   comfort:      { single: 4450, double: 4900 },
   premium:      { double: 5950 },
   premium_plus: { double: 8600 }
 };
-const otherPrices = { door: 8200 };
 
 function setType(el, val) {
   currentType = val;
@@ -319,7 +325,7 @@ function calc() {
     const unitPrice = profile[currentGlass]     || profile['double'];
     base = Math.max(unitPrice, Math.round(unitPrice * areaFactor / 50) * 50);
   } else {
-    const unitPrice = otherPrices[currentType] || otherPrices['door'];
+    const unitPrice = doorMx[currentProfile] || doorMx['standard'];
     base = Math.max(unitPrice, Math.round(unitPrice * areaFactor / 50) * 50);
   }
 
