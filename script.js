@@ -455,7 +455,7 @@ async function handleSubmit(btn) {
   btn.disabled = true;
   btn.textContent = 'Відправка...';
 
-  const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxShifgkkvjJDxXCRhTAlBt2kjx59Zq1d3okTKkAjuKzmkxSwQYytm1B5Z7qPWNwqxSAg/exec';
+  const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyomo3DMtKATb0SGbg4MvkVFLWI23BGLt35nqOvA3phdQDQMcOAZgqVNV1hhOMkCLJ0sA/exec';
 
   try {
     await fetch(WEBHOOK_URL, {
