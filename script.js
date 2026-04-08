@@ -273,9 +273,12 @@ function setType(el, val) {
   document.querySelectorAll('#typeTabs .calc-tab').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
   const isEntryDoor = val === 'entry_door';
-  const priceBlock  = document.getElementById('calcPriceBlock');
-  const entryBlock  = document.getElementById('entryDoorBlock');
-  if (priceBlock) priceBlock.style.display = isEntryDoor ? 'none' : '';
+  const hide = isEntryDoor ? 'none' : '';
+  ['calcPriceBlock','groupProfile','groupGlass','groupDims','groupQty','groupOptions'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = hide;
+  });
+  const entryBlock = document.getElementById('entryDoorBlock');
   if (entryBlock) entryBlock.style.display = isEntryDoor ? '' : 'none';
   if (!isEntryDoor) calc();
 }

@@ -598,7 +598,7 @@
           <button class="calc-tab" data-type="balcony" onclick="setType(this,'balcony')">🏗 Балкон. блок</button>
         </div>
       </div>
-      <div class="calc-group">
+      <div class="calc-group" id="groupProfile">
         <div class="calc-label">Профіль</div>
         <div class="calc-tabs" id="profileTabs">
           <button class="calc-tab active" data-profile="standard" onclick="setProfile(this,'standard')">Стандарт</button>
@@ -607,14 +607,14 @@
           <button class="calc-tab" data-profile="premium_plus" onclick="setProfile(this,'premium_plus')">Premium+</button>
         </div>
       </div>
-      <div class="calc-group">
+      <div class="calc-group" id="groupGlass">
         <div class="calc-label">Склопакет</div>
         <div class="calc-tabs" id="glassTabs">
           <button class="calc-tab active" data-glass="single" onclick="setGlass(this,'single')">1-камерний</button>
           <button class="calc-tab" data-glass="double" onclick="setGlass(this,'double')">2-камерний</button>
         </div>
       </div>
-      <div class="calc-group">
+      <div class="calc-group" id="groupDims">
         <div class="calc-label">Розміри (см)</div>
         <div class="calc-dims">
           <div class="dim-field">
@@ -636,12 +636,12 @@
           </div>
         </div>
       </div>
-      <div class="calc-group">
+      <div class="calc-group" id="groupQty">
         <div class="calc-label">Кількість: <span id="qtyVal">1</span> шт.</div>
         <input type="range" id="qty" min="1" max="20" value="1" oninput="document.getElementById('qtyVal').textContent=this.value; calc()" class="calc-slider">
         <div class="slider-labels"><span>1</span><span>20</span></div>
       </div>
-      <div class="calc-group">
+      <div class="calc-group" id="groupOptions">
         <div class="calc-label">Додаткові опції</div>
         <div class="calc-options">
           <label class="calc-option">
@@ -682,8 +682,7 @@
           </div>
         </div>
         <div id="entryDoorBlock" style="display:none; text-align:center; padding: 24px 0;">
-          <div class="result-label" style="font-size:1.1rem; margin-bottom:12px;">🚪 Вхідні двері металеві</div>
-          <div class="result-note" style="font-size:1rem;">Точна ціна після консультації менеджера</div>
+          <div class="result-label" style="font-size:1.1rem;">🚪 Вхідні двері металеві</div>
         </div>
         <div class="result-note">⚡ Точна ціна після консультації менеджера</div>
         <a href="#order-form" class="btn-primary" style="display:block; text-align:center; margin-top:24px;" onclick="fillFormFromCalc()">Замовити дзвінок</a>
@@ -806,6 +805,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=10"></script>
+<script src="script.js?v=11"></script>
 </body>
 </html>
