@@ -461,7 +461,7 @@ async function handleSubmit(btn) {
     await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ name, phone, product, comment })
+      body: JSON.stringify({ name, phone, product, comment, _key: 'vd2026site' })
     });
     btn.textContent = '✓ Заявку надіслано!';
     btn.style.background = '#4caf50';
