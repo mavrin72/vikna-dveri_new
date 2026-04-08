@@ -234,11 +234,26 @@ if (phoneInput) {
 ═══════════════════════════════════════════════════════════════ */
 let currentType    = 'window';
 let currentProfile = 'standard';
-let currentGlass   = 'double';
+let currentGlass   = 'single';
 
-const basePrices  = { window: 4500, window_open: 5500, door: 8200, balcony: 12500 };
-const profileMult = { standard: 1, comfort: 1.25, premium: 1.6 };
-const glassMult   = { double: 1, triple: 1.18 };
+// Ціни за розмір 100×100 см
+const priceMx = {
+  standard: {
+    single: { window: 2681, window_open: 4100 },
+    double: { window: 2950, window_open: 4510 }
+  },
+  comfort: {
+    single: { window: 3077, window_open: 4579 },
+    double: { window: 3385, window_open: 5037 }
+  },
+  premium: {
+    double: { window: 4132, window_open: 5927 }
+  },
+  premium_plus: {
+    double: { window: 5942, window_open: 9441 }
+  }
+};
+const otherPrices = { door: 8200, balcony: 12500 };
 
 function setType(el, val) {
   currentType = val;
@@ -250,6 +265,19 @@ function setProfile(el, val) {
   currentProfile = val;
   document.querySelectorAll('#profileTabs .calc-tab').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
+  // Преміум та Преміум+ — тільки 2-камерний
+  const singleTab = document.querySelector('#glassTabs [data-glass="single"]');
+  if (val === 'premium' || val === 'premium_plus') {
+    if (singleTab) singleTab.style.display = 'none';
+    if (currentGlass === 'single') {
+      currentGlass = 'double';
+      document.querySelectorAll('#glassTabs .calc-tab').forEach(b => {
+        b.classList.toggle('active', b.dataset.glass === 'double');
+      });
+    }
+  } else {
+    if (singleTab) singleTab.style.display = '';
+  }
   calc();
 }
 function setGlass(el, val) {
@@ -265,23 +293,29 @@ function adjustDim(id, delta) {
 function fmt(n) { return n.toLocaleString('uk-UA') + ' ₴'; }
 
 function calc() {
-  const w   = parseInt((document.getElementById('width')  || {}).value) || 120;
-  const h   = parseInt((document.getElementById('height') || {}).value) || 140;
+  const w   = parseInt((document.getElementById('width')  || {}).value) || 100;
+  const h   = parseInt((document.getElementById('height') || {}).value) || 100;
   const qty = parseInt((document.getElementById('qty')    || {}).value) || 1;
 
-  const area          = (w / 100) * (h / 100);
-  const REFERENCE     = (1.2 * 1.4);
-  const areaFactor    = Math.max(0.5, Math.min(2.5, area / REFERENCE));
-  const typePrice     = basePrices[currentType]    || basePrices['window'];
-  const profMult      = profileMult[currentProfile] || 1;
-  const glsMult       = glassMult[currentGlass]     || 1;
-  let   base          = typePrice * profMult * glsMult * areaFactor;
-  base = Math.max(typePrice, Math.round(base / 50) * 50);
+  const area       = (w / 100) * (h / 100);
+  const REFERENCE  = 1.0; // еталон 100×100
+  const areaFactor = Math.max(0.5, Math.min(2.5, area / REFERENCE));
+
+  let base;
+  if (currentType === 'window' || currentType === 'window_open') {
+    const profile = priceMx[currentProfile] || priceMx['standard'];
+    const glass   = profile[currentGlass]   || profile['double'];
+    const unitPrice = glass[currentType]    || glass['window'];
+    base = Math.max(unitPrice, Math.round(unitPrice * areaFactor / 50) * 50);
+  } else {
+    const unitPrice = otherPrices[currentType] || otherPrices['door'];
+    base = Math.max(unitPrice, Math.round(unitPrice * areaFactor / 50) * 50);
+  }
 
   let options = 0;
   if ((document.getElementById('opt_sill')     || {}).checked) options += Math.round(base * 0.12);
   if ((document.getElementById('opt_mosquito') || {}).checked) options += 680;
-  if ((document.getElementById('opt_color')    || {}).checked) options += Math.round(w * 18);
+  if ((document.getElementById('opt_color')    || {}).checked) options += Math.round(base * 0.20);
 
   let install = 0;
   if ((document.getElementById('opt_install')  || {}).checked) install = Math.max(800, Math.round(area * 800));

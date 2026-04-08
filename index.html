@@ -603,13 +603,14 @@
           <button class="calc-tab active" data-profile="standard" onclick="setProfile(this,'standard')">Стандарт</button>
           <button class="calc-tab" data-profile="comfort" onclick="setProfile(this,'comfort')">Comfort</button>
           <button class="calc-tab" data-profile="premium" onclick="setProfile(this,'premium')">Premium</button>
+          <button class="calc-tab" data-profile="premium_plus" onclick="setProfile(this,'premium_plus')">Premium+</button>
         </div>
       </div>
       <div class="calc-group">
         <div class="calc-label">Склопакет</div>
         <div class="calc-tabs" id="glassTabs">
-          <button class="calc-tab active" data-glass="double" onclick="setGlass(this,'double')">2-камерний</button>
-          <button class="calc-tab" data-glass="triple" onclick="setGlass(this,'triple')">3-камерний</button>
+          <button class="calc-tab active" data-glass="single" onclick="setGlass(this,'single')">1-камерний</button>
+          <button class="calc-tab" data-glass="double" onclick="setGlass(this,'double')">2-камерний</button>
         </div>
       </div>
       <div class="calc-group">
@@ -619,7 +620,7 @@
             <label class="dim-label">Ширина</label>
             <div class="dim-control">
               <button onclick="adjustDim('width',-10)">−</button>
-              <input type="number" id="width" value="120" min="40" max="300" oninput="calc()">
+              <input type="number" id="width" value="100" min="40" max="300" oninput="calc()">
               <button onclick="adjustDim('width',10)">+</button>
             </div>
           </div>
@@ -628,7 +629,7 @@
             <label class="dim-label">Висота</label>
             <div class="dim-control">
               <button onclick="adjustDim('height',-10)">−</button>
-              <input type="number" id="height" value="140" min="40" max="300" oninput="calc()">
+              <input type="number" id="height" value="100" min="40" max="300" oninput="calc()">
               <button onclick="adjustDim('height',10)">+</button>
             </div>
           </div>
