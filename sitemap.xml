@@ -1,9 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://vikna-dveri.store/</loc>
-    <lastmod>2026-04-08</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/вікна/2023-12-16%20(1).jpg</image:loc>
+      <image:title>Металопластикові вікна в Бучі</image:title>
+      <image:caption>Металопластикові вікна в Бучі — вітальня</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/вікна/2024-01-15.jpg</image:loc>
+      <image:title>Вікна Буча</image:title>
+      <image:caption>Вікна Буча — монтаж під ключ</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/вікна/unnamed.jpg</image:loc>
+      <image:title>Вікна Буча</image:title>
+      <image:caption>Вікна Буча — готовий об'єкт</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/двері/2023-12-16.jpg</image:loc>
+      <image:title>Вхідні двері в Бучі</image:title>
+      <image:caption>Вхідні двері в Бучі</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/двері/2024-09-06.jpg</image:loc>
+      <image:title>Вхідні двері Буча</image:title>
+      <image:caption>Вхідні двері Буча — під'їзд</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/двері/unnamed%20(1).jpg</image:loc>
+      <image:title>Вхідні двері Буча</image:title>
+      <image:caption>Броньовані вхідні двері, Буча</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/ролети/2023-11-22.jpg</image:loc>
+      <image:title>Ролети в Бучі</image:title>
+      <image:caption>Захисні ролети в Бучі</image:caption>
+    </image:image>
   </url>
 </urlset>
