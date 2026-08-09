@@ -466,6 +466,8 @@ async function handleSubmit(btn) {
     btn.textContent = '✓ Заявку надіслано!';
     btn.style.background = '#4caf50';
     localStorage.setItem('_lastFormSent', Date.now().toString());
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'form_submit_zayavka', product });
     if (nameEl)    nameEl.value    = '';
     if (phoneEl)   phoneEl.value   = '';
     if (productEl) productEl.value = '';
