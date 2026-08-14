@@ -169,6 +169,22 @@ document.addEventListener('keydown', e => {
 });
 
 /* ═══════════════════════════════════════════════════════════════
+   PROMO MODAL (для рекламних посилань /#advertising)
+═══════════════════════════════════════════════════════════════ */
+function openPromo() {
+  document.getElementById('promoModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePromo() {
+  document.getElementById('promoModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('promoModal').classList.contains('open')) closePromo();
+});
+if (window.location.hash === '#advertising') openPromo();
+
+/* ═══════════════════════════════════════════════════════════════
    PRODUCT PANEL — mouse parallax
 ═══════════════════════════════════════════════════════════════ */
 document.querySelectorAll('.product-visual').forEach(visual => {
@@ -422,10 +438,9 @@ function fillFormFromCalc() {
 ═══════════════════════════════════════════════════════════════ */
 const _formLoadTime = Date.now();
 
-async function handleSubmit(btn) {
+async function submitLead({ name, phone, product, comment, honeypot }, btn, fieldsToClear) {
   // Honeypot: якщо бот заповнив приховане поле — ігноруємо
-  const hp = (document.getElementById('_hp') || {}).value || '';
-  if (hp) return;
+  if (honeypot) return;
 
   // Rate limit: не частіше 1 разу на 60 секунд
   const lastSent = parseInt(localStorage.getItem('_lastFormSent') || '0');
@@ -436,15 +451,9 @@ async function handleSubmit(btn) {
 
   // Мінімальний час на сторінці: 3 секунди
   if (Date.now() - _formLoadTime < 3000) return;
-  const nameEl    = document.getElementById('clientName');
-  const phoneEl   = document.getElementById('clientPhone');
-  const productEl = document.getElementById('clientProduct');
-  const commentEl = document.getElementById('clientComment');
 
-  const name    = (nameEl    || {}).value?.trim() || '';
-  const phone   = (phoneEl   || {}).value?.trim() || '';
-  const product = (productEl || {}).value || 'Не обрано';
-  const comment = (commentEl || {}).value?.trim() || '';
+  name  = (name  || '').trim();
+  phone = (phone || '').trim();
 
   if (!name || !phone) {
     alert('Будь ласка, вкажіть ваше ім\'я та номер телефону.');
@@ -468,10 +477,7 @@ async function handleSubmit(btn) {
     localStorage.setItem('_lastFormSent', Date.now().toString());
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: 'form_submit_zayavka', product });
-    if (nameEl)    nameEl.value    = '';
-    if (phoneEl)   phoneEl.value   = '';
-    if (productEl) productEl.value = '';
-    if (commentEl) commentEl.value = '';
+    fieldsToClear.forEach(el => { if (el) el.value = ''; });
   } catch (err) {
     btn.textContent = '❌ Помилка. Спробуйте ще';
     btn.style.background = '#f44336';
@@ -482,4 +488,33 @@ async function handleSubmit(btn) {
     btn.textContent  = originalText;
     btn.style.background = '';
   }, 4000);
+}
+
+async function handleSubmit(btn) {
+  const nameEl    = document.getElementById('clientName');
+  const phoneEl   = document.getElementById('clientPhone');
+  const productEl = document.getElementById('clientProduct');
+  const commentEl = document.getElementById('clientComment');
+
+  await submitLead({
+    name:     (nameEl    || {}).value,
+    phone:    (phoneEl   || {}).value,
+    product:  (productEl || {}).value || 'Не обрано',
+    comment:  (commentEl || {}).value?.trim() || '',
+    honeypot: (document.getElementById('_hp') || {}).value || ''
+  }, btn, [nameEl, phoneEl, productEl, commentEl]);
+}
+
+async function handlePromoSubmit(btn) {
+  const nameEl    = document.getElementById('promoName');
+  const phoneEl   = document.getElementById('promoPhone');
+  const productEl = document.getElementById('promoProduct');
+
+  await submitLead({
+    name:     (nameEl    || {}).value,
+    phone:    (phoneEl   || {}).value,
+    product:  (productEl || {}).value || 'Не обрано',
+    comment:  'Знижка 10% (рекламна пропозиція)',
+    honeypot: (document.getElementById('_hpPromo') || {}).value || ''
+  }, btn, [nameEl, phoneEl, productEl]);
 }
