@@ -761,8 +761,8 @@ nav.scrolled {
 
 .promo-backdrop {
   position:absolute; inset:0;
-  background:rgba(4,10,20,0.94);
-  backdrop-filter:blur(8px);
+  background:rgba(4,10,20,0.55);
+  backdrop-filter:blur(3px);
 }
 .promo-card {
   position:relative; z-index:2;
@@ -775,8 +775,14 @@ nav.scrolled {
   box-shadow:0 40px 100px rgba(0,0,0,0.5);
   transform:translateY(20px) scale(0.97);
   transition:transform .35s cubic-bezier(.2,.8,.2,1);
+  scrollbar-width:thin;
+  scrollbar-color:var(--accent) transparent;
 }
 .promo-modal.open .promo-card { transform:translateY(0) scale(1); }
+.promo-card::-webkit-scrollbar { width:6px; }
+.promo-card::-webkit-scrollbar-track { background:transparent; }
+.promo-card::-webkit-scrollbar-thumb { background:var(--border-d); border-radius:3px; }
+.promo-card::-webkit-scrollbar-thumb:hover { background:var(--accent); }
 
 .promo-close {
   position:absolute; top:16px; right:16px; z-index:3;
