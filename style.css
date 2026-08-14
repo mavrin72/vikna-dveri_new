@@ -748,6 +748,85 @@ nav.scrolled {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   PROMO MODAL
+═══════════════════════════════════════════════════════════════ */
+.promo-modal {
+  position:fixed; inset:0; z-index:2100;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity .3s ease;
+  padding:24px;
+}
+.promo-modal.open { opacity:1; pointer-events:all; }
+
+.promo-backdrop {
+  position:absolute; inset:0;
+  background:rgba(4,10,20,0.94);
+  backdrop-filter:blur(8px);
+}
+.promo-card {
+  position:relative; z-index:2;
+  width:100%; max-width:480px;
+  max-height:90vh; overflow-y:auto;
+  background:var(--navy-2);
+  border:1px solid var(--border-d);
+  border-radius:6px;
+  padding:44px 40px;
+  box-shadow:0 40px 100px rgba(0,0,0,0.5);
+  transform:translateY(20px) scale(0.97);
+  transition:transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.promo-modal.open .promo-card { transform:translateY(0) scale(1); }
+
+.promo-close {
+  position:absolute; top:16px; right:16px; z-index:3;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+  color:var(--white); width:38px; height:38px; border-radius:50%;
+  font-size:1.3rem; cursor:none; transition:all .2s;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'DM Sans',sans-serif;
+}
+.promo-close:hover { background:var(--accent); border-color:var(--accent); color:var(--navy); }
+
+.promo-badge {
+  display:inline-block; color:var(--accent);
+  font-size:0.76rem; font-weight:700; letter-spacing:2px;
+  text-transform:uppercase; margin-bottom:16px;
+}
+.promo-title {
+  font-family:'Cormorant Garamond',serif;
+  font-weight:700; font-size:clamp(1.7rem,4vw,2.3rem);
+  color:var(--white); line-height:1.2; margin-bottom:14px;
+}
+.promo-title span { color:var(--accent); }
+.promo-sub {
+  color:rgba(245,242,237,0.6); font-size:0.94rem;
+  line-height:1.6; margin-bottom:24px;
+}
+
+.promo-offers {
+  display:flex; flex-wrap:wrap; gap:10px;
+  margin-bottom:28px;
+}
+.promo-offer {
+  display:flex; align-items:center; gap:8px;
+  background:rgba(200,169,110,0.08);
+  border:1px solid var(--border-d);
+  border-radius:20px; padding:8px 14px;
+  color:var(--white); font-size:0.82rem; font-weight:600;
+}
+.promo-offer-ic { font-size:1rem; }
+
+.promo-disclaimer {
+  color:rgba(245,242,237,0.3); font-size:0.74rem;
+  line-height:1.5; margin-top:14px;
+}
+
+@media (max-width:520px) {
+  .promo-card { padding:32px 24px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    FEATURED TESTIMONIAL
 ═══════════════════════════════════════════════════════════════ */
 .ft-section {
