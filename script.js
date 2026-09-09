@@ -438,7 +438,7 @@ function fillFormFromCalc() {
 ═══════════════════════════════════════════════════════════════ */
 const _formLoadTime = Date.now();
 
-async function submitLead({ name, phone, product, comment, honeypot }, btn, fieldsToClear) {
+async function submitLead({ name, phone, city, product, comment, honeypot }, btn, fieldsToClear) {
   // Honeypot: якщо бот заповнив приховане поле — ігноруємо
   if (honeypot) return;
 
@@ -454,9 +454,10 @@ async function submitLead({ name, phone, product, comment, honeypot }, btn, fiel
 
   name  = (name  || '').trim();
   phone = (phone || '').trim();
+  city  = (city  || '').trim();
 
-  if (!name || !phone) {
-    alert('Будь ласка, вкажіть ваше ім\'я та номер телефону.');
+  if (!name || !phone || !city) {
+    alert('Будь ласка, вкажіть ваше ім\'я, номер телефону та населений пункт.');
     return;
   }
 
@@ -470,7 +471,7 @@ async function submitLead({ name, phone, product, comment, honeypot }, btn, fiel
     await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ name, phone, product, comment, _key: 'vd2026site' })
+      body: JSON.stringify({ name, phone, city, product, comment, _key: 'vd2026site' })
     });
     btn.textContent = '✓ Заявку надіслано!';
     btn.style.background = '#4caf50';
@@ -493,28 +494,32 @@ async function submitLead({ name, phone, product, comment, honeypot }, btn, fiel
 async function handleSubmit(btn) {
   const nameEl    = document.getElementById('clientName');
   const phoneEl   = document.getElementById('clientPhone');
+  const cityEl    = document.getElementById('clientCity');
   const productEl = document.getElementById('clientProduct');
   const commentEl = document.getElementById('clientComment');
 
   await submitLead({
     name:     (nameEl    || {}).value,
     phone:    (phoneEl   || {}).value,
+    city:     (cityEl    || {}).value,
     product:  (productEl || {}).value || 'Не обрано',
     comment:  (commentEl || {}).value?.trim() || '',
     honeypot: (document.getElementById('_hp') || {}).value || ''
-  }, btn, [nameEl, phoneEl, productEl, commentEl]);
+  }, btn, [nameEl, phoneEl, cityEl, productEl, commentEl]);
 }
 
 async function handlePromoSubmit(btn) {
   const nameEl    = document.getElementById('promoName');
   const phoneEl   = document.getElementById('promoPhone');
+  const cityEl    = document.getElementById('promoCity');
   const productEl = document.getElementById('promoProduct');
 
   await submitLead({
     name:     (nameEl    || {}).value,
     phone:    (phoneEl   || {}).value,
+    city:     (cityEl    || {}).value,
     product:  (productEl || {}).value || 'Не обрано',
     comment:  'Знижка 10% (рекламна пропозиція)',
     honeypot: (document.getElementById('_hpPromo') || {}).value || ''
-  }, btn, [nameEl, phoneEl, productEl]);
+  }, btn, [nameEl, phoneEl, cityEl, productEl]);
 }
