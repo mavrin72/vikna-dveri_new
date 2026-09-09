@@ -971,9 +971,6 @@ nav.scrolled {
   background:var(--white); transition:border-color .25s, color .25s;
 }
 .area-pill:hover { border-color:var(--accent); color:var(--accent); }
-.area-pill-muted {
-  background:transparent; color:var(--muted); border-style:dashed;
-}
 
 /* ═══════════════════════════════════════════════════════════════
    PROCESS
