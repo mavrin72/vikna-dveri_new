@@ -956,6 +956,26 @@ nav.scrolled {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   SERVICE AREA
+═══════════════════════════════════════════════════════════════ */
+.service-area { background:var(--cream); padding:100px 80px; }
+.service-area-inner { max-width:900px; margin:0 auto; text-align:center; }
+.service-area-inner .section-sub { max-width:600px; margin-left:auto; margin-right:auto; }
+.area-grid {
+  display:flex; flex-wrap:wrap; justify-content:center; gap:12px;
+}
+.area-pill {
+  border:1px solid var(--border-l); border-radius:2px;
+  padding:12px 24px; color:var(--navy);
+  font-size:0.92rem; letter-spacing:0.3px;
+  background:var(--white); transition:border-color .25s, color .25s;
+}
+.area-pill:hover { border-color:var(--accent); color:var(--accent); }
+.area-pill-muted {
+  background:transparent; color:var(--muted); border-style:dashed;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    PROCESS
 ═══════════════════════════════════════════════════════════════ */
 .process { background:var(--navy); padding:100px 80px; }
@@ -1283,6 +1303,7 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   .why-card { border-right:none; border-bottom:1px solid var(--border-l); }
   .gallery-section { padding:80px 32px; }
   .ft-section { padding:80px 32px; }
+  .service-area { padding:80px 32px; }
   .process { padding:80px 32px; }
   .process-steps { grid-template-columns:1fr; }
   .step { border-right:none; border-bottom:1px solid var(--border-d); }
@@ -1355,6 +1376,7 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   .ft-text { font-size:1.3rem; }
   .ft-section { padding:60px 20px; }
   .why-us { padding:60px 20px; }
+  .service-area { padding:60px 20px; }
   .process { padding:60px 20px; }
   .calculator-section { padding:60px 20px; }
   .calc-tab { font-size:0.8rem; padding:9px 10px; }
