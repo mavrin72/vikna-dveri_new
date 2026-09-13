@@ -173,7 +173,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=25">
+<link rel="stylesheet" href="style.css?v=26">
 <script>if (history.scrollRestoration) history.scrollRestoration = 'manual';</script>
 </head>
 <body>
@@ -217,9 +217,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="hero-grid-bg"></div>
   <div class="hero-body">
     <div class="hero-left">
-      <div class="hero-badge">
-        <span class="badge-dot"></span>
-        Буча, Ірпінь, Бородянка
+      <div class="hero-badge-wrap">
+        <button type="button" class="hero-badge" id="areaBadge"
+                onclick="toggleAreas()" aria-expanded="false" aria-controls="areaPanel">
+          <span class="badge-dot"></span>
+          <span class="hb-lead">Працюємо</span>
+          <span class="hb-rotator">
+            <span class="hb-city active">у Бучі</span>
+            <span class="hb-city">в Ірпені</span>
+            <span class="hb-city">у Бородянці</span>
+            <span class="hb-city">у Гостомелі</span>
+            <span class="hb-city">у Білогородці</span>
+            <span class="hb-city">у Дмитрівці</span>
+            <span class="hb-city">у селі Мила</span>
+          </span>
+          <span class="hb-chev" aria-hidden="true">▾</span>
+        </button>
+
+        <div class="area-panel" id="areaPanel" hidden>
+          <div class="ap-head">Де ми працюємо</div>
+          <ul class="ap-list">
+            <li>Буча</li>
+            <li>Ірпінь</li>
+            <li>Бородянка</li>
+            <li>Гостомель</li>
+            <li>Білогородка</li>
+            <li>Дмитрівка</li>
+            <li>с. Мила</li>
+          </ul>
+          <p class="ap-note">Вашого населеного пункту немає у списку? Це не відмова — узгодьте виїзд з менеджером, ми виїжджаємо і за межі списку.</p>
+          <a href="#order-form" class="ap-cta" onclick="closeAreas()">Запитати про своє місто →</a>
+        </div>
       </div>
       <h1 class="hero-title">
         <span class="ht-line">Вікна</span>
@@ -675,6 +703,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <span class="area-pill">Дмитрівка</span>
       <span class="area-pill">с. Мила</span>
     </div>
+    <p class="area-note">Не знайшли свій населений пункт? Напишіть його у формі або скажіть менеджеру — узгодимо виїзд індивідуально.</p>
   </div>
 </section>
 
@@ -1101,6 +1130,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <option value="с. Мила">
 </datalist>
 
-<script src="script.js?v=25"></script>
+<script src="script.js?v=26"></script>
 </body>
 </html>
