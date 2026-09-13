@@ -164,8 +164,13 @@ nav.scrolled {
 /* Місто змінюється саме — по одному, з перекидом угору */
 .hb-rotator {
   position:relative; display:inline-block;
-  height:1.15em; min-width:9.4em; overflow:hidden;
-  text-align:left; vertical-align:bottom;
+  overflow:hidden; text-align:left; vertical-align:bottom;
+}
+/* Невидимий зразок тримає ширину й висоту під найдовшу назву,
+   щоб жодне місто не обрізалось. */
+.hb-ghost {
+  display:block; visibility:hidden; white-space:nowrap;
+  font-weight:600; pointer-events:none;
 }
 .hb-city {
   position:absolute; left:0; top:0; white-space:nowrap;
@@ -1641,7 +1646,6 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   .gp-wide { grid-column:span 2; aspect-ratio:16/6; }
   .hero-title { font-size:clamp(2.8rem,10vw,4.5rem); }
   .hero-badge { font-size:0.68rem; letter-spacing:1.2px; }
-  .hb-rotator { min-width:8.8em; }
   .hero-sub { font-size:0.95rem; }
   .hero-actions { flex-direction:column; gap:12px; }
   .hero-actions .btn-primary,
@@ -1676,7 +1680,6 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   .nav-inner { padding:14px 18px; }
   .hero-body { padding:100px 20px 40px; }
   .hero-badge { font-size:0.62rem; padding:7px 14px; gap:7px; }
-  .hb-rotator { min-width:8.6em; }
   .area-panel { padding:18px; }
   .ap-list { gap:7px 10px; }
   .ap-list li { font-size:0.84rem; }
