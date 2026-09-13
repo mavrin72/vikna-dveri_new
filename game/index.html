@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<title>Збери вікно</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;600;700&family=DM+Sans:wght@300;400;500;600&display=swap">
+<style>
+  :root{
+    --navy:#080f1c; --navy-2:#0e1a2e; --navy-3:#172540;
+    --accent:#c8a96e; --accent-lt:#e4c99a;
+    --cream:#f5f2ed; --muted:rgba(245,242,237,0.5);
+    --line:rgba(200,169,110,0.18);
+    --ok:#7ec89a;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{
+    margin:0; background:var(--navy); color:var(--cream);
+    font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    font-weight:300; line-height:1.6; padding:0 16px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .shell{max-width:520px; margin:0 auto; padding-block:18px 28px;}
+
+  .top{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:16px;}
+  .brand{font-family:'Cormorant Garamond',Georgia,serif; font-size:1.05rem; font-weight:700;}
+  .brand span{color:var(--accent);}
+  .best{color:var(--muted); font-size:.74rem; letter-spacing:1.4px; text-transform:uppercase;}
+
+  .card{border:1px solid var(--line); border-radius:10px; background:var(--navy-2); padding:26px 22px;}
+  h1{
+    font-family:'Cormorant Garamond',Georgia,serif; font-weight:600;
+    font-size:clamp(1.9rem,7.5vw,2.6rem); line-height:1.06; margin:0 0 12px; text-wrap:balance;
+  }
+  h1 em{font-style:italic; color:var(--accent);}
+  .lede{margin:0 0 20px; color:var(--muted); font-size:.94rem;}
+  .road{list-style:none; margin:0 0 24px; padding:0; display:grid; gap:9px;}
+  .road li{display:flex; gap:11px; align-items:center; font-size:.9rem; color:rgba(245,242,237,0.82);}
+  .road i{font-style:normal; width:22px; text-align:center; flex-shrink:0;}
+
+  .btn{
+    display:block; width:100%; padding:15px 20px; border:none; border-radius:3px;
+    background:var(--accent); color:var(--navy);
+    font-family:'DM Sans',sans-serif; font-size:.86rem; font-weight:700;
+    letter-spacing:1.4px; text-transform:uppercase; cursor:pointer;
+    text-align:center; text-decoration:none; transition:background .2s,transform .12s;
+  }
+  .btn:hover{background:var(--accent-lt);}
+  .btn:active{transform:translateY(1px);}
+  .btn-ghost{
+    background:transparent; border:1px solid var(--line); color:var(--cream);
+    margin-top:10px; font-weight:500; letter-spacing:.4px; text-transform:none; font-size:.95rem;
+  }
+  .btn-ghost:hover{border-color:var(--accent); color:var(--accent); background:transparent;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px;}
+
+  /* ── гра ── */
+  .hud{display:flex; align-items:baseline; gap:10px; margin-bottom:10px;}
+  .stage-name{font-family:'Cormorant Garamond',Georgia,serif; font-size:1.4rem; line-height:1.1;}
+  .act{
+    font-size:.64rem; letter-spacing:2px; text-transform:uppercase;
+    color:var(--accent); border:1px solid var(--line); border-radius:20px;
+    padding:3px 9px; white-space:nowrap;
+  }
+  .timer{margin-left:auto; font-size:1.02rem; font-weight:500; font-variant-numeric:tabular-nums; color:var(--muted);}
+  .pips{display:flex; gap:4px; margin-bottom:14px;}
+  .pip{height:3px; flex:1; background:rgba(245,242,237,0.1); border-radius:2px; transition:background .35s;}
+  .pip.done{background:var(--accent);}
+  .pip.now{background:var(--accent-lt);}
+
+  .board{
+    position:relative; border:1px solid var(--line); border-radius:8px;
+    background:
+      linear-gradient(rgba(200,169,110,0.04) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(200,169,110,0.04) 1px,transparent 1px),
+      var(--navy-2);
+    background-size:34px 34px,34px 34px,auto;
+    touch-action:none; overflow:hidden;
+  }
+  .board.road-scene{background:var(--navy-2); cursor:pointer;}
+  .board svg{display:block; width:100%; height:auto;}
+  .tray-line{stroke:var(--line); stroke-width:1; stroke-dasharray:4 6;}
+
+  .slot{stroke-dasharray:5 5; opacity:.32; transition:opacity .2s;}
+  .slot.avail{opacity:.85; animation:slotPulse 1.4s ease-in-out infinite;}
+  .slot.hot{opacity:1; fill:rgba(200,169,110,0.16); animation:none;}
+  @keyframes slotPulse{0%,100%{opacity:.55}50%{opacity:1}}
+  .piece{cursor:grab;}
+  .piece.dragging{cursor:grabbing;}
+  .piece.placed{cursor:default; pointer-events:none;}
+  .shine{pointer-events:none;}
+
+  /* дорога */
+  @keyframes rollLeft{from{transform:translateX(0)} to{transform:translateX(-340px)}}
+  @keyframes bump{0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)}}
+  @keyframes wheel{from{transform:rotate(0)} to{transform:rotate(360deg)}}
+  .scroller{animation:rollLeft 2.4s linear infinite;}
+  .scroller.slow{animation-duration:5s;}
+  .van{animation:bump .5s ease-in-out infinite;}
+  .wheel{animation:wheel 1s linear infinite; transform-box:fill-box; transform-origin:center;}
+  @keyframes glowIn{from{opacity:0} to{opacity:1}}
+  .window-glow{animation:glowIn 1s ease both;}
+
+  .goal{animation:goalPulse 1.3s ease-in-out infinite;}
+  @keyframes goalPulse{0%,100%{opacity:.45}50%{opacity:1}}
+  .dirt{position:absolute; left:0; top:0; touch-action:none; cursor:crosshair;}
+  .hint{text-align:center; color:var(--muted); font-size:.85rem; margin:14px 0 0; min-height:22px;}
+  .hint.win{color:var(--ok);}
+
+  /* ── фінал ── */
+  .final-time{
+    font-family:'Cormorant Garamond',Georgia,serif; font-size:3.6rem; line-height:1;
+    font-weight:700; color:var(--accent); margin:6px 0 4px; font-variant-numeric:tabular-nums;
+  }
+  .final-label{font-size:.72rem; letter-spacing:2.6px; text-transform:uppercase; color:var(--muted); margin-bottom:22px;}
+
+  .foot{margin-top:20px; color:rgba(245,242,237,0.28); font-size:.76rem; text-align:center;}
+  .foot a{color:var(--accent); text-decoration:none;}
+  [hidden]{display:none !important;}
+
+  @media (prefers-reduced-motion:reduce){
+    .pip,.slot{transition:none !important;}
+    .slot.avail{animation:none; opacity:.85;}
+    .scroller,.van,.wheel,.goal{animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="top">
+    <div class="brand">Вікна @<span> двері</span></div>
+    <div class="best" id="bestLine"></div>
+  </div>
+
+  <!-- ═══ СТАРТ ═══ -->
+  <section class="card" id="startScreen">
+    <h1>Від майстерні<br><em>до готового будинку</em></h1>
+    <p class="lede">Менеджер передзвонить найближчим часом. А поки пройдіть шлях замовлення — так, як він відбувається насправді.</p>
+    <ul class="road">
+      <li><i>📏</i> Зніміть заміри на об'єкті</li>
+      <li><i>🔧</i> Зберіть чотири конструкції з деталей</li>
+      <li><i>🚚</i> Завантажте їх у машину</li>
+      <li><i>🛣</i> Довезіть на об'єкт</li>
+      <li><i>🏠</i> Встановіть у будинок</li>
+      <li><i>🧽</i> Помийте скло після монтажу</li>
+    </ul>
+    <button class="btn" id="startBtn">Почати зміну</button>
+  </section>
+
+  <!-- ═══ ГРА ═══ -->
+  <section id="playScreen" hidden>
+    <div class="hud">
+      <span class="act" id="actLabel">Майстерня</span>
+      <div class="stage-name" id="stageName">Вікно у спальню</div>
+      <div class="timer" id="timer">0:00</div>
+    </div>
+    <div class="pips" id="pips"></div>
+    <div class="board" id="board"></div>
+    <p class="hint" id="hint">Візьміть деталь — місця для неї підсвітяться</p>
+  </section>
+
+  <!-- ═══ ФІНАЛ ═══ -->
+  <section class="card" id="overScreen" hidden>
+    <div class="best" style="color:var(--accent)">Будинок готовий</div>
+    <div class="final-time" id="finalTime">0:00</div>
+    <div class="final-label" id="finalLabel">ваш час</div>
+    <button class="btn" id="againBtn">Пройти ще раз</button>
+    <a class="btn btn-ghost" href="https://vikna-dveri.store" target="_blank" rel="noopener">Повернутись на сайт</a>
+  </section>
+
+  <p class="foot"><a href="https://vikna-dveri.store" target="_blank" rel="noopener">vikna-dveri.store</a></p>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   Поле 340×470. Угорі сцена, внизу за пунктиром — те, що тягнуть.
+   Деталь описана координатами СВОГО місця, у лоток її зсуває
+   трансформація. «Поставити» = перенести на потрібне місце.
+═══════════════════════════════════════════════════════════════ */
+var W = 340, H = 470, FLOOR = 300;
+
+var COL = {
+  glass:'#1d3350', prof:'#e9e4da', dark:'#3c434c',
+  wall:'#232f42',  roof:'#374357'
+};
+
+/* ── чотири конструкції ── */
+var PRODUCTS = [
+  {
+    name:'Вікно у спальню',
+    box:{ x:34, y:14, w:272, h:272 },
+    frame:'<rect x="40" y="20" width="260" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="12"/>' +
+          '<rect x="163" y="26" width="14" height="248" fill="'+COL.prof+'"/>',
+    pieces:[
+      { x:52,  y:32, w:105, h:236, kind:'glass' },
+      { x:183, y:32, w:105, h:236, kind:'glass' }
+    ]
+  },
+  {
+    name:'Вікно на чотири',
+    box:{ x:34, y:14, w:272, h:272 },
+    frame:'<rect x="40" y="20" width="260" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="12"/>' +
+          '<rect x="163" y="26" width="14" height="248" fill="'+COL.prof+'"/>' +
+          '<rect x="46" y="143" width="248" height="14" fill="'+COL.prof+'"/>',
+    pieces:[
+      { x:52,  y:32,  w:105, h:105, kind:'glass' },
+      { x:183, y:32,  w:105, h:105, kind:'glass' },
+      { x:52,  y:163, w:105, h:105, kind:'glass' },
+      { x:183, y:163, w:105, h:105, kind:'glass' }
+    ]
+  },
+  {
+    name:'Вхідні двері',
+    box:{ x:58, y:11, w:224, h:276 },
+    frame:'<rect x="70" y="16" width="200" height="266" fill="none" stroke="'+COL.dark+'" stroke-width="10"/>' +
+          '<rect x="62" y="46" width="8" height="18" rx="2" fill="'+COL.dark+'"/>' +
+          '<rect x="62" y="140" width="8" height="18" rx="2" fill="'+COL.dark+'"/>' +
+          '<rect x="62" y="234" width="8" height="18" rx="2" fill="'+COL.dark+'"/>',
+    pieces:[
+      { x:82,  y:28,  w:176, h:242, kind:'prof' },
+      { x:106, y:48,  w:128, h:88,  kind:'glass' },
+      { x:236, y:150, w:10,  h:36,  kind:'handle', r:5 }
+    ]
+  },
+  {
+    name:'Балконний блок',
+    box:{ x:20, y:14, w:300, h:272 },
+    frame:'<rect x="26" y="20" width="88" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="11"/>' +
+          '<rect x="124" y="20" width="92" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="11"/>' +
+          '<rect x="226" y="20" width="88" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="11"/>',
+    pieces:[
+      { x:37,  y:31,  w:66, h:238, kind:'glass' },
+      { x:135, y:31,  w:70, h:186, kind:'glass' },
+      { x:237, y:31,  w:66, h:238, kind:'glass' },
+      { x:128, y:150, w:10, h:36,  kind:'handle', r:5 }
+    ]
+  }
+];
+
+/* ── шлях замовлення ── */
+var STAGES = [
+  { type:'measure',         act:'Виїзд',        name:'Замір на об’єкті' },
+  { type:'assemble', p:0, act:'Майстерня' },
+  { type:'assemble', p:1, act:'Майстерня' },
+  { type:'assemble', p:2, act:'Майстерня' },
+  { type:'assemble', p:3, act:'Майстерня' },
+  { type:'load',            act:'Завантаження', name:'Машина у дворі' },
+  { type:'drive',           act:'Дорога',       name:'Їдемо на об’єкт' },
+  { type:'install',         act:'Монтаж',       name:'Будинок замовника' },
+  { type:'clean',           act:'Прибирання',   name:'Миємо після монтажу' }
+];
+
+/* отвір, який міряють на першому етапі */
+var MEAS = { x:70, y:96, w:200, h:212, mmW:1500, mmH:1600 };
+
+/* місця в кузові та отвори в будинку — під ті самі чотири вироби */
+var CARGO = [
+  { x:56,  y:138, w:62, h:62 },
+  { x:132, y:138, w:62, h:62 },
+  { x:56,  y:206, w:62, h:62 },
+  { x:132, y:206, w:62, h:62 }
+];
+var OPENINGS = [
+  { x:46,  y:66,  w:78, h:78 },    // вікно ліворуч угорі
+  { x:216, y:66,  w:78, h:78 },    // вікно праворуч угорі
+  { x:54,  y:182, w:66, h:104 },   // двері
+  { x:170, y:176, w:124, h:110 }   // балконний блок
+];
+
+var $ = function (id) { return document.getElementById(id); };
+var G = { stage:0, pieces:[], slots:[], left:0, t0:0, tick:null, drag:null, done:false, timer:null };
+
+/* ═══════════ малювання ═══════════ */
+function shapeOf(p) {
+  return '<rect x="' + p.x + '" y="' + p.y + '" width="' + p.w + '" height="' + p.h + '"' +
+         (p.r ? ' rx="' + p.r + '"' : '') + '/>';
+}
+function fillOf(k) { return k === 'glass' ? COL.glass : (k === 'handle' ? COL.dark : COL.prof); }
+function sigOfRect(w, h, r) { return 'r:' + w + 'x' + h + 'x' + (r || 0); }
+
+function glassShine(p) {
+  var x1 = p.x + p.w * 0.14, y1 = p.y + p.h * 0.9;
+  var x2 = p.x + p.w * 0.76, y2 = p.y + p.h * 0.1;
+  var wd = Math.max(7, Math.min(p.w, p.h) * 0.17);
+  return '<line class="shine" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 +
+         '" stroke="rgba(245,242,237,.13)" stroke-width="' + wd + '"/>';
+}
+
+/* готовий виріб: основа + усі деталі на своїх місцях */
+function productMarkup(i) {
+  var pr = PRODUCTS[i];
+  var parts = pr.pieces.map(function (p) {
+    return '<g fill="' + fillOf(p.kind) + '">' + shapeOf(p) +
+           (p.kind === 'glass' ? glassShine(p) : '') + '</g>';
+  }).join('');
+  return pr.frame + parts;
+}
+
+/* той самий виріб, вписаний у прямокутник */
+function productFitted(i, box) {
+  var b = PRODUCTS[i].box;
+  var s = Math.min(box.w / b.w, box.h / b.h);
+  var tx = box.x + box.w / 2 - (b.x + b.w / 2) * s;
+  var ty = box.y + box.h / 2 - (b.y + b.h / 2) * s;
+  return '<g transform="translate(' + tx + ' ' + ty + ') scale(' + s + ')">' + productMarkup(i) + '</g>';
+}
+
+/* ═══════════ сцени ═══════════ */
+function buildStage() {
+  var st = STAGES[G.stage];
+  $('actLabel').textContent = st.act;
+  $('stageName').textContent = st.name || PRODUCTS[st.p].name;
+  $('board').classList.toggle('road-scene', st.type === 'drive');
+  paintPips();
+  G.done = false;
+  clearTimeout(G.timer);
+
+  if (st.type === 'assemble') buildAssemble(st.p);
+  else if (st.type === 'load') buildCarry(CARGO, truckScene(), 'Складіть вироби в кузов');
+  else if (st.type === 'install') buildCarry(OPENINGS, houseScene(), 'Вставте кожен виріб у свій отвір');
+  else if (st.type === 'measure') buildMeasure();
+  else if (st.type === 'clean') buildClean();
+  else buildDrive();
+}
+
+/* — 1. збирання — */
+function buildAssemble(pi) {
+  var pr = PRODUCTS[pi];
+  G.pieces = pr.pieces.map(function (p, i) {
+    return {
+      i:i, cx:p.x + p.w / 2, cy:p.y + p.h / 2, w:p.w, h:p.h,
+      sig:sigOfRect(p.w, p.h, p.r),
+      slotHtml:shapeOf(p),
+      html:shapeOf(p) + (p.kind === 'glass' ? glassShine(p) : ''),
+      fill:fillOf(p.kind), placed:false
+    };
+  });
+  layout(pr.frame, 'Візьміть деталь — місця для неї підсвітяться');
+}
+
+/* — 2 і 4. перенести готові вироби — */
+function buildCarry(targets, sceneHtml, hintText) {
+  G.pieces = PRODUCTS.map(function (pr, i) {
+    var t = targets[i];
+    return {
+      i:i, cx:t.x + t.w / 2, cy:t.y + t.h / 2, w:t.w, h:t.h,
+      sig:'prod' + i,
+      slotHtml:'<rect x="' + t.x + '" y="' + t.y + '" width="' + t.w + '" height="' + t.h + '" rx="3"/>',
+      html:productFitted(i, t),
+      fill:'none', placed:false
+    };
+  });
+  layout(sceneHtml, hintText);
+}
+
+function layout(sceneHtml, hintText) {
+  var n = G.pieces.length;
+  var cols = n <= 3 ? n : Math.ceil(n / 2);
+  var rows = n <= 3 ? 1 : 2;
+  var cellW = (W - 20) / cols, cellH = (H - FLOOR - 14) / rows;
+
+  var order = G.pieces.map(function (_, i) { return i; });
+  for (var k = order.length - 1; k > 0; k--) {
+    var j = Math.floor(Math.random() * (k + 1));
+    var tmp = order[k]; order[k] = order[j]; order[j] = tmp;
+  }
+
+  G.pieces.forEach(function (p) {
+    var slot = order.indexOf(p.i), col = slot % cols, row = Math.floor(slot / cols);
+    var span = Math.max(p.w, p.h);
+    var s = Math.min(0.62, (cellW - 16) / span, (cellH - 12) / span);
+    s = Math.max(s, Math.min(1.1, 62 / span));
+    p.tray = { tx:10 + cellW * (col + 0.5), ty:FLOOR + 8 + cellH * (row + 0.5), s:Math.max(0.16, s) };
+  });
+
+  G.slots = G.pieces.map(function (p) {
+    return { i:p.i, c:{ x:p.cx, y:p.cy }, sig:p.sig, filled:false };
+  });
+  G.left = G.pieces.length;
+
+  var slotsHtml = G.pieces.map(function (p) {
+    return '<g class="slot" data-slot="' + p.i + '" fill="rgba(245,242,237,0.035)" ' +
+           'stroke="#c8a96e" stroke-width="1.5">' + p.slotHtml + '</g>';
+  }).join('');
+
+  var piecesHtml = G.pieces.map(function (p) {
+    return '<g class="piece" data-piece="' + p.i + '" transform="' + trayTransform(p) + '" ' +
+           'fill="' + p.fill + '">' + hitArea(p) + p.html + '</g>';
+  }).join('');
+
+  $('board').innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" id="svg" role="application" aria-label="Поле гри">' +
+      '<line class="tray-line" x1="14" y1="' + FLOOR + '" x2="' + (W - 14) + '" y2="' + FLOOR + '"/>' +
+      '<g id="sceneLayer">' + sceneHtml + '</g>' +
+      '<g id="slotLayer">' + slotsHtml + '</g>' +
+      '<g id="piecesLayer">' + piecesHtml + '</g>' +
+    '</svg>';
+
+  bindDrag();
+  hint(hintText);
+}
+
+/* — 3. дорога — */
+function buildDrive() {
+  var tree = function (x, h) {
+    return '<g transform="translate(' + x + ' ' + (250 - h) + ')">' +
+           '<rect x="-2" y="' + h + '" width="4" height="18" fill="#2c3746"/>' +
+           '<path d="M0 0 L12 ' + h + ' L-12 ' + h + ' Z" fill="#26384a"/></g>';
+  };
+  var house = function (x) {
+    return '<g transform="translate(' + x + ' 214)">' +
+           '<rect x="-18" y="0" width="36" height="36" fill="#243146"/>' +
+           '<path d="M-22 0 L0 -16 L22 0 Z" fill="#2f3d55"/>' +
+           '<rect x="-7" y="10" width="14" height="12" fill="rgba(200,169,110,.45)"/></g>';
+  };
+
+  $('board').innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" id="svg" role="img" aria-label="Дорога на об’єкт">' +
+      '<rect x="0" y="0" width="' + W + '" height="268" fill="#0c1524"/>' +
+      '<circle cx="272" cy="58" r="20" fill="rgba(200,169,110,.16)"/>' +
+      '<g class="scroller slow">' + tree(30, 34) + house(120) + tree(210, 26) + tree(300, 40) + house(390) + tree(470, 30) + tree(560, 34) + '</g>' +
+      '<rect x="0" y="268" width="' + W + '" height="60" fill="#182534"/>' +
+      '<g class="scroller">' +
+        [0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660].map(function (x) {
+          return '<rect x="' + x + '" y="296" width="30" height="3" fill="rgba(245,242,237,.22)"/>';
+        }).join('') +
+      '</g>' +
+
+      '<g transform="translate(86 206)"><g class="van">' +
+        '<rect x="0" y="0" width="112" height="62" rx="4" fill="#e9e4da"/>' +
+        '<rect x="8" y="8" width="96" height="30" rx="2" fill="rgba(29,51,80,.35)"/>' +
+        '<path d="M112 14 L150 14 L166 40 L166 62 L112 62 Z" fill="#dcd5c7"/>' +
+        '<rect x="120" y="20" width="30" height="18" rx="2" fill="#1d3350"/>' +
+        '<circle class="wheel" cx="36" cy="64" r="13" fill="#232b36"/>' +
+        '<circle class="wheel" cx="140" cy="64" r="13" fill="#232b36"/>' +
+        '<circle cx="36" cy="64" r="5" fill="#4a5361"/>' +
+        '<circle cx="140" cy="64" r="5" fill="#4a5361"/>' +
+        '<rect x="163" y="40" width="6" height="8" rx="2" fill="var(--accent)"/>' +
+      '</g></g>' +
+
+      '<g transform="translate(0 360)">' +
+        '<text x="170" y="0" text-anchor="middle" fill="rgba(245,242,237,.45)" ' +
+        'font-family="DM Sans, sans-serif" font-size="13">Веземо на об’єкт…</text>' +
+        '<rect x="70" y="20" width="200" height="4" rx="2" fill="rgba(245,242,237,.1)"/>' +
+        '<rect id="driveBar" x="70" y="20" width="0" height="4" rx="2" fill="var(--accent)"/>' +
+      '</g>' +
+    '</svg>';
+
+  hint('Торкніться, щоб їхати швидше');
+
+  var t = 0, total = 6000, step = 100;
+  var bar = $('driveBar');
+  var go = setInterval(function () {
+    t += step * (G.boost ? 3 : 1);
+    if (bar) bar.setAttribute('width', Math.min(200, 200 * t / total));
+    if (t >= total) { clearInterval(go); G.boost = false; nextStage(); }
+  }, step);
+  G.boost = false;
+  $('board').onclick = function () { G.boost = true; };
+  G.timer = go;
+}
+
+/* ─────────── 1. ЗАМІР ───────────
+   Кінець рулетки тягнеться до краю отвору, число біжить
+   за пальцем і фіксується, коли доходить до краю. */
+function buildMeasure() {
+  var m = MEAS;
+  $('board').innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" id="svg" role="application" aria-label="Замір отвору">' +
+      '<rect x="14" y="24" width="312" height="380" rx="3" fill="' + COL.wall + '"/>' +
+      '<rect x="14" y="24" width="312" height="380" rx="3" fill="none" stroke="rgba(245,242,237,.07)" stroke-width="2"/>' +
+      '<rect x="14" y="24" width="312" height="10" fill="rgba(0,0,0,.18)"/>' +
+      '<rect x="' + m.x + '" y="' + m.y + '" width="' + m.w + '" height="' + m.h + '" fill="#070d16"/>' +
+      '<rect x="' + m.x + '" y="' + m.y + '" width="' + m.w + '" height="' + m.h +
+        '" fill="none" stroke="#39465c" stroke-width="6"/>' +
+      '<text x="170" y="' + (m.y + m.h + 30) + '" text-anchor="middle" fill="rgba(245,242,237,.35)" ' +
+        'font-family="DM Sans, sans-serif" font-size="12">отвір під вікно</text>' +
+
+      '<g id="dimGroup">' +
+        '<line id="dimLine" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent)" stroke-width="2.5"/>' +
+        '<line id="dimAnchor" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent)" stroke-width="3"/>' +
+        '<line id="dimGoal" class="goal" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent-lt)" ' +
+          'stroke-width="4"/>' +
+        '<g id="dimCase">' +
+          '<rect id="dimCaseBg" x="0" y="0" width="26" height="20" rx="4" fill="var(--accent)"/>' +
+          '<rect id="dimCaseIn" x="0" y="0" width="10" height="10" rx="5" fill="#0e1a2e"/>' +
+        '</g>' +
+        '<g id="dimHandle">' +
+          '<circle id="dimHit" cx="0" cy="0" r="30" fill="transparent"/>' +
+          '<circle id="dimKnob" cx="0" cy="0" r="12" fill="var(--accent)"/>' +
+          '<circle id="dimKnobIn" cx="0" cy="0" r="4.5" fill="#0e1a2e"/>' +
+        '</g>' +
+        '<g id="dimChip">' +
+          '<rect id="dimChipBg" x="0" y="0" width="86" height="26" rx="13" fill="#0e1a2e" ' +
+            'stroke="var(--accent)" stroke-width="1"/>' +
+          '<text id="dimChipText" x="0" y="0" text-anchor="middle" fill="var(--cream)" ' +
+            'font-family="DM Sans, sans-serif" font-size="13" font-weight="500">0 мм</text>' +
+        '</g>' +
+      '</g>' +
+
+      '<text id="dimDone" x="170" y="434" text-anchor="middle" fill="var(--ok)" ' +
+        'font-family="DM Sans, sans-serif" font-size="14"></text>' +
+    '</svg>';
+
+  G.meas = { axis:'w', pos:MEAS.x, doneW:0 };
+  drawMeasure();
+  $('dimHandle').addEventListener('pointerdown', measDown);
+  hint('Потягніть рулетку до правого краю отвору');
+}
+
+function measState() {
+  var m = MEAS, s = G.meas;
+  return s.axis === 'w'
+    ? { from:m.x, to:m.x + m.w, mm:m.mmW, fixed:m.y + m.h / 2, horiz:true }
+    : { from:m.y, to:m.y + m.h, mm:m.mmH, fixed:m.x + m.w / 2, horiz:false };
+}
+
+function drawMeasure() {
+  var st = measState(), s = G.meas;
+  var val = Math.round((s.pos - st.from) / (st.to - st.from) * st.mm / 10) * 10;
+  var hx = st.horiz ? s.pos : st.fixed;
+  var hy = st.horiz ? st.fixed : s.pos;
+
+  var set = function (id, attrs) {
+    var el = $(id);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+  };
+  set('dimLine', st.horiz
+    ? { x1:st.from, y1:st.fixed, x2:hx, y2:st.fixed }
+    : { x1:st.fixed, y1:st.from, x2:st.fixed, y2:hy });
+  set('dimAnchor', st.horiz
+    ? { x1:st.from, y1:st.fixed - 12, x2:st.from, y2:st.fixed + 12 }
+    : { x1:st.fixed - 12, y1:st.from, x2:st.fixed + 12, y2:st.from });
+  set('dimGoal', st.horiz
+    ? { x1:st.to, y1:st.fixed - 16, x2:st.to, y2:st.fixed + 16 }
+    : { x1:st.fixed - 16, y1:st.to, x2:st.fixed + 16, y2:st.to });
+  ['dimHit', 'dimKnob', 'dimKnobIn'].forEach(function (id) { set(id, { cx:hx, cy:hy }); });
+  var ax = st.horiz ? st.from - 13 : st.fixed - 13;
+  var ay = st.horiz ? st.fixed - 10 : st.from - 10;
+  set('dimCaseBg', { x:ax, y:ay });
+  set('dimCaseIn', { x:ax + 8, y:ay + 5 });
+
+  var cx = st.horiz ? Math.min(Math.max(hx, 60), 280) : st.fixed + 62;
+  var cy = st.horiz ? st.fixed - 34 : Math.min(Math.max(hy, 60), 330);
+  set('dimChipBg', { x:cx - 43, y:cy - 13 });
+  set('dimChipText', { x:cx, y:cy + 5 });
+  $('dimChipText').textContent = Math.max(0, val) + ' мм';
+}
+
+function measDown(e) {
+  e.preventDefault();
+  G.measDrag = true;
+  window.addEventListener('pointermove', measMove);
+  window.addEventListener('pointerup', measUp);
+  window.addEventListener('pointercancel', measUp);
+}
+
+function measMove(e) {
+  if (!G.measDrag) return;
+  var st = measState(), pt = svgPoint(e);
+  var v = st.horiz ? pt.x : pt.y;
+  G.meas.pos = Math.min(st.to + 24, Math.max(st.from, v));
+  drawMeasure();
+}
+
+function measUp() {
+  if (!G.measDrag) return;
+  G.measDrag = false;
+  window.removeEventListener('pointermove', measMove);
+  window.removeEventListener('pointerup', measUp);
+  window.removeEventListener('pointercancel', measUp);
+
+  var st = measState(), s = G.meas;
+  if (Math.abs(s.pos - st.to) > 16) { s.pos = st.from; drawMeasure(); return; }
+
+  s.pos = st.to;
+  drawMeasure();
+  $('dimKnob').setAttribute('fill', '#7ec89a');
+
+  if (s.axis === 'w') {
+    s.doneW = st.mm;
+    $('dimDone').textContent = 'Ширина ' + st.mm + ' мм ✓';
+    hint('Тепер висота — потягніть униз');
+    setTimeout(function () {
+      s.axis = 'h'; s.pos = MEAS.y;
+      $('dimKnob').setAttribute('fill', 'var(--accent)');
+      drawMeasure();
+    }, 650);
+  } else {
+    $('dimDone').textContent = 'Замір готовий: ' + s.doneW + ' × ' + st.mm + ' мм';
+    hint('Замір готовий — везем розміри у виробництво', true);
+    G.done = true;
+    G.timer = setTimeout(nextStage, 1400);
+  }
+}
+
+/* ─────────── 9. МИТТЯ ───────────
+   Скло в плівці й розводах — стирається пальцем, як скретч-картка. */
+function buildClean() {
+  var installed = OPENINGS.map(function (o, i) { return productFitted(i, o); }).join('');
+  $('board').innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" id="svg" role="img" aria-label="Будинок після монтажу">' +
+      '<g id="sceneLayer">' + houseScene() + installed + '</g>' +
+    '</svg>' +
+    '<canvas id="dirt" class="dirt"></canvas>';
+
+  var board = $('board'), cv = $('dirt');
+  var rectW = board.clientWidth, rectH = rectW * H / W;
+  var dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(rectW * dpr);
+  cv.height = Math.round(rectH * dpr);
+  cv.style.width = rectW + 'px';
+  cv.style.height = rectH + 'px';
+
+  var ctx = cv.getContext('2d');
+  var k = rectW / W * dpr;                       // одиниці поля → пікселі полотна
+  ctx.scale(1, 1);
+
+  OPENINGS.forEach(function (o, idx) {
+    var x = o.x * k, y = o.y * k, w = o.w * k, hgt = o.h * k;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, hgt);
+    ctx.clip();                                  // плівка лежить рівно по склу
+    ctx.fillStyle = 'rgba(205,206,198,0.82)';    // монтажна плівка
+    ctx.fillRect(x, y, w, hgt);
+    ctx.fillStyle = 'rgba(150,152,143,0.55)';    // розводи
+    for (var i = 0; i < 9; i++) {
+      ctx.beginPath();
+      ctx.ellipse(x + Math.random() * w, y + Math.random() * hgt,
+                  w * (0.1 + Math.random() * 0.18), hgt * (0.06 + Math.random() * 0.12),
+                  Math.random() * Math.PI, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (idx === 1) {                             // заводська наклейка
+      ctx.fillStyle = 'rgba(245,242,237,0.95)';
+      ctx.fillRect(x + w * 0.18, y + hgt * 0.35, w * 0.64, hgt * 0.22);
+      ctx.fillStyle = 'rgba(120,122,116,0.8)';
+      ctx.fillRect(x + w * 0.24, y + hgt * 0.41, w * 0.5, hgt * 0.03);
+      ctx.fillRect(x + w * 0.24, y + hgt * 0.47, w * 0.34, hgt * 0.03);
+    }
+    ctx.restore();
+  });
+
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 46 * dpr;
+
+  G.clean = { ctx:ctx, cv:cv, dpr:dpr, k:k, last:null, wiping:false, done:false };
+  cv.addEventListener('pointerdown', wipeDown);
+  hint('Проведіть пальцем по склу');
+}
+
+function wipePoint(e) {
+  var c = G.clean, r = c.cv.getBoundingClientRect();
+  return { x:(e.clientX - r.left) * c.cv.width / r.width,
+           y:(e.clientY - r.top) * c.cv.height / r.height };
+}
+
+function wipeDown(e) {
+  if (!G.clean || G.clean.done) return;
+  e.preventDefault();
+  G.clean.wiping = true;
+  G.clean.last = wipePoint(e);
+  wipeDab(G.clean.last);
+  window.addEventListener('pointermove', wipeMove);
+  window.addEventListener('pointerup', wipeUp);
+  window.addEventListener('pointercancel', wipeUp);
+}
+
+function wipeDab(p) {
+  var ctx = G.clean.ctx;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, G.clean.dpr * 23, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function wipeMove(e) {
+  var c = G.clean;
+  if (!c || !c.wiping) return;
+  var p = wipePoint(e);
+  c.ctx.beginPath();
+  c.ctx.moveTo(c.last.x, c.last.y);
+  c.ctx.lineTo(p.x, p.y);
+  c.ctx.stroke();
+  wipeDab(p);
+  c.last = p;
+}
+
+function wipeUp() {
+  var c = G.clean;
+  if (!c) return;
+  c.wiping = false;
+  window.removeEventListener('pointermove', wipeMove);
+  window.removeEventListener('pointerup', wipeUp);
+  window.removeEventListener('pointercancel', wipeUp);
+  checkClean();
+}
+
+/* скільки бруду лишилось у межах вікон */
+function checkClean() {
+  var c = G.clean;
+  if (!c || c.done) return;
+  var left = 0, total = 0;
+  OPENINGS.forEach(function (o) {
+    var x = Math.round(o.x * c.k), y = Math.round(o.y * c.k);
+    var w = Math.round(o.w * c.k), hgt = Math.round(o.h * c.k);
+    var data = c.ctx.getImageData(x, y, w, hgt).data;
+    for (var i = 3; i < data.length; i += 4 * 16) {   // кожен 16-й піксель
+      total++;
+      if (data[i] > 40) left++;
+    }
+  });
+  var dirty = total ? left / total : 0;
+  if (dirty > 0.12) { hint('Помито ' + Math.round((1 - dirty) * 100) + '%'); return; }
+
+  c.done = true;
+  c.cv.style.transition = 'opacity .6s ease';
+  c.cv.style.opacity = '0';
+  hint('Чисто! Вікна як з салону', true);
+  lightUpHouse($('svg'));
+  G.timer = setTimeout(nextStage, 1600);
+}
+
+/* ── сцени-декорації ── */
+function truckScene() {
+  return '<g>' +
+    '<rect x="30" y="110" width="200" height="168" rx="4" fill="none" stroke="#e9e4da" stroke-width="7"/>' +
+    '<rect x="36" y="116" width="188" height="156" fill="rgba(245,242,237,.03)"/>' +
+    '<path d="M230 140 L268 140 L292 186 L292 278 L230 278 Z" fill="none" stroke="#e9e4da" stroke-width="7"/>' +
+    '<rect x="240" y="152" width="34" height="24" rx="3" fill="#1d3350"/>' +
+    '<circle cx="80" cy="282" r="14" fill="#232b36"/>' +
+    '<circle cx="258" cy="282" r="14" fill="#232b36"/>' +
+    '<rect x="30" y="102" width="200" height="8" rx="3" fill="#c3bcac"/>' +
+    '</g>';
+}
+
+function houseScene() {
+  return '<g>' +
+    '<path d="M18 96 L170 18 L322 96 Z" fill="' + COL.roof + '"/>' +
+    '<rect x="38" y="96" width="264" height="200" fill="' + COL.wall + '"/>' +
+    '<rect x="38" y="96" width="264" height="200" fill="none" stroke="rgba(245,242,237,.08)" stroke-width="2"/>' +
+    '<rect x="236" y="34" width="20" height="34" fill="' + COL.roof + '"/>' +
+    '<rect x="38" y="292" width="264" height="8" fill="#1b2434"/>' +
+    '</g>';
+}
+
+/* ═══════════ спільний рушій перетягування ═══════════ */
+function hitArea(p) {
+  var need = 46 / p.tray.s;
+  var w = Math.max(p.w, need), h = Math.max(p.h, need);
+  return '<rect x="' + (p.cx - w / 2) + '" y="' + (p.cy - h / 2) + '" width="' + w +
+         '" height="' + h + '" fill="transparent"/>';
+}
+function trayTransform(p) {
+  var t = p.tray;
+  return 'translate(' + (t.tx - p.cx * t.s) + ' ' + (t.ty - p.cy * t.s) + ') scale(' + t.s + ')';
+}
+function svgPoint(e) {
+  var svg = $('svg'), pt = svg.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function dist(a, b) { return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)); }
+
+function bindDrag() {
+  var list = $('piecesLayer').querySelectorAll('.piece');
+  for (var i = 0; i < list.length; i++) list[i].addEventListener('pointerdown', onDown);
+}
+
+function onDown(e) {
+  var el = e.currentTarget, p = G.pieces[+el.dataset.piece];
+  if (p.placed || G.done) return;
+  e.preventDefault();
+  el.classList.add('dragging');
+  el.parentNode.appendChild(el);
+  G.drag = { el:el, p:p };
+  showAvailable(p, true);
+  moveTo(e);
+  // слухаємо вікно: переміщення елемента в DOM скидає захват вказівника
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+}
+
+function moveTo(e) {
+  var d = G.drag, pt = svgPoint(e);
+  d.el.setAttribute('transform', 'translate(' + (pt.x - d.p.cx) + ' ' + (pt.y - d.p.cy) + ')');
+  return pt;
+}
+
+function onMove(e) {
+  if (!G.drag) return;
+  var pt = moveTo(e), near = nearestSlot(G.drag.p, pt);
+  hotSlot(near && near.d < snapRadius(G.drag.p) * 1.5 ? near.slot.i : -1);
+}
+
+function onUp(e) {
+  if (!G.drag) return;
+  var el = G.drag.el, p = G.drag.p, pt = svgPoint(e);
+  el.classList.remove('dragging');
+  window.removeEventListener('pointermove', onMove);
+  window.removeEventListener('pointerup', onUp);
+  window.removeEventListener('pointercancel', onUp);
+  hotSlot(-1);
+  showAvailable(p, false);
+  G.drag = null;
+
+  var near = nearestSlot(p, pt);
+  if (near && near.d < snapRadius(p)) place(el, p, near.slot);
+  else el.setAttribute('transform', trayTransform(p));
+}
+
+/* однакові за формою деталі взаємозамінні */
+function nearestSlot(p, pt) {
+  var best = null, bestD = Infinity;
+  G.slots.forEach(function (s) {
+    if (s.filled || s.sig !== p.sig) return;
+    var d = dist(pt, s.c);
+    if (d < bestD) { bestD = d; best = s; }
+  });
+  return best ? { slot:best, d:bestD } : null;
+}
+function snapRadius(p) { return Math.max(44, Math.min(92, Math.max(p.w, p.h) * 0.5)); }
+
+function showAvailable(p, on) {
+  G.slots.forEach(function (s) {
+    if (s.filled) return;
+    var el = document.querySelector('.slot[data-slot="' + s.i + '"]');
+    if (el) el.classList.toggle('avail', on && s.sig === p.sig);
+  });
+}
+function hotSlot(i) {
+  var list = document.querySelectorAll('.slot');
+  for (var k = 0; k < list.length; k++) list[k].classList.toggle('hot', +list[k].dataset.slot === i);
+}
+
+function place(el, p, slot) {
+  p.placed = true; p.slotIx = slot.i; slot.filled = true;
+  el.classList.add('placed');
+  el.setAttribute('transform', 'translate(' + (slot.c.x - p.cx) + ' ' + (slot.c.y - p.cy) + ')');
+  var node = document.querySelector('.slot[data-slot="' + slot.i + '"]');
+  if (node) node.parentNode.removeChild(node);
+  restack();
+
+  G.left--;
+  if (G.left > 0) hint(G.left === 1 ? 'Лишилась одна' : 'Лишилось: ' + G.left);
+  else stageDone();
+}
+
+function restack() {
+  var layer = $('piecesLayer');
+  if (!layer) return;
+  G.pieces.slice().sort(function (a, b) {
+    var ka = a.placed ? a.slotIx : 100 + a.i;
+    var kb = b.placed ? b.slotIx : 100 + b.i;
+    return ka - kb;
+  }).forEach(function (p) {
+    var el = layer.querySelector('.piece[data-piece="' + p.i + '"]');
+    if (el) layer.appendChild(el);
+  });
+}
+
+/* ═══════════ переходи ═══════════ */
+function stageDone() {
+  G.done = true;
+  var st = STAGES[G.stage];
+  hint(st.type === 'install' ? 'Будинок готовий' : 'Готово', true);
+
+  var svg = $('svg');
+
+  var flash = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  flash.setAttribute('x', 0); flash.setAttribute('y', 0);
+  flash.setAttribute('width', W); flash.setAttribute('height', FLOOR);
+  flash.setAttribute('fill', 'rgba(200,169,110,0.18)');
+  flash.setAttribute('pointer-events', 'none');
+  flash.style.transition = 'opacity .85s ease';
+  svg.appendChild(flash);
+  requestAnimationFrame(function () { flash.style.opacity = '0'; });
+
+  G.timer = setTimeout(nextStage, st.type === 'install' ? 1600 : 900);
+}
+
+/* у встановлених вікнах вмикається світло */
+function lightUpHouse(svg) {
+  var ns = 'http://www.w3.org/2000/svg';
+  var g = document.createElementNS(ns, 'g');
+  g.setAttribute('class', 'window-glow');
+  g.setAttribute('pointer-events', 'none');
+  OPENINGS.forEach(function (o) {
+    var r = document.createElementNS(ns, 'rect');
+    r.setAttribute('x', o.x); r.setAttribute('y', o.y);
+    r.setAttribute('width', o.w); r.setAttribute('height', o.h);
+    r.setAttribute('fill', 'rgba(233,199,133,.38)');
+    g.appendChild(r);
+  });
+  svg.appendChild(g);
+}
+
+function nextStage() {
+  clearTimeout(G.timer);
+  $('board').onclick = null;
+  G.stage++;
+  if (G.stage >= STAGES.length) finish();
+  else buildStage();
+}
+
+function paintPips() {
+  $('pips').innerHTML = STAGES.map(function (_, i) {
+    return '<span class="pip ' + (i < G.stage ? 'done' : (i === G.stage ? 'now' : '')) + '"></span>';
+  }).join('');
+}
+function hint(text, win) {
+  var h = $('hint');
+  h.textContent = text;
+  h.className = 'hint' + (win ? ' win' : '');
+}
+
+/* ═══════════ час і екрани ═══════════ */
+function fmt(ms) {
+  var s = Math.floor(ms / 1000);
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+function start() {
+  G.stage = 0;
+  $('startScreen').hidden = true;
+  $('overScreen').hidden = true;
+  $('playScreen').hidden = false;
+  $('timer').textContent = '0:00';
+  buildStage();
+  G.t0 = Date.now();
+  clearInterval(G.tick);
+  G.tick = setInterval(function () { $('timer').textContent = fmt(Date.now() - G.t0); }, 500);
+}
+
+function finish() {
+  clearInterval(G.tick);
+  var ms = Date.now() - G.t0, best = 0;
+  try { best = parseInt(localStorage.getItem('vd_puzzle_best') || '0', 10); } catch (e) {}
+  $('finalTime').textContent = fmt(ms);
+  if (!best || ms < best) {
+    $('finalLabel').textContent = best ? 'новий найкращий час' : 'ваш час';
+    try { localStorage.setItem('vd_puzzle_best', String(ms)); } catch (e) {}
+  } else {
+    $('finalLabel').textContent = 'найкраще було ' + fmt(best);
+  }
+  $('playScreen').hidden = true;
+  $('overScreen').hidden = false;
+  showBest();
+}
+
+function showBest() {
+  var best = 0;
+  try { best = parseInt(localStorage.getItem('vd_puzzle_best') || '0', 10); } catch (e) {}
+  $('bestLine').textContent = best ? 'Найкращий час ' + fmt(best) : '';
+}
+
+$('startBtn').addEventListener('click', start);
+$('againBtn').addEventListener('click', start);
+showBest();
+</script>
+</body>
+</html>
