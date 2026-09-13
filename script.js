@@ -695,3 +695,64 @@ if (toTopBtn) {
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ЛОКАЦІЇ У ШАПЦІ — місто змінюється саме + розкривний список
+═══════════════════════════════════════════════════════════════ */
+(function initAreaBadge() {
+  const cities = document.querySelectorAll('.hb-city');
+  if (cities.length < 2) return;
+
+  let idx = 0, timer = null;
+  const step = () => {
+    const current = cities[idx];
+    idx = (idx + 1) % cities.length;
+    const next = cities[idx];
+    current.classList.remove('active');
+    current.classList.add('leaving');
+    next.classList.add('active');
+    setTimeout(() => current.classList.remove('leaving'), 500);
+  };
+
+  const start = () => { if (!timer) timer = setInterval(step, 2200); };
+  const stop  = () => { clearInterval(timer); timer = null; };
+
+  // Не крутимо, поки вкладка у фоні, і поки список відкритий
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+  window._areaRotator = { start, stop };
+  start();
+})();
+
+function toggleAreas() {
+  const panel = document.getElementById('areaPanel');
+  const badge = document.getElementById('areaBadge');
+  if (!panel || !badge) return;
+  panel.hidden ? openAreas() : closeAreas();
+}
+
+function openAreas() {
+  const panel = document.getElementById('areaPanel');
+  const badge = document.getElementById('areaBadge');
+  if (!panel || !badge) return;
+  panel.hidden = false;
+  badge.setAttribute('aria-expanded', 'true');
+  if (window._areaRotator) window._areaRotator.stop();
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'areas_open' });
+}
+
+function closeAreas() {
+  const panel = document.getElementById('areaPanel');
+  const badge = document.getElementById('areaBadge');
+  if (!panel || !badge) return;
+  panel.hidden = true;
+  badge.setAttribute('aria-expanded', 'false');
+  if (window._areaRotator && !document.hidden) window._areaRotator.start();
+}
+
+// Клік повз список і Escape — закривають
+document.addEventListener('click', e => {
+  const wrap = e.target.closest && e.target.closest('.hero-badge-wrap');
+  if (!wrap) closeAreas();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAreas(); });
