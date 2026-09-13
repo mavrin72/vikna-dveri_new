@@ -78,8 +78,10 @@
   .board svg{display:block; width:100%; height:auto;}
   .tray-line{stroke:var(--line); stroke-width:1; stroke-dasharray:4 6;}
 
-  .slot{stroke-dasharray:5 5; opacity:.45; transition:opacity .2s;}
-  .slot.hot{opacity:1;}
+  .slot{stroke-dasharray:5 5; opacity:.32; transition:opacity .2s;}
+  .slot.avail{opacity:.85; animation:slotPulse 1.4s ease-in-out infinite;}
+  .slot.hot{opacity:1; fill:rgba(200,169,110,0.16); animation:none;}
+  @keyframes slotPulse{0%,100%{opacity:.55}50%{opacity:1}}
   .piece{cursor:grab;}
   .piece.dragging{cursor:grabbing;}
   .piece.placed{cursor:default; pointer-events:none;}
@@ -111,6 +113,7 @@
 
   @media (prefers-reduced-motion:reduce){
     .pip,.slot{transition:none !important;}
+    .slot.avail{animation:none; opacity:.85;}
   }
 </style>
 </head>
@@ -125,7 +128,7 @@
   <!-- ═══ СТАРТ ═══ -->
   <section class="card" id="startScreen">
     <h1>Зберіть вікно<br><em>поки чекаєте дзвінка</em></h1>
-    <p class="lede">Менеджер передзвонить найближчим часом. А поки — шість конструкцій, розібраних на деталі. Перетягніть кожну деталь на її місце. Помилитись тут неможливо і поспішати нікуди.</p>
+    <p class="lede">Менеджер передзвонить найближчим часом. А поки — шість конструкцій, розібраних на деталі. Візьміть деталь — підсвітяться місця, куди вона підходить. Однакові деталі стають у будь-яке з них, тож помилитись неможливо.</p>
     <button class="btn" id="startBtn">Почати</button>
   </section>
 
@@ -137,7 +140,7 @@
     </div>
     <div class="pips" id="pips"></div>
     <div class="board" id="board"></div>
-    <p class="hint" id="hint">Перетягніть деталь на пунктирне місце</p>
+    <p class="hint" id="hint">Візьміть деталь — місця для неї підсвітяться</p>
   </section>
 
   <!-- ═══ ФІНАЛ ═══ -->
@@ -247,7 +250,7 @@ var LEVELS = [
 ];
 
 var $ = function (id) { return document.getElementById(id); };
-var G = { level:0, pieces:[], left:0, t0:0, tick:null, drag:null, done:false };
+var G = { level:0, pieces:[], slots:[], left:0, t0:0, tick:null, drag:null, done:false };
 
 /* ── геометрія ── */
 function shapeOf(p) {
@@ -259,6 +262,9 @@ function centerOf(p) {
   return p.path ? { x:p.cx, y:p.cy } : { x:p.x + p.w / 2, y:p.y + p.h / 2 };
 }
 function spanOf(p) { return p.path ? p.size : Math.max(p.w, p.h); }
+/* Однакові за формою деталі взаємозамінні: гравцеві не треба вгадувати,
+   яке саме зі скелець у яку секцію — підійде будь-яке. */
+function sigOf(p) { return p.path ? 'p:' + p.path : 'r:' + p.w + 'x' + p.h + 'x' + (p.r || 0); }
 function fillOf(k) { return k === 'glass' ? COL.glass : (k === 'handle' ? COL.dark : COL.prof); }
 
 function glassShine(p) {
@@ -300,6 +306,9 @@ function buildLevel() {
       placed:false
     };
   });
+  G.slots = G.pieces.map(function (p) {
+    return { i:p.i, c:p.c, sig:sigOf(p), filled:false };
+  });
   G.left = n;
   G.done = false;
 
@@ -325,7 +334,7 @@ function buildLevel() {
   $('levelName').textContent = lv.name;
   paintPips();
   bindDrag();
-  hint('Перетягніть деталь на пунктирне місце');
+  hint('Візьміть деталь — місця для неї підсвітяться');
 }
 
 /* Прозорий прямокутник під деталлю: на екрані зона захвату
@@ -364,6 +373,7 @@ function onDown(e) {
   el.classList.add('dragging');
   el.parentNode.appendChild(el);                 // піднімаємо над рештою
   G.drag = { el:el, p:p };
+  showAvailable(p, true);
   moveTo(e);
   // Слухаємо вікно, а не саму деталь: переміщення елемента в DOM
   // скидає захват вказівника, і рух за пальцем губиться.
@@ -381,7 +391,8 @@ function moveTo(e) {
 function onMove(e) {
   if (!G.drag) return;
   var pt = moveTo(e);
-  markSlot(G.drag.p, dist(pt, G.drag.p.c) < snapRadius(G.drag.p) * 1.5);
+  var near = nearestSlot(G.drag.p, pt);
+  hotSlot(near && near.d < snapRadius(G.drag.p) * 1.5 ? near.slot.i : -1);
 }
 
 function onUp(e) {
@@ -391,11 +402,24 @@ function onUp(e) {
   window.removeEventListener('pointermove', onMove);
   window.removeEventListener('pointerup', onUp);
   window.removeEventListener('pointercancel', onUp);
-  markSlot(p, false);
+  hotSlot(-1);
+  showAvailable(p, false);
   G.drag = null;
 
-  if (dist(pt, p.c) < snapRadius(p)) place(el, p);
+  var near = nearestSlot(p, pt);
+  if (near && near.d < snapRadius(p)) place(el, p, near.slot);
   else el.setAttribute('transform', trayTransform(p));
+}
+
+/* Найближче вільне місце, у яке ця деталь взагалі може стати */
+function nearestSlot(p, pt) {
+  var sig = sigOf(p), best = null, bestD = Infinity;
+  G.slots.forEach(function (s) {
+    if (s.filled || s.sig !== sig) return;
+    var d = dist(pt, s.c);
+    if (d < bestD) { bestD = d; best = s; }
+  });
+  return best ? { slot:best, d:bestD } : null;
 }
 
 function snapRadius(p) {
@@ -403,17 +427,31 @@ function snapRadius(p) {
 }
 function dist(a, b) { return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)); }
 
-function markSlot(p, on) {
-  var s = document.querySelector('.slot[data-slot="' + p.i + '"]');
-  if (s) s.classList.toggle('hot', !!on);
+function showAvailable(p, on) {
+  var sig = sigOf(p);
+  G.slots.forEach(function (s) {
+    if (s.filled) return;
+    var el = document.querySelector('.slot[data-slot="' + s.i + '"]');
+    if (el) el.classList.toggle('avail', on && s.sig === sig);
+  });
 }
 
-function place(el, p) {
+function hotSlot(i) {
+  var list = document.querySelectorAll('.slot');
+  for (var k = 0; k < list.length; k++) {
+    list[k].classList.toggle('hot', +list[k].dataset.slot === i);
+  }
+}
+
+function place(el, p, slot) {
   p.placed = true;
+  p.slotIx = slot.i;
+  slot.filled = true;
   el.classList.add('placed');
-  el.setAttribute('transform', 'translate(0 0)');
-  var slot = document.querySelector('.slot[data-slot="' + p.i + '"]');
-  if (slot) slot.parentNode.removeChild(slot);
+  el.setAttribute('transform',
+    'translate(' + (slot.c.x - p.c.x) + ' ' + (slot.c.y - p.c.y) + ')');
+  var node = document.querySelector('.slot[data-slot="' + slot.i + '"]');
+  if (node) node.parentNode.removeChild(node);
   restack();
 
   G.left--;
@@ -427,7 +465,11 @@ function place(el, p) {
 function restack() {
   var layer = document.getElementById('piecesLayer');
   if (!layer) return;
-  G.pieces.forEach(function (p) {
+  G.pieces.slice().sort(function (a, b) {
+    var ka = a.placed ? a.slotIx : 100 + a.i;
+    var kb = b.placed ? b.slotIx : 100 + b.i;
+    return ka - kb;
+  }).forEach(function (p) {
     var el = layer.querySelector('.piece[data-piece="' + p.i + '"]');
     if (el) layer.appendChild(el);
   });
