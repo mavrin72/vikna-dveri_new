@@ -681,3 +681,17 @@ function requestCall() {
     form.classList.remove('highlight');
   }, 650);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   КНОПКА "НАГОРУ"
+═══════════════════════════════════════════════════════════════ */
+const toTopBtn = document.getElementById('toTop');
+if (toTopBtn) {
+  const toggleToTop = () => toTopBtn.classList.toggle('show', window.scrollY > 700);
+  window.addEventListener('scroll', toggleToTop, { passive: true });
+  toggleToTop();
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
