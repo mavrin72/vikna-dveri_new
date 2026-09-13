@@ -637,3 +637,20 @@ function trackCall(place) {
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event: 'call_click', place });
 }
+
+// "Замовити дзвінок" — ведемо до короткої форми і ставимо курсор у поле
+function requestCall() {
+  const form  = document.getElementById('heroQuick');
+  const input = document.getElementById('quickPhone');
+  if (!form || !input) return;
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'call_request_click' });
+
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  form.classList.add('highlight');
+  setTimeout(() => {
+    input.focus({ preventScroll: true });
+    form.classList.remove('highlight');
+  }, 650);
+}
