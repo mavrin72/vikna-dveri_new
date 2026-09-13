@@ -130,8 +130,50 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 }
 </script>
 
+<!-- Schema.org — FAQ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Скільки часу займає виготовлення і монтаж?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Стандартні конструкції виготовляємо за 3–10 робочих днів. Нестандартні форми (арки, трапеції) та ламінація — 3–4 тижні. Монтаж одного вікна триває 1,5–2 години, працюють 4 власні бригади, тому черга на встановлення коротка."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Скільки коштує монтаж?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Монтаж — від 800 грн/м². Точна сума залежить від розміру конструкції та умов на об'єкті, її ви бачите в розрахунку після заміру."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Яка гарантія і що робити, якщо щось піде не так?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Від 5 до 10 років гарантії на конструкції та 1 рік на монтаж. Ми працюємо з 2018 року і обслуговуємо свої вікна також після закінчення гарантії — регулювання, заміна фурнітури, ущільнювачів."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Куди ви виїжджаєте на замір і монтаж?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Буча, Ірпінь, Бородянка, Гостомель, Білогородка, Дмитрівка та с. Мила. Якщо вашого населеного пункту немає в списку — напишіть його у формі, менеджер підтвердить можливість виїзду."
+      }
+    }
+  ]
+}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=23">
 <script>if (history.scrollRestoration) history.scrollRestoration = 'manual';</script>
 </head>
 <body>
@@ -139,10 +181,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJZLFQLG"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-
-<!-- CUSTOM CURSOR -->
-<div class="cursor-dot" id="cursorDot"></div>
-<div class="cursor-ring" id="cursorRing"></div>
 
 <!-- NAV -->
 <nav id="nav">
@@ -154,6 +192,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <li><a href="#why-us">Про нас</a></li>
       <li><a href="#process">Процес</a></li>
       <li><a href="#calculator">Калькулятор</a></li>
+      <li><a href="#faq">Питання</a></li>
     </ul>
     <a href="#order-form" class="nav-cta">Замовити</a>
     <button class="hamburger" id="hamburger" onclick="toggleMenu()">
@@ -166,7 +205,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="#why-us" onclick="toggleMenu()">Про нас</a>
     <a href="#process" onclick="toggleMenu()">Процес</a>
     <a href="#calculator" onclick="toggleMenu()">Калькулятор</a>
+    <a href="#faq" onclick="toggleMenu()">Питання</a>
     <a href="#order-form" class="mobile-cta" onclick="toggleMenu()">Замовити →</a>
+    <a href="tel:+380938335860" class="mobile-phone">📞 +38 (093) 833-58-60 — Буча</a>
+    <a href="tel:+380934680051" class="mobile-phone">📞 +38 (093) 468-00-51 — Бородянка</a>
   </div>
 </nav>
 
@@ -185,10 +227,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="ht-line accent-word">преміум якості</span>
       </h1>
       <p class="hero-sub">Металопластикові конструкції з надійними профілями для вашого дому. Тепло, тихо, надійно. Професійний монтаж та великий асортимент.</p>
+      <form class="hero-quick" id="heroQuick" onsubmit="handleQuickSubmit(event)" novalidate>
+        <div class="hq-title">Залиште номер — передзвонимо і порахуємо вартість</div>
+        <div class="hq-row">
+          <input type="tel" id="quickPhone" name="phone" inputmode="tel"
+                 autocomplete="tel" placeholder="+380 (XX) XXX-XX-XX" aria-label="Номер телефону">
+          <button type="submit" class="hq-btn" id="quickBtn">Отримати розрахунок</button>
+        </div>
+        <!-- honeypot -->
+        <input type="text" id="_hpQuick" name="_hpQuick" class="hq-hp" tabindex="-1" autocomplete="off">
+        <div class="hq-msg" id="quickMsg" role="status" aria-live="polite"></div>
+        <div class="hq-note">Безкоштовно і ні до чого не зобов'язує. Номер нікому не передаємо.</div>
+      </form>
       <div class="hero-actions">
-        <a href="#order-form" class="btn-primary">Отримати розрахунок</a>
         <a href="#products" class="btn-ghost">Переглянути каталог <span>→</span></a>
       </div>
+      <ul class="hero-perks">
+        <li><span class="hp-ic">📏</span> Безкоштовний замір</li>
+        <li><span class="hp-ic">🚚</span> Безкоштовна доставка</li>
+        <li><span class="hp-ic">🛡</span> Гарантія 5–10 років</li>
+      </ul>
     </div>
 
     <div class="hero-visual">
@@ -655,6 +713,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
+<!-- ═══════════════════════════════ FREE MEASUREMENT ═══════════════════════════════ -->
+<section class="measure" id="measure">
+  <div class="measure-inner">
+    <div class="measure-copy reveal">
+      <div class="section-label">Безкоштовно</div>
+      <h2 class="section-title">Замір безкоштовний<br>і ні до чого не зобов'язує</h2>
+      <p class="section-sub">Замірник приїде у зручний для вас час, зніме точні розміри, підкаже конфігурацію і порахує підсумкову вартість на місці. Виїзд не оплачується, і ви нічого не винні, якщо вирішите не замовляти.</p>
+      <div class="measure-actions">
+        <a href="#order-form" class="btn-primary">Записатись на замір</a>
+        <a href="tel:+380938335860" class="btn-outline measure-call">📞 +38 (093) 833-58-60</a>
+      </div>
+    </div>
+    <div class="measure-points reveal">
+      <div class="measure-point">
+        <div class="mp-ic">📏</div>
+        <h4>Виїзд — 0 ₴</h4>
+        <p>Замір безкоштовний у Бучі, Ірпені, Бородянці, Гостомелі, Білогородці, Дмитрівці та с. Мила.</p>
+      </div>
+      <div class="measure-point">
+        <div class="mp-ic">🧾</div>
+        <h4>Точна ціна замість «орієнтовної»</h4>
+        <p>Після заміру вартість і терміни фіксуються в договорі — ви бачите підсумкову суму до оплати.</p>
+      </div>
+      <div class="measure-point">
+        <div class="mp-ic">🤝</div>
+        <h4>Без зобов'язань</h4>
+        <p>Розрахунок нічого не зобов'язує. Не підійшла ціна чи терміни — просто не оформлюєте замовлення.</p>
+      </div>
+      <div class="measure-point">
+        <div class="mp-ic">🚚</div>
+        <h4>Доставка безкоштовна</h4>
+        <p>Готові конструкції привозимо на об'єкт у межах регіону обслуговування без окремої оплати.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════════════════════ CALCULATOR ═══════════════════════════════ -->
 <section class="calculator-section" id="calculator">
   <div class="reveal" style="text-align:center; margin-bottom: 60px;">
@@ -765,6 +860,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <a href="#order-form" class="btn-primary" style="display:block; text-align:center; margin-top:24px;" onclick="fillFormFromCalc()">Замовити дзвінок</a>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FAQ ═══════════════════════════════ -->
+<section class="faq" id="faq">
+  <div class="faq-head reveal">
+    <div class="section-label">Питання та відповіді</div>
+    <h2 class="section-title">Те, про що питають найчастіше</h2>
+    <p class="section-sub">Якщо вашого питання тут немає — залиште заявку або зателефонуйте, відповімо без обіцянок «зателефонуємо пізніше».</p>
+  </div>
+
+  <div class="faq-list reveal">
+
+    <details class="faq-item">
+      <summary>Скільки часу займає виготовлення і монтаж?</summary>
+      <div class="faq-answer"><p>Стандартні конструкції виготовляємо за 3–10 робочих днів. Нестандартні форми (арки, трапеції) та ламінація — 3–4 тижні. Монтаж одного вікна триває 1,5–2 години, працюють 4 власні бригади, тому черга на встановлення коротка.</p></div>
+    </details>
+
+
+
+
+
+    <details class="faq-item">
+      <summary>Скільки коштує монтаж?</summary>
+      <div class="faq-answer"><p>Монтаж — від 800 грн/м². Точна сума залежить від розміру конструкції та умов на об'єкті, її ви бачите в розрахунку після заміру.</p></div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Яка гарантія і що робити, якщо щось піде не так?</summary>
+      <div class="faq-answer"><p>Від 5 до 10 років гарантії на конструкції та 1 рік на монтаж. Ми працюємо з 2018 року і обслуговуємо свої вікна також після закінчення гарантії — регулювання, заміна фурнітури, ущільнювачів.</p></div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Куди ви виїжджаєте на замір і монтаж?</summary>
+      <div class="faq-answer"><p>Буча, Ірпінь, Бородянка, Гостомель, Білогородка, Дмитрівка та с. Мила. Якщо вашого населеного пункту немає в списку — напишіть його у формі, менеджер підтвердить можливість виїзду.</p></div>
+    </details>
+  </div>
+
+  <div class="faq-cta reveal">
+    <p>Не знайшли відповідь?</p>
+    <a href="#order-form" class="btn-primary">Поставити питання менеджеру</a>
   </div>
 </section>
 
@@ -904,6 +1040,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="promo-offer"><span class="promo-offer-ic">🚚</span> Безкоштовна доставка</div>
     </div>
 
+    <div class="promo-deadline">⏳ Пропозиція діє до <span id="promoDeadline"></span></div>
+
     <div class="form-group">
       <label>Ваше ім'я</label>
       <input type="text" id="promoName" placeholder="Ваше ім'я" required>
@@ -933,6 +1071,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 
+<!-- Липка панель з телефонами (тільки мобільний) -->
+<div class="call-bar" id="callBar">
+  <a href="tel:+380938335860" class="call-bar-btn" onclick="trackCall('Буча')">
+    <span class="cb-ic">📞</span>093 833-58-60
+  </a>
+  <a href="tel:+380934680051" class="call-bar-btn" onclick="trackCall('Бородянка')">
+    <span class="cb-ic">📞</span>093 468-00-51
+  </a>
+  <button type="button" class="call-bar-cta" onclick="requestCall()">Замовити дзвінок</button>
+</div>
+
+<!-- Кнопка повернення до промо (з'являється, якщо попап закрили) -->
+<button class="promo-pill" id="promoPill" onclick="openPromo()" aria-label="Відкрити пропозицію зі знижкою 10%">
+  <span class="promo-pill-ic">🔥</span> Знижка 10%
+</button>
+
 <datalist id="cityList">
   <option value="Буча">
   <option value="Ірпінь">
@@ -943,6 +1097,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <option value="с. Мила">
 </datalist>
 
-<script src="script.js?v=19"></script>
+<script src="script.js?v=23"></script>
 </body>
 </html>

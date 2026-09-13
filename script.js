@@ -1,22 +1,4 @@
 /* ═══════════════════════════════════════════════════════════════
-   CUSTOM CURSOR
-═══════════════════════════════════════════════════════════════ */
-const cursorDot  = document.getElementById('cursorDot');
-const cursorRing = document.getElementById('cursorRing');
-let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX; mouseY = e.clientY;
-  if (cursorDot) { cursorDot.style.left = mouseX + 'px'; cursorDot.style.top = mouseY + 'px'; }
-});
-(function animateCursor() {
-  ringX += (mouseX - ringX) * 0.12;
-  ringY += (mouseY - ringY) * 0.12;
-  if (cursorRing) { cursorRing.style.left = ringX + 'px'; cursorRing.style.top = ringY + 'px'; }
-  requestAnimationFrame(animateCursor);
-})();
-
-/* ═══════════════════════════════════════════════════════════════
    NAV — scroll behaviour
 ═══════════════════════════════════════════════════════════════ */
 const nav = document.getElementById('nav');
@@ -171,18 +153,91 @@ document.addEventListener('keydown', e => {
 /* ═══════════════════════════════════════════════════════════════
    PROMO MODAL (для рекламних посилань /#advertising)
 ═══════════════════════════════════════════════════════════════ */
+// Попап показується не одразу, а через PROMO_DELAY_MS — щоб людина
+// встигла побачити сайт. Якщо його закрити, лишається кнопка "Знижка 10%".
+const PROMO_DELAY_MS = 20000;
+const PROMO_HASH     = '#advertising';
+
+// Строк дії пропозиції — кінець поточного тижня (неділя).
+// Якщо до неділі лишилось менше 2 днів, беремо наступну.
+function promoDeadlineText() {
+  const d = new Date();
+  let days = (7 - d.getDay()) % 7;
+  if (days < 2) days += 7;
+  d.setDate(d.getDate() + days);
+  return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+}
+
+const promoEligible = window.location.hash === PROMO_HASH;
+
+function showPromoPill() {
+  const pill = document.getElementById('promoPill');
+  if (pill && !sessionStorage.getItem('_promoDone')) pill.classList.add('show');
+}
+function hidePromoPill() {
+  const pill = document.getElementById('promoPill');
+  if (pill) pill.classList.remove('show');
+}
+
 function openPromo() {
-  document.getElementById('promoModal').classList.add('open');
+  const modal = document.getElementById('promoModal');
+  if (!modal) return;
+  modal.classList.add('open');
   document.body.style.overflow = 'hidden';
+  hidePromoPill();
+  try { sessionStorage.setItem('_promoSeen', '1'); } catch (e) {}
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'promo_open' });
 }
+
 function closePromo() {
-  document.getElementById('promoModal').classList.remove('open');
+  const modal = document.getElementById('promoModal');
+  if (!modal) return;
+  modal.classList.remove('open');
   document.body.style.overflow = '';
+  if (promoEligible) showPromoPill();
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'promo_close' });
 }
+
+// Заявку з промо надіслано — більше не нагадуємо
+function promoDone() {
+  try { sessionStorage.setItem('_promoDone', '1'); } catch (e) {}
+  hidePromoPill();
+}
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('promoModal').classList.contains('open')) closePromo();
+  const modal = document.getElementById('promoModal');
+  if (e.key === 'Escape' && modal && modal.classList.contains('open')) closePromo();
 });
-if (window.location.hash === '#advertising') openPromo();
+
+if (promoEligible) {
+  const dl = document.getElementById('promoDeadline');
+  if (dl) dl.textContent = promoDeadlineText();
+
+  let seen = false, done = false;
+  try {
+    seen = !!sessionStorage.getItem('_promoSeen');
+    done = !!sessionStorage.getItem('_promoDone');
+  } catch (e) {}
+
+  if (done) {
+    // нічого не показуємо
+  } else if (seen) {
+    showPromoPill();
+  } else {
+    const tryOpenPromo = () => {
+      // не перебиваємо людину, яка вже заповнює форму
+      const tag = (document.activeElement && document.activeElement.tagName) || '';
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) {
+        setTimeout(tryOpenPromo, 15000);
+        return;
+      }
+      openPromo();
+    };
+    setTimeout(tryOpenPromo, PROMO_DELAY_MS);
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    PRODUCT PANEL — mouse parallax
@@ -438,29 +493,38 @@ function fillFormFromCalc() {
 ═══════════════════════════════════════════════════════════════ */
 const _formLoadTime = Date.now();
 
-async function submitLead({ name, phone, city, product, comment, honeypot }, btn, fieldsToClear) {
+async function submitLead({ name, phone, city, product, comment, honeypot, quick }, btn, fieldsToClear) {
   // Honeypot: якщо бот заповнив приховане поле — ігноруємо
-  if (honeypot) return;
-
-  // Rate limit: не частіше 1 разу на 60 секунд
-  const lastSent = parseInt(localStorage.getItem('_lastFormSent') || '0');
-  if (Date.now() - lastSent < 60000) {
-    alert('Заявку вже надіслано. Зачекайте хвилину перед повторним відправленням.');
-    return;
-  }
-
-  // Мінімальний час на сторінці: 3 секунди
-  if (Date.now() - _formLoadTime < 3000) return;
+  if (honeypot) return false;
 
   name  = (name  || '').trim();
   phone = (phone || '').trim();
   city  = (city  || '').trim();
 
-  if (!name || !phone || !city) {
-    alert('Будь ласка, вкажіть ваше ім\'я, номер телефону та населений пункт.');
-    return;
+  const digits = phone.replace(/\D/g, '');
+  if (!phone || digits.length < 9) {
+    notifyLead(btn, 'Вкажіть, будь ласка, коректний номер телефону.');
+    return false;
+  }
+  if (!quick && (!name || !city)) {
+    notifyLead(btn, 'Будь ласка, вкажіть ваше ім\'я та населений пункт.');
+    return false;
   }
 
+  // Rate limit: не частіше 1 разу на 60 секунд
+  const lastSent = parseInt(localStorage.getItem('_lastFormSent') || '0');
+  if (Date.now() - lastSent < 60000) {
+    notifyLead(btn, 'Заявку вже надіслано — ми з вами зв\'яжемось. Повторно можна за хвилину.');
+    return false;
+  }
+
+  // Мінімальний час на сторінці: 3 секунди (захист від ботів)
+  if (Date.now() - _formLoadTime < 3000) {
+    notifyLead(btn, 'Зачекайте пару секунд і натисніть ще раз.');
+    return false;
+  }
+
+  let ok = false;
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Відправка...';
@@ -473,11 +537,13 @@ async function submitLead({ name, phone, city, product, comment, honeypot }, btn
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ name, phone, city, product, comment, _key: 'vd2026site' })
     });
+    ok = true;
     btn.textContent = '✓ Заявку надіслано!';
     btn.style.background = '#4caf50';
     localStorage.setItem('_lastFormSent', Date.now().toString());
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: 'form_submit_zayavka', product });
+    if (typeof promoDone === 'function') promoDone();
     fieldsToClear.forEach(el => { if (el) el.value = ''; });
   } catch (err) {
     btn.textContent = '❌ Помилка. Спробуйте ще';
@@ -489,6 +555,8 @@ async function submitLead({ name, phone, city, product, comment, honeypot }, btn
     btn.textContent  = originalText;
     btn.style.background = '';
   }, 4000);
+
+  return ok;
 }
 
 async function handleSubmit(btn) {
@@ -508,6 +576,44 @@ async function handleSubmit(btn) {
   }, btn, [nameEl, phoneEl, cityEl, productEl, commentEl]);
 }
 
+// Повідомлення показуємо під формою (для hero-форми) або як alert (для решти)
+function notifyLead(btn, text) {
+  const msg = btn && btn.id === 'quickBtn' ? document.getElementById('quickMsg') : null;
+  if (msg) {
+    msg.textContent = text;
+    msg.className = 'hq-msg show error';
+    return;
+  }
+  alert(text);
+}
+
+async function handleQuickSubmit(e) {
+  if (e) e.preventDefault();
+  const btn     = document.getElementById('quickBtn');
+  const phoneEl = document.getElementById('quickPhone');
+  const msg     = document.getElementById('quickMsg');
+  if (msg) { msg.textContent = ''; msg.className = 'hq-msg'; }
+
+  const ok = await submitLead({
+    name:     '',
+    phone:    (phoneEl || {}).value,
+    city:     '',
+    product:  'Потрібна консультація',
+    comment:  'Швидка заявка з головного екрана (вказано лише телефон)',
+    honeypot: (document.getElementById('_hpQuick') || {}).value || '',
+    quick:    true
+  }, btn, [phoneEl]);
+
+  if (!msg) return;
+  if (ok) {
+    msg.textContent = '✓ Дякуємо! Передзвонимо у робочий час: Пн–Пт 9:00–17:00, Сб 9:00–15:00.';
+    msg.className = 'hq-msg show ok';
+  } else if (!msg.textContent) {
+    msg.textContent = 'Не вдалося надіслати. Зателефонуйте, будь ласка: 093 833-58-60.';
+    msg.className = 'hq-msg show error';
+  }
+}
+
 async function handlePromoSubmit(btn) {
   const nameEl    = document.getElementById('promoName');
   const phoneEl   = document.getElementById('promoPhone');
@@ -522,4 +628,29 @@ async function handlePromoSubmit(btn) {
     comment:  'Знижка 10% (рекламна пропозиція)',
     honeypot: (document.getElementById('_hpPromo') || {}).value || ''
   }, btn, [nameEl, phoneEl, cityEl, productEl]);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ЛИПКА ПАНЕЛЬ З ТЕЛЕФОНАМИ
+═══════════════════════════════════════════════════════════════ */
+function trackCall(place) {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'call_click', place });
+}
+
+// "Замовити дзвінок" — ведемо до короткої форми і ставимо курсор у поле
+function requestCall() {
+  const form  = document.getElementById('heroQuick');
+  const input = document.getElementById('quickPhone');
+  if (!form || !input) return;
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'call_request_click' });
+
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  form.classList.add('highlight');
+  setTimeout(() => {
+    input.focus({ preventScroll: true });
+    form.classList.remove('highlight');
+  }, 650);
 }
