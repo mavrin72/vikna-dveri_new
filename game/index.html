@@ -36,7 +36,10 @@
     font-size:clamp(1.9rem,7.5vw,2.6rem); line-height:1.06; margin:0 0 12px; text-wrap:balance;
   }
   h1 em{font-style:italic; color:var(--accent);}
-  .lede{margin:0 0 22px; color:var(--muted); font-size:.94rem;}
+  .lede{margin:0 0 20px; color:var(--muted); font-size:.94rem;}
+  .road{list-style:none; margin:0 0 24px; padding:0; display:grid; gap:9px;}
+  .road li{display:flex; gap:11px; align-items:center; font-size:.9rem; color:rgba(245,242,237,0.82);}
+  .road i{font-style:normal; width:22px; text-align:center; flex-shrink:0;}
 
   .btn{
     display:block; width:100%; padding:15px 20px; border:none; border-radius:3px;
@@ -55,13 +58,15 @@
   :focus-visible{outline:2px solid var(--accent); outline-offset:3px;}
 
   /* ── гра ── */
-  .hud{display:flex; align-items:baseline; gap:12px; margin-bottom:10px;}
-  .level-name{font-family:'Cormorant Garamond',Georgia,serif; font-size:1.45rem; line-height:1.1;}
-  .timer{
-    margin-left:auto; font-size:1.05rem; font-weight:500;
-    font-variant-numeric:tabular-nums; color:var(--muted);
+  .hud{display:flex; align-items:baseline; gap:10px; margin-bottom:10px;}
+  .stage-name{font-family:'Cormorant Garamond',Georgia,serif; font-size:1.4rem; line-height:1.1;}
+  .act{
+    font-size:.64rem; letter-spacing:2px; text-transform:uppercase;
+    color:var(--accent); border:1px solid var(--line); border-radius:20px;
+    padding:3px 9px; white-space:nowrap;
   }
-  .pips{display:flex; gap:5px; margin-bottom:14px;}
+  .timer{margin-left:auto; font-size:1.02rem; font-weight:500; font-variant-numeric:tabular-nums; color:var(--muted);}
+  .pips{display:flex; gap:4px; margin-bottom:14px;}
   .pip{height:3px; flex:1; background:rgba(245,242,237,0.1); border-radius:2px; transition:background .35s;}
   .pip.done{background:var(--accent);}
   .pip.now{background:var(--accent-lt);}
@@ -75,6 +80,7 @@
     background-size:34px 34px,34px 34px,auto;
     touch-action:none; overflow:hidden;
   }
+  .board.road-scene{background:var(--navy-2); cursor:pointer;}
   .board svg{display:block; width:100%; height:auto;}
   .tray-line{stroke:var(--line); stroke-width:1; stroke-dasharray:4 6;}
 
@@ -87,6 +93,17 @@
   .piece.placed{cursor:default; pointer-events:none;}
   .shine{pointer-events:none;}
 
+  /* дорога */
+  @keyframes rollLeft{from{transform:translateX(0)} to{transform:translateX(-340px)}}
+  @keyframes bump{0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)}}
+  @keyframes wheel{from{transform:rotate(0)} to{transform:rotate(360deg)}}
+  .scroller{animation:rollLeft 2.4s linear infinite;}
+  .scroller.slow{animation-duration:5s;}
+  .van{animation:bump .5s ease-in-out infinite;}
+  .wheel{animation:wheel 1s linear infinite; transform-box:fill-box; transform-origin:center;}
+  @keyframes glowIn{from{opacity:0} to{opacity:1}}
+  .window-glow{animation:glowIn 1s ease both;}
+
   .hint{text-align:center; color:var(--muted); font-size:.85rem; margin:14px 0 0; min-height:22px;}
   .hint.win{color:var(--ok);}
 
@@ -96,16 +113,6 @@
     font-weight:700; color:var(--accent); margin:6px 0 4px; font-variant-numeric:tabular-nums;
   }
   .final-label{font-size:.72rem; letter-spacing:2.6px; text-transform:uppercase; color:var(--muted); margin-bottom:22px;}
-  .calls{display:grid; gap:8px; margin:18px 0 0;}
-  .call{
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    padding:13px; border:1px solid var(--line); border-radius:3px;
-    color:var(--cream); text-decoration:none; font-size:.95rem;
-    transition:border-color .2s,color .2s;
-  }
-  .call:hover{border-color:var(--accent); color:var(--accent);}
-  .call b{font-weight:500;}
-  .call span{color:var(--muted); font-size:.8rem;}
 
   .foot{margin-top:20px; color:rgba(245,242,237,0.28); font-size:.76rem; text-align:center;}
   .foot a{color:var(--accent); text-decoration:none;}
@@ -114,6 +121,7 @@
   @media (prefers-reduced-motion:reduce){
     .pip,.slot{transition:none !important;}
     .slot.avail{animation:none; opacity:.85;}
+    .scroller,.van,.wheel{animation:none !important;}
   }
 </style>
 </head>
@@ -127,15 +135,22 @@
 
   <!-- ═══ СТАРТ ═══ -->
   <section class="card" id="startScreen">
-    <h1>Зберіть вікно<br><em>поки чекаєте дзвінка</em></h1>
-    <p class="lede">Менеджер передзвонить найближчим часом. А поки — шість конструкцій, розібраних на деталі. Візьміть деталь — підсвітяться місця, куди вона підходить. Однакові деталі стають у будь-яке з них, тож помилитись неможливо.</p>
-    <button class="btn" id="startBtn">Почати</button>
+    <h1>Від майстерні<br><em>до готового будинку</em></h1>
+    <p class="lede">Менеджер передзвонить найближчим часом. А поки пройдіть шлях замовлення — так, як він відбувається насправді.</p>
+    <ul class="road">
+      <li><i>🔧</i> Зберіть чотири конструкції з деталей</li>
+      <li><i>🚚</i> Завантажте їх у машину</li>
+      <li><i>🛣</i> Довезіть на об'єкт</li>
+      <li><i>🏠</i> Встановіть у будинок</li>
+    </ul>
+    <button class="btn" id="startBtn">Почати зміну</button>
   </section>
 
   <!-- ═══ ГРА ═══ -->
   <section id="playScreen" hidden>
     <div class="hud">
-      <div class="level-name" id="levelName">Вікно у спальню</div>
+      <span class="act" id="actLabel">Майстерня</span>
+      <div class="stage-name" id="stageName">Вікно у спальню</div>
       <div class="timer" id="timer">0:00</div>
     </div>
     <div class="pips" id="pips"></div>
@@ -145,14 +160,10 @@
 
   <!-- ═══ ФІНАЛ ═══ -->
   <section class="card" id="overScreen" hidden>
-    <div class="best" style="color:var(--accent)">Усі шість зібрано</div>
+    <div class="best" style="color:var(--accent)">Будинок готовий</div>
     <div class="final-time" id="finalTime">0:00</div>
     <div class="final-label" id="finalLabel">ваш час</div>
-    <button class="btn" id="againBtn">Зібрати ще раз</button>
-    <div class="calls">
-      <a class="call" href="tel:+380938335860"><b>093 833-58-60</b> <span>Буча</span></a>
-      <a class="call" href="tel:+380934680051"><b>093 468-00-51</b> <span>Бородянка</span></a>
-    </div>
+    <button class="btn" id="againBtn">Пройти ще раз</button>
     <a class="btn btn-ghost" href="https://vikna-dveri.store" target="_blank" rel="noopener">Повернутись на сайт</a>
   </section>
 
@@ -160,23 +171,23 @@
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   Поле 340×470. Угорі — нерухома основа конструкції,
-   внизу, за пунктиром, лежать деталі.
-   Кожна деталь описана координатами СВОГО МІСЦЯ, а в лоток
-   її зсуває трансформація. Тому «поставити» = прибрати її.
-═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   Поле 340×470. Угорі сцена, внизу за пунктиром — те, що тягнуть.
+   Деталь описана координатами СВОГО місця, у лоток її зсуває
+   трансформація. «Поставити» = перенести на потрібне місце.
+═══════════════════════════════════════════════════════════════ */
 var W = 340, H = 470, FLOOR = 300;
 
 var COL = {
-  glass: '#1d3350',
-  prof:  '#e9e4da',
-  dark:  '#3c434c'
+  glass:'#1d3350', prof:'#e9e4da', dark:'#3c434c',
+  wall:'#232f42',  roof:'#374357'
 };
 
-var LEVELS = [
+/* ── чотири конструкції ── */
+var PRODUCTS = [
   {
     name:'Вікно у спальню',
+    box:{ x:34, y:14, w:272, h:272 },
     frame:'<rect x="40" y="20" width="260" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="12"/>' +
           '<rect x="163" y="26" width="14" height="248" fill="'+COL.prof+'"/>',
     pieces:[
@@ -186,6 +197,7 @@ var LEVELS = [
   },
   {
     name:'Вікно на чотири',
+    box:{ x:34, y:14, w:272, h:272 },
     frame:'<rect x="40" y="20" width="260" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="12"/>' +
           '<rect x="163" y="26" width="14" height="248" fill="'+COL.prof+'"/>' +
           '<rect x="46" y="143" width="248" height="14" fill="'+COL.prof+'"/>',
@@ -198,6 +210,7 @@ var LEVELS = [
   },
   {
     name:'Вхідні двері',
+    box:{ x:58, y:11, w:224, h:276 },
     frame:'<rect x="70" y="16" width="200" height="266" fill="none" stroke="'+COL.dark+'" stroke-width="10"/>' +
           '<rect x="62" y="46" width="8" height="18" rx="2" fill="'+COL.dark+'"/>' +
           '<rect x="62" y="140" width="8" height="18" rx="2" fill="'+COL.dark+'"/>' +
@@ -210,6 +223,7 @@ var LEVELS = [
   },
   {
     name:'Балконний блок',
+    box:{ x:20, y:14, w:300, h:272 },
     frame:'<rect x="26" y="20" width="88" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="11"/>' +
           '<rect x="124" y="20" width="92" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="11"/>' +
           '<rect x="226" y="20" width="88" height="260" fill="none" stroke="'+COL.prof+'" stroke-width="11"/>',
@@ -219,56 +233,46 @@ var LEVELS = [
       { x:237, y:31,  w:66, h:238, kind:'glass' },
       { x:128, y:150, w:10, h:36,  kind:'handle', r:5 }
     ]
-  },
-  {
-    name:'Арочне вікно',
-    frame:'<path d="M40 160 A130 120 0 0 1 300 160" fill="none" stroke="'+COL.prof+'" stroke-width="12"/>' +
-          '<rect x="40" y="160" width="260" height="120" fill="none" stroke="'+COL.prof+'" stroke-width="12"/>' +
-          '<rect x="163" y="166" width="14" height="108" fill="'+COL.prof+'"/>',
-    pieces:[
-      { path:'M52 160 A118 108 0 0 1 288 160 Z', cx:170, cy:112, size:236, kind:'glass' },
-      { x:52,  y:172, w:105, h:96,  kind:'glass' },
-      { x:183, y:172, w:105, h:96,  kind:'glass' },
-      { x:22,  y:284, w:296, h:14,  kind:'prof', r:2 }
-    ]
-  },
-  {
-    name:'Панорама',
-    frame:'<rect x="20" y="40" width="300" height="212" fill="none" stroke="'+COL.prof+'" stroke-width="11"/>' +
-          '<rect x="118" y="46" width="12" height="200" fill="'+COL.prof+'"/>' +
-          '<rect x="210" y="46" width="12" height="200" fill="'+COL.prof+'"/>' +
-          '<rect x="26" y="140" width="288" height="12" fill="'+COL.prof+'"/>',
-    pieces:[
-      { x:26,  y:46,  w:92, h:94, kind:'glass' },
-      { x:130, y:46,  w:80, h:94, kind:'glass' },
-      { x:222, y:46,  w:92, h:94, kind:'glass' },
-      { x:26,  y:152, w:92, h:94, kind:'glass' },
-      { x:130, y:152, w:80, h:94, kind:'glass' },
-      { x:222, y:152, w:92, h:94, kind:'glass' }
-    ]
   }
 ];
 
-var $ = function (id) { return document.getElementById(id); };
-var G = { level:0, pieces:[], slots:[], left:0, t0:0, tick:null, drag:null, done:false };
+/* ── шлях замовлення ── */
+var STAGES = [
+  { type:'assemble', p:0, act:'Майстерня' },
+  { type:'assemble', p:1, act:'Майстерня' },
+  { type:'assemble', p:2, act:'Майстерня' },
+  { type:'assemble', p:3, act:'Майстерня' },
+  { type:'load',            act:'Завантаження', name:'Машина у дворі' },
+  { type:'drive',           act:'Дорога',       name:'Їдемо на об’єкт' },
+  { type:'install',         act:'Монтаж',       name:'Будинок замовника' }
+];
 
-/* ── геометрія ── */
+/* місця в кузові та отвори в будинку — під ті самі чотири вироби */
+var CARGO = [
+  { x:56,  y:138, w:62, h:62 },
+  { x:132, y:138, w:62, h:62 },
+  { x:56,  y:206, w:62, h:62 },
+  { x:132, y:206, w:62, h:62 }
+];
+var OPENINGS = [
+  { x:46,  y:66,  w:78, h:78 },    // вікно ліворуч угорі
+  { x:216, y:66,  w:78, h:78 },    // вікно праворуч угорі
+  { x:54,  y:182, w:66, h:104 },   // двері
+  { x:170, y:176, w:124, h:110 }   // балконний блок
+];
+
+var $ = function (id) { return document.getElementById(id); };
+var G = { stage:0, pieces:[], slots:[], left:0, t0:0, tick:null, drag:null, done:false, timer:null };
+
+/* ═══════════ малювання ═══════════ */
 function shapeOf(p) {
-  if (p.path) return '<path d="' + p.path + '"/>';
   return '<rect x="' + p.x + '" y="' + p.y + '" width="' + p.w + '" height="' + p.h + '"' +
          (p.r ? ' rx="' + p.r + '"' : '') + '/>';
 }
-function centerOf(p) {
-  return p.path ? { x:p.cx, y:p.cy } : { x:p.x + p.w / 2, y:p.y + p.h / 2 };
-}
-function spanOf(p) { return p.path ? p.size : Math.max(p.w, p.h); }
-/* Однакові за формою деталі взаємозамінні: гравцеві не треба вгадувати,
-   яке саме зі скелець у яку секцію — підійде будь-яке. */
-function sigOf(p) { return p.path ? 'p:' + p.path : 'r:' + p.w + 'x' + p.h + 'x' + (p.r || 0); }
 function fillOf(k) { return k === 'glass' ? COL.glass : (k === 'handle' ? COL.dark : COL.prof); }
+function sigOfRect(w, h, r) { return 'r:' + w + 'x' + h + 'x' + (r || 0); }
 
 function glassShine(p) {
-  if (p.path) return '<path class="shine" d="M78 150 L168 62" stroke="rgba(245,242,237,.13)" stroke-width="18" fill="none"/>';
   var x1 = p.x + p.w * 0.14, y1 = p.y + p.h * 0.9;
   var x2 = p.x + p.w * 0.76, y2 = p.y + p.h * 0.1;
   var wd = Math.max(7, Math.min(p.w, p.h) * 0.17);
@@ -276,89 +280,218 @@ function glassShine(p) {
          '" stroke="rgba(245,242,237,.13)" stroke-width="' + wd + '"/>';
 }
 
-/* ── побудова рівня ── */
-function buildLevel() {
-  var lv = LEVELS[G.level];
-  var n = lv.pieces.length;
+/* готовий виріб: основа + усі деталі на своїх місцях */
+function productMarkup(i) {
+  var pr = PRODUCTS[i];
+  var parts = pr.pieces.map(function (p) {
+    return '<g fill="' + fillOf(p.kind) + '">' + shapeOf(p) +
+           (p.kind === 'glass' ? glassShine(p) : '') + '</g>';
+  }).join('');
+  return pr.frame + parts;
+}
+
+/* той самий виріб, вписаний у прямокутник */
+function productFitted(i, box) {
+  var b = PRODUCTS[i].box;
+  var s = Math.min(box.w / b.w, box.h / b.h);
+  var tx = box.x + box.w / 2 - (b.x + b.w / 2) * s;
+  var ty = box.y + box.h / 2 - (b.y + b.h / 2) * s;
+  return '<g transform="translate(' + tx + ' ' + ty + ') scale(' + s + ')">' + productMarkup(i) + '</g>';
+}
+
+/* ═══════════ сцени ═══════════ */
+function buildStage() {
+  var st = STAGES[G.stage];
+  $('actLabel').textContent = st.act;
+  $('stageName').textContent = st.name || PRODUCTS[st.p].name;
+  $('board').classList.toggle('road-scene', st.type === 'drive');
+  paintPips();
+  G.done = false;
+  clearTimeout(G.timer);
+
+  if (st.type === 'assemble') buildAssemble(st.p);
+  else if (st.type === 'load') buildCarry(CARGO, truckScene(), 'Складіть вироби в кузов');
+  else if (st.type === 'install') buildCarry(OPENINGS, houseScene(), 'Вставте кожен виріб у свій отвір');
+  else buildDrive();
+}
+
+/* — 1. збирання — */
+function buildAssemble(pi) {
+  var pr = PRODUCTS[pi];
+  G.pieces = pr.pieces.map(function (p, i) {
+    return {
+      i:i, cx:p.x + p.w / 2, cy:p.y + p.h / 2, w:p.w, h:p.h,
+      sig:sigOfRect(p.w, p.h, p.r),
+      slotHtml:shapeOf(p),
+      html:shapeOf(p) + (p.kind === 'glass' ? glassShine(p) : ''),
+      fill:fillOf(p.kind), placed:false
+    };
+  });
+  layout(pr.frame, 'Візьміть деталь — місця для неї підсвітяться');
+}
+
+/* — 2 і 4. перенести готові вироби — */
+function buildCarry(targets, sceneHtml, hintText) {
+  G.pieces = PRODUCTS.map(function (pr, i) {
+    var t = targets[i];
+    return {
+      i:i, cx:t.x + t.w / 2, cy:t.y + t.h / 2, w:t.w, h:t.h,
+      sig:'prod' + i,
+      slotHtml:'<rect x="' + t.x + '" y="' + t.y + '" width="' + t.w + '" height="' + t.h + '" rx="3"/>',
+      html:productFitted(i, t),
+      fill:'none', placed:false
+    };
+  });
+  layout(sceneHtml, hintText);
+}
+
+function layout(sceneHtml, hintText) {
+  var n = G.pieces.length;
   var cols = n <= 3 ? n : Math.ceil(n / 2);
   var rows = n <= 3 ? 1 : 2;
-  var cellW = (W - 20) / cols;
-  var cellH = (H - FLOOR - 14) / rows;
+  var cellW = (W - 20) / cols, cellH = (H - FLOOR - 14) / rows;
 
-  // порядок у лотку перемішуємо, щоб деталі не лежали «по порядку»
-  var order = lv.pieces.map(function (_, i) { return i; });
+  var order = G.pieces.map(function (_, i) { return i; });
   for (var k = order.length - 1; k > 0; k--) {
     var j = Math.floor(Math.random() * (k + 1));
     var tmp = order[k]; order[k] = order[j]; order[j] = tmp;
   }
 
-  G.pieces = lv.pieces.map(function (p, i) {
-    var slot = order.indexOf(i);
-    var col = slot % cols, row = Math.floor(slot / cols);
-    var span = spanOf(p);
-    var s = Math.min(0.5, (cellW - 16) / span, (cellH - 12) / span);
-    s = Math.max(s, Math.min(1.1, 62 / span));   // дрібну деталь лишаємо великою
-    return {
-      x:p.x, y:p.y, w:p.w, h:p.h, r:p.r, path:p.path, cx:p.cx, cy:p.cy, size:p.size, kind:p.kind,
-      i:i, c:centerOf(p),
-      tray:{ tx:10 + cellW * (col + 0.5), ty:FLOOR + 8 + cellH * (row + 0.5), s:Math.max(0.16, s) },
-      span:span,
-      placed:false
-    };
+  G.pieces.forEach(function (p) {
+    var slot = order.indexOf(p.i), col = slot % cols, row = Math.floor(slot / cols);
+    var span = Math.max(p.w, p.h);
+    var s = Math.min(0.62, (cellW - 16) / span, (cellH - 12) / span);
+    s = Math.max(s, Math.min(1.1, 62 / span));
+    p.tray = { tx:10 + cellW * (col + 0.5), ty:FLOOR + 8 + cellH * (row + 0.5), s:Math.max(0.16, s) };
   });
-  G.slots = G.pieces.map(function (p) {
-    return { i:p.i, c:p.c, sig:sigOf(p), filled:false };
-  });
-  G.left = n;
-  G.done = false;
 
-  var slots = G.pieces.map(function (p) {
+  G.slots = G.pieces.map(function (p) {
+    return { i:p.i, c:{ x:p.cx, y:p.cy }, sig:p.sig, filled:false };
+  });
+  G.left = G.pieces.length;
+
+  var slotsHtml = G.pieces.map(function (p) {
     return '<g class="slot" data-slot="' + p.i + '" fill="rgba(245,242,237,0.035)" ' +
-           'stroke="#c8a96e" stroke-width="1.5">' + shapeOf(p) + '</g>';
+           'stroke="#c8a96e" stroke-width="1.5">' + p.slotHtml + '</g>';
   }).join('');
 
-  var parts = G.pieces.map(function (p) {
+  var piecesHtml = G.pieces.map(function (p) {
     return '<g class="piece" data-piece="' + p.i + '" transform="' + trayTransform(p) + '" ' +
-           'fill="' + fillOf(p.kind) + '">' + hitArea(p) + shapeOf(p) +
-           (p.kind === 'glass' ? glassShine(p) : '') + '</g>';
+           'fill="' + p.fill + '">' + hitArea(p) + p.html + '</g>';
   }).join('');
 
   $('board').innerHTML =
-    '<svg viewBox="0 0 ' + W + ' ' + H + '" id="svg" role="application" aria-label="Збирання конструкції">' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" id="svg" role="application" aria-label="Поле гри">' +
       '<line class="tray-line" x1="14" y1="' + FLOOR + '" x2="' + (W - 14) + '" y2="' + FLOOR + '"/>' +
-      '<g>' + lv.frame + '</g>' +
-      '<g id="slotLayer">' + slots + '</g>' +
-      '<g id="piecesLayer">' + parts + '</g>' +
+      '<g id="sceneLayer">' + sceneHtml + '</g>' +
+      '<g id="slotLayer">' + slotsHtml + '</g>' +
+      '<g id="piecesLayer">' + piecesHtml + '</g>' +
     '</svg>';
 
-  $('levelName').textContent = lv.name;
-  paintPips();
   bindDrag();
-  hint('Візьміть деталь — місця для неї підсвітяться');
+  hint(hintText);
 }
 
-/* Прозорий прямокутник під деталлю: на екрані зона захвату
-   ніколи не менша за ~46 px, навіть якщо сама деталь крихітна. */
+/* — 3. дорога — */
+function buildDrive() {
+  var tree = function (x, h) {
+    return '<g transform="translate(' + x + ' ' + (250 - h) + ')">' +
+           '<rect x="-2" y="' + h + '" width="4" height="18" fill="#2c3746"/>' +
+           '<path d="M0 0 L12 ' + h + ' L-12 ' + h + ' Z" fill="#26384a"/></g>';
+  };
+  var house = function (x) {
+    return '<g transform="translate(' + x + ' 214)">' +
+           '<rect x="-18" y="0" width="36" height="36" fill="#243146"/>' +
+           '<path d="M-22 0 L0 -16 L22 0 Z" fill="#2f3d55"/>' +
+           '<rect x="-7" y="10" width="14" height="12" fill="rgba(200,169,110,.45)"/></g>';
+  };
+
+  $('board').innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" id="svg" role="img" aria-label="Дорога на об’єкт">' +
+      '<rect x="0" y="0" width="' + W + '" height="268" fill="#0c1524"/>' +
+      '<circle cx="272" cy="58" r="20" fill="rgba(200,169,110,.16)"/>' +
+      '<g class="scroller slow">' + tree(30, 34) + house(120) + tree(210, 26) + tree(300, 40) + house(390) + tree(470, 30) + tree(560, 34) + '</g>' +
+      '<rect x="0" y="268" width="' + W + '" height="60" fill="#182534"/>' +
+      '<g class="scroller">' +
+        [0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660].map(function (x) {
+          return '<rect x="' + x + '" y="296" width="30" height="3" fill="rgba(245,242,237,.22)"/>';
+        }).join('') +
+      '</g>' +
+
+      '<g transform="translate(86 206)"><g class="van">' +
+        '<rect x="0" y="0" width="112" height="62" rx="4" fill="#e9e4da"/>' +
+        '<rect x="8" y="8" width="96" height="30" rx="2" fill="rgba(29,51,80,.35)"/>' +
+        '<path d="M112 14 L150 14 L166 40 L166 62 L112 62 Z" fill="#dcd5c7"/>' +
+        '<rect x="120" y="20" width="30" height="18" rx="2" fill="#1d3350"/>' +
+        '<circle class="wheel" cx="36" cy="64" r="13" fill="#232b36"/>' +
+        '<circle class="wheel" cx="140" cy="64" r="13" fill="#232b36"/>' +
+        '<circle cx="36" cy="64" r="5" fill="#4a5361"/>' +
+        '<circle cx="140" cy="64" r="5" fill="#4a5361"/>' +
+        '<rect x="163" y="40" width="6" height="8" rx="2" fill="var(--accent)"/>' +
+      '</g></g>' +
+
+      '<g transform="translate(0 360)">' +
+        '<text x="170" y="0" text-anchor="middle" fill="rgba(245,242,237,.45)" ' +
+        'font-family="DM Sans, sans-serif" font-size="13">Веземо на об’єкт…</text>' +
+        '<rect x="70" y="20" width="200" height="4" rx="2" fill="rgba(245,242,237,.1)"/>' +
+        '<rect id="driveBar" x="70" y="20" width="0" height="4" rx="2" fill="var(--accent)"/>' +
+      '</g>' +
+    '</svg>';
+
+  hint('Торкніться, щоб їхати швидше');
+
+  var t = 0, total = 6000, step = 100;
+  var bar = $('driveBar');
+  var go = setInterval(function () {
+    t += step * (G.boost ? 3 : 1);
+    if (bar) bar.setAttribute('width', Math.min(200, 200 * t / total));
+    if (t >= total) { clearInterval(go); G.boost = false; nextStage(); }
+  }, step);
+  G.boost = false;
+  $('board').onclick = function () { G.boost = true; };
+  G.timer = go;
+}
+
+/* ── сцени-декорації ── */
+function truckScene() {
+  return '<g>' +
+    '<rect x="30" y="110" width="200" height="168" rx="4" fill="none" stroke="#e9e4da" stroke-width="7"/>' +
+    '<rect x="36" y="116" width="188" height="156" fill="rgba(245,242,237,.03)"/>' +
+    '<path d="M230 140 L268 140 L292 186 L292 278 L230 278 Z" fill="none" stroke="#e9e4da" stroke-width="7"/>' +
+    '<rect x="240" y="152" width="34" height="24" rx="3" fill="#1d3350"/>' +
+    '<circle cx="80" cy="282" r="14" fill="#232b36"/>' +
+    '<circle cx="258" cy="282" r="14" fill="#232b36"/>' +
+    '<rect x="30" y="102" width="200" height="8" rx="3" fill="#c3bcac"/>' +
+    '</g>';
+}
+
+function houseScene() {
+  return '<g>' +
+    '<path d="M18 96 L170 18 L322 96 Z" fill="' + COL.roof + '"/>' +
+    '<rect x="38" y="96" width="264" height="200" fill="' + COL.wall + '"/>' +
+    '<rect x="38" y="96" width="264" height="200" fill="none" stroke="rgba(245,242,237,.08)" stroke-width="2"/>' +
+    '<rect x="236" y="34" width="20" height="34" fill="' + COL.roof + '"/>' +
+    '<rect x="38" y="292" width="264" height="8" fill="#1b2434"/>' +
+    '</g>';
+}
+
+/* ═══════════ спільний рушій перетягування ═══════════ */
 function hitArea(p) {
   var need = 46 / p.tray.s;
-  var w = Math.max(p.w || p.span, need);
-  var h = Math.max(p.h || p.span, need);
-  return '<rect x="' + (p.c.x - w / 2) + '" y="' + (p.c.y - h / 2) + '" width="' + w +
+  var w = Math.max(p.w, need), h = Math.max(p.h, need);
+  return '<rect x="' + (p.cx - w / 2) + '" y="' + (p.cy - h / 2) + '" width="' + w +
          '" height="' + h + '" fill="transparent"/>';
 }
-
 function trayTransform(p) {
   var t = p.tray;
-  return 'translate(' + (t.tx - p.c.x * t.s) + ' ' + (t.ty - p.c.y * t.s) + ') scale(' + t.s + ')';
+  return 'translate(' + (t.tx - p.cx * t.s) + ' ' + (t.ty - p.cy * t.s) + ') scale(' + t.s + ')';
 }
-
-/* ── перетягування ── */
 function svgPoint(e) {
-  var svg = $('svg');
-  var pt = svg.createSVGPoint();
+  var svg = $('svg'), pt = svg.createSVGPoint();
   pt.x = e.clientX; pt.y = e.clientY;
   return pt.matrixTransform(svg.getScreenCTM().inverse());
 }
+function dist(a, b) { return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)); }
 
 function bindDrag() {
   var list = $('piecesLayer').querySelectorAll('.piece');
@@ -366,17 +499,15 @@ function bindDrag() {
 }
 
 function onDown(e) {
-  var el = e.currentTarget;
-  var p = G.pieces[+el.dataset.piece];
+  var el = e.currentTarget, p = G.pieces[+el.dataset.piece];
   if (p.placed || G.done) return;
   e.preventDefault();
   el.classList.add('dragging');
-  el.parentNode.appendChild(el);                 // піднімаємо над рештою
+  el.parentNode.appendChild(el);
   G.drag = { el:el, p:p };
   showAvailable(p, true);
   moveTo(e);
-  // Слухаємо вікно, а не саму деталь: переміщення елемента в DOM
-  // скидає захват вказівника, і рух за пальцем губиться.
+  // слухаємо вікно: переміщення елемента в DOM скидає захват вказівника
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
@@ -384,14 +515,13 @@ function onDown(e) {
 
 function moveTo(e) {
   var d = G.drag, pt = svgPoint(e);
-  d.el.setAttribute('transform', 'translate(' + (pt.x - d.p.c.x) + ' ' + (pt.y - d.p.c.y) + ')');
+  d.el.setAttribute('transform', 'translate(' + (pt.x - d.p.cx) + ' ' + (pt.y - d.p.cy) + ')');
   return pt;
 }
 
 function onMove(e) {
   if (!G.drag) return;
-  var pt = moveTo(e);
-  var near = nearestSlot(G.drag.p, pt);
+  var pt = moveTo(e), near = nearestSlot(G.drag.p, pt);
   hotSlot(near && near.d < snapRadius(G.drag.p) * 1.5 ? near.slot.i : -1);
 }
 
@@ -411,59 +541,45 @@ function onUp(e) {
   else el.setAttribute('transform', trayTransform(p));
 }
 
-/* Найближче вільне місце, у яке ця деталь взагалі може стати */
+/* однакові за формою деталі взаємозамінні */
 function nearestSlot(p, pt) {
-  var sig = sigOf(p), best = null, bestD = Infinity;
+  var best = null, bestD = Infinity;
   G.slots.forEach(function (s) {
-    if (s.filled || s.sig !== sig) return;
+    if (s.filled || s.sig !== p.sig) return;
     var d = dist(pt, s.c);
     if (d < bestD) { bestD = d; best = s; }
   });
   return best ? { slot:best, d:bestD } : null;
 }
-
-function snapRadius(p) {
-  return Math.max(44, Math.min(92, spanOf(p) * 0.5));
-}
-function dist(a, b) { return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)); }
+function snapRadius(p) { return Math.max(44, Math.min(92, Math.max(p.w, p.h) * 0.5)); }
 
 function showAvailable(p, on) {
-  var sig = sigOf(p);
   G.slots.forEach(function (s) {
     if (s.filled) return;
     var el = document.querySelector('.slot[data-slot="' + s.i + '"]');
-    if (el) el.classList.toggle('avail', on && s.sig === sig);
+    if (el) el.classList.toggle('avail', on && s.sig === p.sig);
   });
 }
-
 function hotSlot(i) {
   var list = document.querySelectorAll('.slot');
-  for (var k = 0; k < list.length; k++) {
-    list[k].classList.toggle('hot', +list[k].dataset.slot === i);
-  }
+  for (var k = 0; k < list.length; k++) list[k].classList.toggle('hot', +list[k].dataset.slot === i);
 }
 
 function place(el, p, slot) {
-  p.placed = true;
-  p.slotIx = slot.i;
-  slot.filled = true;
+  p.placed = true; p.slotIx = slot.i; slot.filled = true;
   el.classList.add('placed');
-  el.setAttribute('transform',
-    'translate(' + (slot.c.x - p.c.x) + ' ' + (slot.c.y - p.c.y) + ')');
+  el.setAttribute('transform', 'translate(' + (slot.c.x - p.cx) + ' ' + (slot.c.y - p.cy) + ')');
   var node = document.querySelector('.slot[data-slot="' + slot.i + '"]');
   if (node) node.parentNode.removeChild(node);
   restack();
 
   G.left--;
-  if (G.left > 0) hint(G.left === 1 ? 'Лишилась одна деталь' : 'Лишилось деталей: ' + G.left);
-  else levelDone();
+  if (G.left > 0) hint(G.left === 1 ? 'Лишилась одна' : 'Лишилось: ' + G.left);
+  else stageDone();
 }
 
-/* Повертаємо деталі в їхній «правильний» порядок накладання:
-   під час перетягування деталь піднімається наверх, і без цього
-   полотно, поставлене останнім, накрило б скло. */
 function restack() {
-  var layer = document.getElementById('piecesLayer');
+  var layer = $('piecesLayer');
   if (!layer) return;
   G.pieces.slice().sort(function (a, b) {
     var ka = a.placed ? a.slotIx : 100 + a.i;
@@ -475,11 +591,15 @@ function restack() {
   });
 }
 
-/* ── рівень зібрано ── */
-function levelDone() {
+/* ═══════════ переходи ═══════════ */
+function stageDone() {
   G.done = true;
-  hint('Готово', true);
+  var st = STAGES[G.stage];
+  hint(st.type === 'install' ? 'Будинок готовий' : 'Готово', true);
+
   var svg = $('svg');
+  if (st.type === 'install') lightUpHouse(svg);
+
   var flash = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   flash.setAttribute('x', 0); flash.setAttribute('y', 0);
   flash.setAttribute('width', W); flash.setAttribute('height', FLOOR);
@@ -489,52 +609,65 @@ function levelDone() {
   svg.appendChild(flash);
   requestAnimationFrame(function () { flash.style.opacity = '0'; });
 
-  setTimeout(function () {
-    G.level++;
-    if (G.level >= LEVELS.length) finish();
-    else buildLevel();
-  }, 900);
+  G.timer = setTimeout(nextStage, st.type === 'install' ? 1600 : 900);
+}
+
+/* у встановлених вікнах вмикається світло */
+function lightUpHouse(svg) {
+  var ns = 'http://www.w3.org/2000/svg';
+  var g = document.createElementNS(ns, 'g');
+  g.setAttribute('class', 'window-glow');
+  g.setAttribute('pointer-events', 'none');
+  OPENINGS.forEach(function (o) {
+    var r = document.createElementNS(ns, 'rect');
+    r.setAttribute('x', o.x); r.setAttribute('y', o.y);
+    r.setAttribute('width', o.w); r.setAttribute('height', o.h);
+    r.setAttribute('fill', 'rgba(233,199,133,.38)');
+    g.appendChild(r);
+  });
+  svg.appendChild(g);
+}
+
+function nextStage() {
+  clearTimeout(G.timer);
+  $('board').onclick = null;
+  G.stage++;
+  if (G.stage >= STAGES.length) finish();
+  else buildStage();
 }
 
 function paintPips() {
-  $('pips').innerHTML = LEVELS.map(function (_, i) {
-    return '<span class="pip ' + (i < G.level ? 'done' : (i === G.level ? 'now' : '')) + '"></span>';
+  $('pips').innerHTML = STAGES.map(function (_, i) {
+    return '<span class="pip ' + (i < G.stage ? 'done' : (i === G.stage ? 'now' : '')) + '"></span>';
   }).join('');
 }
-
 function hint(text, win) {
   var h = $('hint');
   h.textContent = text;
   h.className = 'hint' + (win ? ' win' : '');
 }
 
-/* ── час ── */
+/* ═══════════ час і екрани ═══════════ */
 function fmt(ms) {
   var s = Math.floor(ms / 1000);
   return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 }
-function startClock() {
-  G.t0 = Date.now();
-  clearInterval(G.tick);
-  G.tick = setInterval(function () { $('timer').textContent = fmt(Date.now() - G.t0); }, 500);
-}
-
-/* ── екрани ── */
 function start() {
-  G.level = 0;
+  G.stage = 0;
   $('startScreen').hidden = true;
   $('overScreen').hidden = true;
   $('playScreen').hidden = false;
   $('timer').textContent = '0:00';
-  buildLevel();
-  startClock();
+  buildStage();
+  G.t0 = Date.now();
+  clearInterval(G.tick);
+  G.tick = setInterval(function () { $('timer').textContent = fmt(Date.now() - G.t0); }, 500);
 }
 
 function finish() {
   clearInterval(G.tick);
   var ms = Date.now() - G.t0, best = 0;
   try { best = parseInt(localStorage.getItem('vd_puzzle_best') || '0', 10); } catch (e) {}
-
   $('finalTime').textContent = fmt(ms);
   if (!best || ms < best) {
     $('finalLabel').textContent = best ? 'новий найкращий час' : 'ваш час';
@@ -542,7 +675,6 @@ function finish() {
   } else {
     $('finalLabel').textContent = 'найкраще було ' + fmt(best);
   }
-
   $('playScreen').hidden = true;
   $('overScreen').hidden = false;
   showBest();
