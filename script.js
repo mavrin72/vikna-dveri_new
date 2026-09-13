@@ -1,22 +1,4 @@
 /* ═══════════════════════════════════════════════════════════════
-   CUSTOM CURSOR
-═══════════════════════════════════════════════════════════════ */
-const cursorDot  = document.getElementById('cursorDot');
-const cursorRing = document.getElementById('cursorRing');
-let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX; mouseY = e.clientY;
-  if (cursorDot) { cursorDot.style.left = mouseX + 'px'; cursorDot.style.top = mouseY + 'px'; }
-});
-(function animateCursor() {
-  ringX += (mouseX - ringX) * 0.12;
-  ringY += (mouseY - ringY) * 0.12;
-  if (cursorRing) { cursorRing.style.left = ringX + 'px'; cursorRing.style.top = ringY + 'px'; }
-  requestAnimationFrame(animateCursor);
-})();
-
-/* ═══════════════════════════════════════════════════════════════
    NAV — scroll behaviour
 ═══════════════════════════════════════════════════════════════ */
 const nav = document.getElementById('nav');
@@ -171,18 +153,91 @@ document.addEventListener('keydown', e => {
 /* ═══════════════════════════════════════════════════════════════
    PROMO MODAL (для рекламних посилань /#advertising)
 ═══════════════════════════════════════════════════════════════ */
+// Попап показується не одразу, а через PROMO_DELAY_MS — щоб людина
+// встигла побачити сайт. Якщо його закрити, лишається кнопка "Знижка 10%".
+const PROMO_DELAY_MS = 20000;
+const PROMO_HASH     = '#advertising';
+
+// Строк дії пропозиції — кінець поточного тижня (неділя).
+// Якщо до неділі лишилось менше 2 днів, беремо наступну.
+function promoDeadlineText() {
+  const d = new Date();
+  let days = (7 - d.getDay()) % 7;
+  if (days < 2) days += 7;
+  d.setDate(d.getDate() + days);
+  return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+}
+
+const promoEligible = window.location.hash === PROMO_HASH;
+
+function showPromoPill() {
+  const pill = document.getElementById('promoPill');
+  if (pill && !sessionStorage.getItem('_promoDone')) pill.classList.add('show');
+}
+function hidePromoPill() {
+  const pill = document.getElementById('promoPill');
+  if (pill) pill.classList.remove('show');
+}
+
 function openPromo() {
-  document.getElementById('promoModal').classList.add('open');
+  const modal = document.getElementById('promoModal');
+  if (!modal) return;
+  modal.classList.add('open');
   document.body.style.overflow = 'hidden';
+  hidePromoPill();
+  try { sessionStorage.setItem('_promoSeen', '1'); } catch (e) {}
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'promo_open' });
 }
+
 function closePromo() {
-  document.getElementById('promoModal').classList.remove('open');
+  const modal = document.getElementById('promoModal');
+  if (!modal) return;
+  modal.classList.remove('open');
   document.body.style.overflow = '';
+  if (promoEligible) showPromoPill();
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'promo_close' });
 }
+
+// Заявку з промо надіслано — більше не нагадуємо
+function promoDone() {
+  try { sessionStorage.setItem('_promoDone', '1'); } catch (e) {}
+  hidePromoPill();
+}
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('promoModal').classList.contains('open')) closePromo();
+  const modal = document.getElementById('promoModal');
+  if (e.key === 'Escape' && modal && modal.classList.contains('open')) closePromo();
 });
-if (window.location.hash === '#advertising') openPromo();
+
+if (promoEligible) {
+  const dl = document.getElementById('promoDeadline');
+  if (dl) dl.textContent = promoDeadlineText();
+
+  let seen = false, done = false;
+  try {
+    seen = !!sessionStorage.getItem('_promoSeen');
+    done = !!sessionStorage.getItem('_promoDone');
+  } catch (e) {}
+
+  if (done) {
+    // нічого не показуємо
+  } else if (seen) {
+    showPromoPill();
+  } else {
+    const tryOpenPromo = () => {
+      // не перебиваємо людину, яка вже заповнює форму
+      const tag = (document.activeElement && document.activeElement.tagName) || '';
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) {
+        setTimeout(tryOpenPromo, 15000);
+        return;
+      }
+      openPromo();
+    };
+    setTimeout(tryOpenPromo, PROMO_DELAY_MS);
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    PRODUCT PANEL — mouse parallax
@@ -478,6 +533,7 @@ async function submitLead({ name, phone, city, product, comment, honeypot }, btn
     localStorage.setItem('_lastFormSent', Date.now().toString());
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: 'form_submit_zayavka', product });
+    if (typeof promoDone === 'function') promoDone();
     fieldsToClear.forEach(el => { if (el) el.value = ''; });
   } catch (err) {
     btn.textContent = '❌ Помилка. Спробуйте ще';
