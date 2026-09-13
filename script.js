@@ -493,6 +493,10 @@ function fillFormFromCalc() {
 ═══════════════════════════════════════════════════════════════ */
 const _formLoadTime = Date.now();
 
+// Остання відповідь вебхука — видно в консолі, а з /?debug=1 і на сторінці
+let _lastWebhookReply = '';
+const _leadDebug = /[?&]debug=1/.test(window.location.search);
+
 async function submitLead({ name, phone, city, product, comment, honeypot, quick }, btn, fieldsToClear) {
   // Honeypot: якщо бот заповнив приховане поле — ігноруємо
   if (honeypot) return false;
@@ -532,11 +536,27 @@ async function submitLead({ name, phone, city, product, comment, honeypot, quick
   const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzUkCwVKFYeAEk68F3S11OeoS-8I8OY8GSpHP1SCN7A1GfRkqrfCI75wpdN02oMzNKu/exec';
 
   try {
-    await fetch(WEBHOOK_URL, {
+    const res = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ name, phone, city, product, comment, _key: 'vd2026site' })
     });
+
+    // Читаємо відповідь: раніше сайт казав "надіслано" навіть тоді,
+    // коли скрипт відхиляв заявку і в таблицю нічого не потрапляло.
+    let reply = '';
+    try { reply = (await res.text() || '').slice(0, 500); } catch (e) {}
+    _lastWebhookReply = 'HTTP ' + res.status + ' · ' + (reply || '(порожня відповідь)');
+    console.log('[lead]', _lastWebhookReply);
+
+    // Відмова: помилковий код, сторінка входу Google замість відповіді,
+    // або явна помилка в тілі відповіді.
+    const rejected = !res.ok
+      || /^\s*</.test(reply)
+      || /"?(result|status)"?\s*:\s*"?error/i.test(reply)
+      || /"?(ok|success)"?\s*:\s*false/i.test(reply);
+    if (rejected) throw new Error(_lastWebhookReply);
+
     ok = true;
     btn.textContent = '✓ Заявку надіслано!';
     btn.style.background = '#4caf50';
@@ -546,6 +566,8 @@ async function submitLead({ name, phone, city, product, comment, honeypot, quick
     if (typeof promoDone === 'function') promoDone();
     fieldsToClear.forEach(el => { if (el) el.value = ''; });
   } catch (err) {
+    console.warn('[lead] заявку не прийнято:', err && err.message);
+    if (!_lastWebhookReply) _lastWebhookReply = 'мережа: ' + (err && err.message);
     btn.textContent = '❌ Помилка. Спробуйте ще';
     btn.style.background = '#f44336';
   }
@@ -595,16 +617,21 @@ async function handleQuickSubmit(e) {
   if (msg) { msg.textContent = ''; msg.className = 'hq-msg'; }
 
   const ok = await submitLead({
-    name:     '',
+    name:     'Швидка заявка',
     phone:    (phoneEl || {}).value,
-    city:     '',
+    city:     'Не вказано',
     product:  'Потрібна консультація',
-    comment:  'Швидка заявка з головного екрана (вказано лише телефон)',
+    comment:  'Швидка заявка з головного екрана — вказано лише телефон, ім\'я та місто уточнити при дзвінку',
     honeypot: (document.getElementById('_hpQuick') || {}).value || '',
     quick:    true
   }, btn, [phoneEl]);
 
   if (!msg) return;
+  if (_leadDebug) {
+    msg.textContent = (ok ? 'OK · ' : 'ВІДМОВА · ') + _lastWebhookReply;
+    msg.className = 'hq-msg show ' + (ok ? 'ok' : 'error');
+    return;
+  }
   if (ok) {
     msg.textContent = '✓ Дякуємо! Передзвонимо у робочий час: Пн–Пт 9:00–17:00, Сб 9:00–15:00.';
     msg.className = 'hq-msg show ok';
