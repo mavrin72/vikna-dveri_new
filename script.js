@@ -493,29 +493,38 @@ function fillFormFromCalc() {
 ═══════════════════════════════════════════════════════════════ */
 const _formLoadTime = Date.now();
 
-async function submitLead({ name, phone, city, product, comment, honeypot }, btn, fieldsToClear) {
+async function submitLead({ name, phone, city, product, comment, honeypot, quick }, btn, fieldsToClear) {
   // Honeypot: якщо бот заповнив приховане поле — ігноруємо
-  if (honeypot) return;
-
-  // Rate limit: не частіше 1 разу на 60 секунд
-  const lastSent = parseInt(localStorage.getItem('_lastFormSent') || '0');
-  if (Date.now() - lastSent < 60000) {
-    alert('Заявку вже надіслано. Зачекайте хвилину перед повторним відправленням.');
-    return;
-  }
-
-  // Мінімальний час на сторінці: 3 секунди
-  if (Date.now() - _formLoadTime < 3000) return;
+  if (honeypot) return false;
 
   name  = (name  || '').trim();
   phone = (phone || '').trim();
   city  = (city  || '').trim();
 
-  if (!name || !phone || !city) {
-    alert('Будь ласка, вкажіть ваше ім\'я, номер телефону та населений пункт.');
-    return;
+  const digits = phone.replace(/\D/g, '');
+  if (!phone || digits.length < 9) {
+    notifyLead(btn, 'Вкажіть, будь ласка, коректний номер телефону.');
+    return false;
+  }
+  if (!quick && (!name || !city)) {
+    notifyLead(btn, 'Будь ласка, вкажіть ваше ім\'я та населений пункт.');
+    return false;
   }
 
+  // Rate limit: не частіше 1 разу на 60 секунд
+  const lastSent = parseInt(localStorage.getItem('_lastFormSent') || '0');
+  if (Date.now() - lastSent < 60000) {
+    notifyLead(btn, 'Заявку вже надіслано — ми з вами зв\'яжемось. Повторно можна за хвилину.');
+    return false;
+  }
+
+  // Мінімальний час на сторінці: 3 секунди (захист від ботів)
+  if (Date.now() - _formLoadTime < 3000) {
+    notifyLead(btn, 'Зачекайте пару секунд і натисніть ще раз.');
+    return false;
+  }
+
+  let ok = false;
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Відправка...';
@@ -528,6 +537,7 @@ async function submitLead({ name, phone, city, product, comment, honeypot }, btn
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ name, phone, city, product, comment, _key: 'vd2026site' })
     });
+    ok = true;
     btn.textContent = '✓ Заявку надіслано!';
     btn.style.background = '#4caf50';
     localStorage.setItem('_lastFormSent', Date.now().toString());
@@ -545,6 +555,8 @@ async function submitLead({ name, phone, city, product, comment, honeypot }, btn
     btn.textContent  = originalText;
     btn.style.background = '';
   }, 4000);
+
+  return ok;
 }
 
 async function handleSubmit(btn) {
@@ -564,6 +576,44 @@ async function handleSubmit(btn) {
   }, btn, [nameEl, phoneEl, cityEl, productEl, commentEl]);
 }
 
+// Повідомлення показуємо під формою (для hero-форми) або як alert (для решти)
+function notifyLead(btn, text) {
+  const msg = btn && btn.id === 'quickBtn' ? document.getElementById('quickMsg') : null;
+  if (msg) {
+    msg.textContent = text;
+    msg.className = 'hq-msg show error';
+    return;
+  }
+  alert(text);
+}
+
+async function handleQuickSubmit(e) {
+  if (e) e.preventDefault();
+  const btn     = document.getElementById('quickBtn');
+  const phoneEl = document.getElementById('quickPhone');
+  const msg     = document.getElementById('quickMsg');
+  if (msg) { msg.textContent = ''; msg.className = 'hq-msg'; }
+
+  const ok = await submitLead({
+    name:     '',
+    phone:    (phoneEl || {}).value,
+    city:     '',
+    product:  'Потрібна консультація',
+    comment:  'Швидка заявка з головного екрана (вказано лише телефон)',
+    honeypot: (document.getElementById('_hpQuick') || {}).value || '',
+    quick:    true
+  }, btn, [phoneEl]);
+
+  if (!msg) return;
+  if (ok) {
+    msg.textContent = '✓ Дякуємо! Передзвонимо у робочий час: Пн–Пт 9:00–17:00, Сб 9:00–15:00.';
+    msg.className = 'hq-msg show ok';
+  } else if (!msg.textContent) {
+    msg.textContent = 'Не вдалося надіслати. Зателефонуйте, будь ласка: 093 833-58-60.';
+    msg.className = 'hq-msg show error';
+  }
+}
+
 async function handlePromoSubmit(btn) {
   const nameEl    = document.getElementById('promoName');
   const phoneEl   = document.getElementById('promoPhone');
@@ -578,4 +628,12 @@ async function handlePromoSubmit(btn) {
     comment:  'Знижка 10% (рекламна пропозиція)',
     honeypot: (document.getElementById('_hpPromo') || {}).value || ''
   }, btn, [nameEl, phoneEl, cityEl, productEl]);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ЛИПКА ПАНЕЛЬ З ТЕЛЕФОНАМИ
+═══════════════════════════════════════════════════════════════ */
+function trackCall(place) {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'call_click', place });
 }

@@ -213,7 +213,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=21">
 <script>if (history.scrollRestoration) history.scrollRestoration = 'manual';</script>
 </head>
 <body>
@@ -247,6 +247,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <a href="#calculator" onclick="toggleMenu()">Калькулятор</a>
     <a href="#faq" onclick="toggleMenu()">Питання</a>
     <a href="#order-form" class="mobile-cta" onclick="toggleMenu()">Замовити →</a>
+    <a href="tel:+380938335860" class="mobile-phone">📞 +38 (093) 833-58-60 — Буча</a>
+    <a href="tel:+380934680051" class="mobile-phone">📞 +38 (093) 468-00-51 — Бородянка</a>
   </div>
 </nav>
 
@@ -265,8 +267,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <span class="ht-line accent-word">преміум якості</span>
       </h1>
       <p class="hero-sub">Металопластикові конструкції з надійними профілями для вашого дому. Тепло, тихо, надійно. Професійний монтаж та великий асортимент.</p>
+      <form class="hero-quick" id="heroQuick" onsubmit="handleQuickSubmit(event)" novalidate>
+        <div class="hq-title">Залиште номер — передзвонимо і порахуємо вартість</div>
+        <div class="hq-row">
+          <input type="tel" id="quickPhone" name="phone" inputmode="tel"
+                 autocomplete="tel" placeholder="+380 (XX) XXX-XX-XX" aria-label="Номер телефону">
+          <button type="submit" class="hq-btn" id="quickBtn">Отримати розрахунок</button>
+        </div>
+        <!-- honeypot -->
+        <input type="text" id="_hpQuick" name="_hpQuick" class="hq-hp" tabindex="-1" autocomplete="off">
+        <div class="hq-msg" id="quickMsg" role="status" aria-live="polite"></div>
+        <div class="hq-note">Безкоштовно і ні до чого не зобов'язує. Номер нікому не передаємо.</div>
+      </form>
       <div class="hero-actions">
-        <a href="#order-form" class="btn-primary">Отримати розрахунок</a>
         <a href="#products" class="btn-ghost">Переглянути каталог <span>→</span></a>
       </div>
       <ul class="hero-perks">
@@ -1125,6 +1138,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 
+<!-- Липка панель з телефонами (тільки мобільний) -->
+<div class="call-bar" id="callBar">
+  <a href="tel:+380938335860" class="call-bar-btn" onclick="trackCall('Буча')">
+    <span class="cb-ic">📞</span>
+    <span class="cb-txt"><strong>Буча</strong><em>093 833-58-60</em></span>
+  </a>
+  <a href="tel:+380934680051" class="call-bar-btn" onclick="trackCall('Бородянка')">
+    <span class="cb-ic">📞</span>
+    <span class="cb-txt"><strong>Бородянка</strong><em>093 468-00-51</em></span>
+  </a>
+</div>
+
 <!-- Кнопка повернення до промо (з'являється, якщо попап закрили) -->
 <button class="promo-pill" id="promoPill" onclick="openPromo()" aria-label="Відкрити пропозицію зі знижкою 10%">
   <span class="promo-pill-ic">🔥</span> Знижка 10%
@@ -1140,6 +1165,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <option value="с. Мила">
 </datalist>
 
-<script src="script.js?v=20"></script>
+<script src="script.js?v=21"></script>
 </body>
 </html>
