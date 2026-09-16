@@ -785,50 +785,69 @@ const AUTUMN_MONTHS = [8, 9, 10];
 
   // На вузьких екранах листя менше — і щоб не з'їдало батарею, і щоб не заважало читати
   const w = window.innerWidth;
-  const count = w < 768 ? 5 : (w < 1200 ? 8 : 12);
+  const count = w < 768 ? 9 : (w < 1200 ? 15 : 22);
 
-  const shapes = [
-    'M3 21c0-9 6-16 18-18 0 11-7 18-18 18z',
-    'M12 2c5 4 8 8 8 12a8 8 0 0 1-16 0c0-4 3-8 8-12z',
-    'M4 20c2-8 8-14 16-16-2 9-7 15-16 16z'
+  // Силуети в системі координат 64×64: клен, дуб, береза, тополя, горобина
+  const SHAPES = [
+    { // клен — п'ять лопатей
+      blade: 'M32 3 37 16 48 10 44 23 58 25 48 33 56 43 42 40 43 51 32 43 21 51 22 40 8 43 16 33 6 25 20 23 16 10 27 16Z',
+      veins: 'M32 43V60 M32 43 44 23 M32 43 20 23 M32 43 32 8'
+    },
+    { // дуб — хвилясті лопаті
+      blade: 'M32 4c8 3 11 9 8 15 7-1 11 5 6 11 7 2 7 9 0 12 4 7-2 13-9 10-2 6-8 6-10 0-7 3-13-3-9-10-7-3-7-10 0-12-5-6-1-12 6-11-3-6 0-12 8-15z',
+      veins: 'M32 52v9 M32 52V8 M32 30 44 21 M32 30 20 21 M32 40 46 34 M32 40 18 34'
+    },
+    { // береза — загострений овал
+      blade: 'M32 3c13 11 19 24 15 36-3 10-9 17-15 22-6-5-12-12-15-22-4-12 2-25 15-36z',
+      veins: 'M32 61V6 M32 22 44 30 M32 22 20 30 M32 36 43 42 M32 36 21 42'
+    },
+    { // тополя — серцеподібний
+      blade: 'M32 5c14 12 24 23 24 33 0 10-10 17-24 17S8 48 8 38C8 28 18 17 32 5z',
+      veins: 'M32 55V8 M32 30 50 24 M32 30 14 24 M32 42 48 40 M32 42 16 40'
+    },
+    { // горобина — вузький листочок
+      blade: 'M32 3c8 13 12 27 8 41-2 8-5 15-8 19-3-4-6-11-8-19-4-14 0-28 8-41z',
+      veins: 'M32 62V6 M32 20 40 27 M32 20 24 27 M32 34 39 41 M32 34 25 41'
+    }
   ];
-  const veins = [
-    'M5 19.5C9.5 15 14.5 10 19.5 4.5',
-    'M12 4v14',
-    'M5.5 19C9.5 15 14 10.5 18.5 6'
-  ];
-  const colors = ['#c8a96e', '#e4c99a', '#b5763f', '#cf9b4e', '#9d6b3f'];
+
+  // Осінні кольори: золото сайту плюс вохра, мідь, іржа, багрянець
+  const COLORS = ['#c8a96e', '#e0b866', '#cf8f3c', '#b5652c', '#9c3f26', '#d9a441'];
 
   const rand = (min, max) => min + Math.random() * (max - min);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const frag = document.createDocumentFragment();
 
   for (let i = 0; i < count; i++) {
-    const shape = Math.floor(Math.random() * shapes.length);
-    const size  = rand(14, 26);
+    const shape = SHAPES[i % SHAPES.length];   // рівномірно по формах, а не випадково
+    const size  = rand(20, 40);
 
     const leaf = document.createElement('span');
     leaf.className = 'leaf';
-    leaf.style.left            = rand(0, 98) + '%';
-    leaf.style.width           = size + 'px';
-    leaf.style.height          = size + 'px';
-    leaf.style.opacity         = rand(0.2, 0.42).toFixed(2);
-    // Дрібніше листя — «далі» від глядача: легке розмиття дає глибину
-    // і не дає йому конкурувати з текстом
-    leaf.style.filter          = 'blur(' + (26 - size) / 14 + 'px)';
-    leaf.style.animationDuration = rand(14, 26).toFixed(1) + 's';
+    leaf.style.left   = rand(-2, 99) + '%';
+    leaf.style.width  = size + 'px';
+    leaf.style.height = size + 'px';
+    leaf.style.setProperty('--leaf-op', rand(0.5, 0.9).toFixed(2));
+    leaf.style.animationDuration = rand(12, 22).toFixed(1) + 's';
     // Від'ємна затримка — листя вже в польоті на момент завантаження,
-    // інакше перші 15 секунд екран порожній
-    leaf.style.animationDelay  = '-' + rand(0, 26).toFixed(1) + 's';
+    // інакше перші секунд п'ятнадцять екран порожній
+    leaf.style.animationDelay = '-' + rand(0, 22).toFixed(1) + 's';
+    // Найдрібніше злегка розмите — читається як глибина
+    if (size < 26) leaf.style.filter = 'blur(' + ((26 - size) / 18).toFixed(2) + 'px)';
 
     const inner = document.createElement('span');
     inner.className = 'leaf-inner';
-    inner.style.color              = colors[Math.floor(Math.random() * colors.length)];
-    inner.style.animationDuration  = rand(3.5, 7).toFixed(1) + 's';
-    inner.style.animationDelay     = '-' + rand(0, 7).toFixed(1) + 's';
+    inner.style.color = pick(COLORS);
+    inner.style.setProperty('--sway',  rand(14, 40).toFixed(0) + 'px');
+    inner.style.setProperty('--rot-a', rand(-180, 0).toFixed(0) + 'deg');
+    inner.style.setProperty('--rot-b', rand(0, 200).toFixed(0) + 'deg');
+    inner.style.animationDuration = rand(3, 7).toFixed(1) + 's';
+    inner.style.animationDelay    = '-' + rand(0, 7).toFixed(1) + 's';
     inner.innerHTML =
-      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path fill="currentColor" d="' + shapes[shape] + '"/>' +
-        '<path d="' + veins[shape] + '" fill="none" stroke="rgba(0,0,0,0.22)" stroke-width="0.9"/>' +
+      '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+        '<path fill="currentColor" d="' + shape.blade + '"/>' +
+        '<path d="' + shape.veins + '" fill="none" stroke="rgba(0,0,0,0.25)" ' +
+              'stroke-width="1.6" stroke-linecap="round"/>' +
       '</svg>';
 
     leaf.appendChild(inner);
@@ -839,7 +858,6 @@ const AUTUMN_MONTHS = [8, 9, 10];
 
   // У фоновій вкладці анімації не крутимо
   document.addEventListener('visibilitychange', () => {
-    layer.style.animationPlayState = '';
     layer.querySelectorAll('.leaf, .leaf-inner').forEach(el => {
       el.style.animationPlayState = document.hidden ? 'paused' : 'running';
     });

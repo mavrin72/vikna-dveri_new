@@ -1689,23 +1689,18 @@ textarea { resize:vertical; min-height:100px; }
   will-change:transform;
 }
 .leaf svg { display:block; width:100%; height:100%; }
+/* Прозорість береться зі змінної: анімація перебиває inline-стиль,
+   тому задавати opacity окремо на елементі марно */
 @keyframes leafFall {
   0%   { transform:translateY(0);     opacity:0; }
-  8%   { opacity:1; }
-  88%  { opacity:1; }
-  100% { transform:translateY(118vh); opacity:0; }
+  7%   { opacity:var(--leaf-op,0.6); }
+  90%  { opacity:var(--leaf-op,0.6); }
+  100% { transform:translateY(120vh); opacity:0; }
 }
+/* Кут і розмах гойдання — теж змінні, щоб кожен листок падав по-своєму */
 @keyframes leafSway {
-  from { transform:translateX(-26px) rotate(-38deg); }
-  to   { transform:translateX(26px)  rotate(42deg); }
-}
-
-/* Менше листя і слабший рух там, де екран вужчий */
-@media (max-width:768px) {
-  @keyframes leafSway {
-    from { transform:translateX(-14px) rotate(-30deg); }
-    to   { transform:translateX(14px)  rotate(34deg); }
-  }
+  from { transform:translateX(calc(var(--sway,24px) * -1)) rotate(var(--rot-a,-40deg)); }
+  to   { transform:translateX(var(--sway,24px))            rotate(var(--rot-b,40deg)); }
 }
 
 /* Якщо в системі вимкнено анімації — шару взагалі немає (див. також script.js) */
