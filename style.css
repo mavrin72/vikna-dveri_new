@@ -1696,16 +1696,10 @@ textarea { resize:vertical; min-height:100px; }
   }
   .ev-bar-text strong { color:#ffd200; font-weight:600; }
 
-  .ev-bar-call {
-    position:relative; z-index:1; flex-shrink:0;
-    display:inline-flex; align-items:center; gap:6px;
-    padding:8px 10px; border-radius:3px;
-    border:1px solid rgba(255,210,0,0.4);
-    background:rgba(255,210,0,0.08);
-    color:#ffd200; text-decoration:none;
-    font-size:0.72rem; font-weight:600; white-space:nowrap;
+  .ev-bar-go {
+    color:#ffd200; font-size:0.8rem; line-height:1; flex-shrink:0;
+    animation:evBarNudge 2.6s ease-in-out infinite;
   }
-  .ev-bar-call:active { background:rgba(255,210,0,0.2); }
 
   .ev-bar-close {
     position:relative; z-index:1; flex-shrink:0;
@@ -1738,20 +1732,23 @@ html.ev-hidden .ev-bar { display:none; }
   0%, 74% { transform:translateX(-160%); }
   100%    { transform:translateX(420%); }
 }
+@keyframes evBarNudge {
+  0%, 100% { transform:translateX(0); }
+  50%      { transform:translateX(3px); }
+}
 @media (prefers-reduced-motion:reduce) {
   .ev-bar::after { animation:none; opacity:0; }
+  .ev-bar-go { animation:none; }
 }
 
 /* Вузькі екрани: спершу коротшає підпис, потім ховається номер біля трубки */
-@media (max-width:440px) {
+@media (max-width:380px) {
   .evb-long  { display:none; }
   .evb-short { display:inline; }
 }
-@media (max-width:370px) {
+@media (max-width:340px) {
   .ev-bar { gap:6px; padding:7px 6px 7px 9px; }
   .ev-bar-text { font-size:0.73rem; }
-  .ev-bar-call-num { display:none; }
-  .ev-bar-call { padding:8px 8px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
