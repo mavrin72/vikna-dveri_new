@@ -765,3 +765,83 @@ document.addEventListener('click', e => {
   if (!wrap) closeAreas();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAreas(); });
+
+/* ═══════════════════════════════════════════════════════════════
+   ОСІННЄ ЛИСТЯ
+   Вмикається саме восени (вересень–листопад) і вимикається саме.
+   AUTUMN_MONTHS — місяці, 0 = січень. Щоб показувати цілий рік,
+   впишіть [0,1,2,3,4,5,6,7,8,9,10,11]; щоб вимкнути — [].
+═══════════════════════════════════════════════════════════════ */
+const AUTUMN_MONTHS = [8, 9, 10];
+
+(function initLeaves() {
+  const layer = document.getElementById('leaves');
+  if (!layer) return;
+
+  // Поважаємо системне «зменшити рух» — людині з вестибулярними
+  // порушеннями падаюче листя робить сайт непридатним
+  const calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (calm || !AUTUMN_MONTHS.includes(new Date().getMonth())) return;
+
+  // На вузьких екранах листя менше — і щоб не з'їдало батарею, і щоб не заважало читати
+  const w = window.innerWidth;
+  const count = w < 768 ? 5 : (w < 1200 ? 8 : 12);
+
+  const shapes = [
+    'M3 21c0-9 6-16 18-18 0 11-7 18-18 18z',
+    'M12 2c5 4 8 8 8 12a8 8 0 0 1-16 0c0-4 3-8 8-12z',
+    'M4 20c2-8 8-14 16-16-2 9-7 15-16 16z'
+  ];
+  const veins = [
+    'M5 19.5C9.5 15 14.5 10 19.5 4.5',
+    'M12 4v14',
+    'M5.5 19C9.5 15 14 10.5 18.5 6'
+  ];
+  const colors = ['#c8a96e', '#e4c99a', '#b5763f', '#cf9b4e', '#9d6b3f'];
+
+  const rand = (min, max) => min + Math.random() * (max - min);
+  const frag = document.createDocumentFragment();
+
+  for (let i = 0; i < count; i++) {
+    const shape = Math.floor(Math.random() * shapes.length);
+    const size  = rand(14, 26);
+
+    const leaf = document.createElement('span');
+    leaf.className = 'leaf';
+    leaf.style.left            = rand(0, 98) + '%';
+    leaf.style.width           = size + 'px';
+    leaf.style.height          = size + 'px';
+    leaf.style.opacity         = rand(0.2, 0.42).toFixed(2);
+    // Дрібніше листя — «далі» від глядача: легке розмиття дає глибину
+    // і не дає йому конкурувати з текстом
+    leaf.style.filter          = 'blur(' + (26 - size) / 14 + 'px)';
+    leaf.style.animationDuration = rand(14, 26).toFixed(1) + 's';
+    // Від'ємна затримка — листя вже в польоті на момент завантаження,
+    // інакше перші 15 секунд екран порожній
+    leaf.style.animationDelay  = '-' + rand(0, 26).toFixed(1) + 's';
+
+    const inner = document.createElement('span');
+    inner.className = 'leaf-inner';
+    inner.style.color              = colors[Math.floor(Math.random() * colors.length)];
+    inner.style.animationDuration  = rand(3.5, 7).toFixed(1) + 's';
+    inner.style.animationDelay     = '-' + rand(0, 7).toFixed(1) + 's';
+    inner.innerHTML =
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path fill="currentColor" d="' + shapes[shape] + '"/>' +
+        '<path d="' + veins[shape] + '" fill="none" stroke="rgba(0,0,0,0.22)" stroke-width="0.9"/>' +
+      '</svg>';
+
+    leaf.appendChild(inner);
+    frag.appendChild(leaf);
+  }
+
+  layer.appendChild(frag);
+
+  // У фоновій вкладці анімації не крутимо
+  document.addEventListener('visibilitychange', () => {
+    layer.style.animationPlayState = '';
+    layer.querySelectorAll('.leaf, .leaf-inner').forEach(el => {
+      el.style.animationPlayState = document.hidden ? 'paused' : 'running';
+    });
+  });
+})();

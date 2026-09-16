@@ -1670,6 +1670,50 @@ textarea { resize:vertical; min-height:100px; }
 .form-submit:hover { background:var(--accent-lt); transform:translateY(-2px); box-shadow:0 10px 30px rgba(200,169,110,0.25); }
 
 /* ═══════════════════════════════════════════════════════════════
+   ОСІННЄ ЛИСТЯ
+   Шар над контентом, але під навігацією (500) і модалками (2000+),
+   щоб листя не перекривало меню, попап і кнопки дзвінка.
+═══════════════════════════════════════════════════════════════ */
+.leaves {
+  position:fixed; inset:0; z-index:400;
+  overflow:hidden; pointer-events:none;
+}
+.leaf {
+  position:absolute; top:-12vh; will-change:transform;
+  animation:leafFall linear infinite;
+}
+/* Падіння і розгойдування — різні елементи, бо обидва анімують transform */
+.leaf-inner {
+  display:block; width:100%; height:100%;
+  animation:leafSway ease-in-out infinite alternate;
+  will-change:transform;
+}
+.leaf svg { display:block; width:100%; height:100%; }
+@keyframes leafFall {
+  0%   { transform:translateY(0);     opacity:0; }
+  8%   { opacity:1; }
+  88%  { opacity:1; }
+  100% { transform:translateY(118vh); opacity:0; }
+}
+@keyframes leafSway {
+  from { transform:translateX(-26px) rotate(-38deg); }
+  to   { transform:translateX(26px)  rotate(42deg); }
+}
+
+/* Менше листя і слабший рух там, де екран вужчий */
+@media (max-width:768px) {
+  @keyframes leafSway {
+    from { transform:translateX(-14px) rotate(-30deg); }
+    to   { transform:translateX(14px)  rotate(34deg); }
+  }
+}
+
+/* Якщо в системі вимкнено анімації — шару взагалі немає (див. також script.js) */
+@media (prefers-reduced-motion:reduce) {
+  .leaves { display:none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    FOOTER
 ═══════════════════════════════════════════════════════════════ */
 footer { background:#040c18; border-top:1px solid var(--border-d); }
