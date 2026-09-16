@@ -1231,6 +1231,165 @@ nav.scrolled {
 .measure-point p { font-size:0.9rem; line-height:1.65; color:var(--muted); }
 
 /* ═══════════════════════════════════════════════════════════════
+   єВІДНОВЛЕННЯ
+═══════════════════════════════════════════════════════════════ */
+/* Міні-знак програми (плитки синій/жовтий) — у навігації, герої, футері, секції */
+.ev-mark {
+  display:inline-grid; grid-template-columns:repeat(2,8px);
+  grid-template-rows:repeat(2,8px); gap:2px;
+  flex-shrink:0; vertical-align:middle;
+}
+.ev-mark i { border-radius:2px; background:#2f6fe0; }
+.ev-mark i:nth-child(2), .ev-mark i:nth-child(3) { background:#ffd200; }
+
+/* Пункт у навігації */
+.nav-links .nav-ev a {
+  color:#ffd76a; display:inline-flex; align-items:center; gap:7px;
+}
+.nav-links .nav-ev a::before {
+  content:''; width:6px; height:6px; border-radius:50%;
+  background:#ffd200; box-shadow:0 0 0 3px rgba(255,210,0,0.18);
+  flex-shrink:0;
+}
+.nav-links .nav-ev a:hover { color:#ffe9a8; }
+.mobile-nav .mobile-ev { color:#ffd76a; }
+.mobile-nav .mobile-ev:hover { color:#ffe9a8; }
+
+/* Перк у герої */
+.hero-perks .hp-ev a {
+  color:rgba(245,242,237,0.72); text-decoration:none;
+  display:inline-flex; align-items:center; gap:8px;
+  transition:color .25s;
+}
+.hero-perks .hp-ev a:hover { color:#ffd76a; }
+
+/* Секція */
+.evidn {
+  background:linear-gradient(135deg,#061634 0%,#0c2a5e 55%,#08203f 100%);
+  padding:100px 80px; position:relative; overflow:hidden;
+}
+.evidn::before {
+  content:''; position:absolute; right:-8%; bottom:-35%;
+  width:560px; height:560px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,210,0,0.13) 0%, transparent 62%);
+  pointer-events:none;
+}
+.evidn-inner {
+  position:relative; z-index:1;
+  max-width:1280px; margin:0 auto;
+  display:grid; grid-template-columns:1fr 1.05fr; gap:64px;
+  align-items:center;
+}
+.evidn-badge {
+  display:inline-flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,210,0,0.32);
+  border-radius:3px; padding:8px 14px;
+  margin-bottom:22px;
+}
+.evidn-badge-text {
+  color:var(--white); font-size:0.9rem; font-weight:600;
+  letter-spacing:0.4px;
+}
+.evidn-copy .section-title { color:var(--white); }
+.evidn-copy .section-sub {
+  color:rgba(245,242,237,0.6); max-width:470px; margin-bottom:34px;
+}
+.evidn-actions { display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+.evidn-call {
+  color:var(--white); border-color:rgba(245,242,237,0.3);
+  display:inline-flex; align-items:center; gap:8px;
+}
+.evidn-note {
+  margin-top:26px; max-width:470px;
+  font-size:0.88rem; line-height:1.7; color:rgba(245,242,237,0.48);
+}
+.evidn-steps {
+  list-style:none; display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px;
+  background:rgba(255,255,255,0.12);
+  border:1px solid rgba(255,255,255,0.12);
+}
+.evidn-step {
+  background:rgba(6,18,42,0.78); padding:32px 28px;
+  transition:background .3s;
+}
+.evidn-step:hover { background:rgba(12,38,82,0.9); }
+.evidn-step-n {
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.6rem; line-height:1; font-weight:700;
+  color:rgba(255,210,0,0.5); margin-bottom:12px;
+}
+.evidn-step h4 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.3rem; font-weight:600; color:var(--white);
+  margin-bottom:10px; line-height:1.25;
+}
+.evidn-step p { font-size:0.9rem; line-height:1.65; color:rgba(245,242,237,0.55); }
+
+/* Чекбокс у формі замовлення */
+.form-group.form-ev { margin-bottom:20px; }
+label.ev-check {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:0; cursor:pointer;
+  text-transform:none; letter-spacing:0.2px;
+  font-size:0.9rem; color:rgba(245,242,237,0.75);
+}
+label.ev-check input { position:absolute; opacity:0; width:0; height:0; }
+.ev-check-box {
+  width:20px; height:20px; flex-shrink:0;
+  border:1px solid rgba(245,242,237,0.28); border-radius:2px;
+  background:rgba(255,255,255,0.04);
+  position:relative; transition:border-color .2s, background .2s;
+}
+.ev-check-box::after {
+  content:''; position:absolute; left:6px; top:2px;
+  width:5px; height:10px; opacity:0;
+  border:solid var(--navy); border-width:0 2px 2px 0;
+  transform:rotate(45deg); transition:opacity .2s;
+}
+label.ev-check:hover .ev-check-box { border-color:var(--accent); }
+label.ev-check input:checked + .ev-check-box {
+  background:var(--accent); border-color:var(--accent);
+}
+label.ev-check input:checked + .ev-check-box::after { opacity:1; }
+label.ev-check input:focus-visible + .ev-check-box { outline:2px solid var(--accent-lt); outline-offset:2px; }
+.ev-check-text { line-height:1.5; }
+
+/* Футер */
+.footer-ev {
+  display:inline-flex; align-items:center; gap:9px;
+  align-self:flex-start; margin-top:2px; text-decoration:none;
+  font-size:0.85rem; line-height:1.5;
+  color:rgba(245,242,237,0.6);
+  border:1px solid rgba(255,210,0,0.28); border-radius:3px;
+  padding:9px 13px; transition:color .25s, border-color .25s;
+}
+.footer-ev:hover { color:#ffd76a; border-color:rgba(255,210,0,0.55); }
+
+/* Навігація не має ламатись через сьомий пункт */
+@media (max-width:1400px) {
+  .nav-inner { padding:22px 40px; }
+  .nav-links { gap:22px; }
+  .nav-links a { font-size:0.76rem; letter-spacing:1.1px; }
+  .nav-cta { padding:10px 20px; font-size:0.78rem; letter-spacing:1.1px; }
+}
+@media (max-width:1120px) {
+  .nav-inner { padding:20px 28px; }
+  .nav-links { gap:14px; }
+  .nav-links a { font-size:0.72rem; letter-spacing:0.7px; }
+  .nav-links .nav-ev a { gap:5px; }
+  .nav-cta { padding:9px 16px; font-size:0.74rem; letter-spacing:0.8px; }
+}
+/* Нижче 1000px горизонтальне меню вже не вміщалось (логотип і кнопка
+   налазили одне на одне) — переходимо на бургер раніше */
+@media (max-width:1000px) {
+  .nav-links { display:none; }
+  .nav-cta { display:none; }
+  .hamburger { display:flex; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    FAQ
 ═══════════════════════════════════════════════════════════════ */
 .faq { background:var(--cream); padding:100px 80px; }
@@ -1585,6 +1744,8 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
 
 @media (max-width:900px) {
   .measure-inner { grid-template-columns:1fr; gap:40px; }
+  .evidn-inner { grid-template-columns:1fr; gap:40px; }
+  .evidn-copy .section-sub, .evidn-note { max-width:none; }
   .measure-copy .section-sub { max-width:none; }
   .hero-body { grid-template-columns:1fr; padding:120px 32px 60px; }
   .hero-visual { display:none; }
@@ -1607,6 +1768,8 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   .ft-section { padding:80px 32px; }
   .service-area { padding:80px 32px; }
   .process { padding:80px 32px; }
+  .evidn { padding:80px 32px; }
+  .evidn-steps { grid-template-columns:1fr; }
   .process-steps { grid-template-columns:1fr; }
   .step { border-right:none; border-bottom:1px solid var(--border-d); }
   .step:last-child { border-bottom:none; }
@@ -1637,9 +1800,6 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   .measure-actions .btn-outline { width:100%; text-align:center; justify-content:center; }
   .hero-perks { gap:8px 18px; }
   .nav-inner { padding:18px 24px; }
-  .nav-links { display:none; }
-  .nav-cta { display:none; }
-  .hamburger { display:flex; }
   .products-header { padding:0 24px; }
   .products { padding:60px 0 0; }
   .gallery-grid { grid-template-columns:1fr 1fr; }
@@ -1703,6 +1863,8 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   .why-us { padding:60px 20px; }
   .service-area { padding:60px 20px; }
   .process { padding:60px 20px; }
+  .evidn { padding:60px 20px; }
+  .evidn-step { padding:26px 20px; }
   .calculator-section { padding:60px 20px; }
   .calc-tab { font-size:0.8rem; padding:9px 10px; }
   .result-card { padding:28px 20px; }

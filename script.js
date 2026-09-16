@@ -587,15 +587,24 @@ async function handleSubmit(btn) {
   const cityEl    = document.getElementById('clientCity');
   const productEl = document.getElementById('clientProduct');
   const commentEl = document.getElementById('clientComment');
+  const evEl      = document.getElementById('clientEv');
 
-  await submitLead({
+  // Позначка «єВідновлення» йде першим рядком коментаря, щоб менеджер побачив одразу
+  const rawComment = (commentEl || {}).value?.trim() || '';
+  const comment = evEl && evEl.checked
+    ? (rawComment ? 'Програма єВідновлення · ' + rawComment : 'Програма єВідновлення')
+    : rawComment;
+
+  const ok = await submitLead({
     name:     (nameEl    || {}).value,
     phone:    (phoneEl   || {}).value,
     city:     (cityEl    || {}).value,
     product:  (productEl || {}).value || 'Не обрано',
-    comment:  (commentEl || {}).value?.trim() || '',
+    comment:  comment,
     honeypot: (document.getElementById('_hp') || {}).value || ''
   }, btn, [nameEl, phoneEl, cityEl, productEl, commentEl]);
+
+  if (ok && evEl) evEl.checked = false;
 }
 
 // Повідомлення показуємо під формою (для hero-форми) або як alert (для решти)
