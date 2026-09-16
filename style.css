@@ -1672,54 +1672,86 @@ textarea { resize:vertical; min-height:100px; }
 /* Смужка «єВідновлення» у шапці — тільки там, де меню згорнуте в бургер
    і пункту «єВідновлення» не видно */
 .ev-bar { display:none; }
+.evb-short { display:none; }
+
 @media (max-width:1000px) {
   .ev-bar {
-    display:flex; align-items:center; justify-content:center; gap:9px;
-    padding:9px 14px; text-decoration:none;
+    display:flex; align-items:center; gap:8px;
+    padding:7px 8px 7px 12px;
     background:linear-gradient(90deg,#0a2657 0%,#14407f 50%,#0a2657 100%);
     border-bottom:1px solid rgba(255,210,0,0.45);
     position:relative; overflow:hidden;
     -webkit-tap-highlight-color:transparent;
   }
-  .ev-bar .ev-mark { position:relative; z-index:1; }
-  .ev-bar-text {
+  .ev-bar-main {
+    flex:1; min-width:0;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    text-decoration:none; padding:2px 0;
     position:relative; z-index:1;
+  }
+  .ev-bar-text {
     color:rgba(255,255,255,0.88); font-size:0.78rem;
     letter-spacing:0.2px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
   }
   .ev-bar-text strong { color:#ffd200; font-weight:600; }
-  .ev-bar-go {
-    position:relative; z-index:1;
-    color:#ffd200; font-size:0.8rem; line-height:1;
-    animation:evBarNudge 2.6s ease-in-out infinite;
+
+  .ev-bar-call {
+    position:relative; z-index:1; flex-shrink:0;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 10px; border-radius:3px;
+    border:1px solid rgba(255,210,0,0.4);
+    background:rgba(255,210,0,0.08);
+    color:#ffd200; text-decoration:none;
+    font-size:0.72rem; font-weight:600; white-space:nowrap;
   }
+  .ev-bar-call:active { background:rgba(255,210,0,0.2); }
+
+  .ev-bar-close {
+    position:relative; z-index:1; flex-shrink:0;
+    background:none; border:none; cursor:pointer;
+    color:rgba(255,255,255,0.45); font-size:1.15rem; line-height:1;
+    /* Від'ємні поля лишають смужку тонкою, але дають пальцю нормальну ціль */
+    padding:11px 9px; margin:-9px -3px; font-family:'DM Sans',sans-serif;
+  }
+  .ev-bar-close:active { color:#fff; }
+
   /* Блік раз на кілька секунд — щоб смужка ловила око, але не миготіла */
   .ev-bar::after {
     content:''; position:absolute; top:0; bottom:0; left:0; width:40%;
     background:linear-gradient(100deg,transparent,rgba(255,255,255,0.14),transparent);
-    transform:translateX(-160%);
+    transform:translateX(-160%); pointer-events:none;
     animation:evBarShine 7s ease-in-out infinite;
   }
-  .ev-bar:active { background:linear-gradient(90deg,#0d2f6b 0%,#1a4c94 50%,#0d2f6b 100%); }
 
   /* Шапка стала вищою — якір не має ховатись під нею */
-  [id] { scroll-margin-top:118px; }
+  [id] { scroll-margin-top:128px; }
 }
+
+/* Смужку закрили — прибираємо і компенсацію висоти разом з нею */
+html.ev-hidden .ev-bar { display:none; }
+@media (max-width:1000px) {
+  html.ev-hidden [id] { scroll-margin-top:84px; }
+}
+
 @keyframes evBarShine {
   0%, 74% { transform:translateX(-160%); }
   100%    { transform:translateX(420%); }
 }
-@keyframes evBarNudge {
-  0%, 100% { transform:translateX(0); }
-  50%      { transform:translateX(3px); }
-}
 @media (prefers-reduced-motion:reduce) {
   .ev-bar::after { animation:none; opacity:0; }
-  .ev-bar-go { animation:none; }
 }
-@media (max-width:360px) {
-  .ev-bar { gap:7px; padding:8px 10px; }
-  .ev-bar-text { font-size:0.72rem; }
+
+/* Вузькі екрани: спершу коротшає підпис, потім ховається номер біля трубки */
+@media (max-width:440px) {
+  .evb-long  { display:none; }
+  .evb-short { display:inline; }
+}
+@media (max-width:370px) {
+  .ev-bar { gap:6px; padding:7px 6px 7px 9px; }
+  .ev-bar-text { font-size:0.73rem; }
+  .ev-bar-call-num { display:none; }
+  .ev-bar-call { padding:8px 8px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1999,5 +2031,11 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
    не має ховатись під нею. Правила в кінці файлу, щоб перекрити
    базові padding-и першого екрана.
 ═══════════════════════════════════════════════════════════════ */
-@media (max-width:1000px) { .hero-body { padding-top:146px; } }
-@media (max-width:480px)  { .hero-body { padding-top:128px; } }
+@media (max-width:1000px) {
+  .hero-body { padding-top:146px; }
+  html.ev-hidden .hero-body { padding-top:110px; }
+}
+@media (max-width:480px) {
+  .hero-body { padding-top:128px; }
+  html.ev-hidden .hero-body { padding-top:96px; }
+}

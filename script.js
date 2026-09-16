@@ -9,6 +9,14 @@ window.addEventListener('scroll', () => {
 /* ═══════════════════════════════════════════════════════════════
    MOBILE MENU
 ═══════════════════════════════════════════════════════════════ */
+/* Смужка «єВідновлення»: закривається на сесію.
+   sessionStorage, а не localStorage — наступного разу людина побачить її знову,
+   але в межах одного візиту не дратуватиме. */
+function closeEvBar() {
+  document.documentElement.classList.add('ev-hidden');
+  try { sessionStorage.setItem('_evBarClosed', '1'); } catch (e) {}
+}
+
 // Смужка «єВідновлення» веде до секції — якщо меню відкрите, згортаємо його,
 // бо інакше воно лишиться поверх того, куди людина щойно перейшла
 function closeMenuIfOpen() {
