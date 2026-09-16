@@ -9,6 +9,13 @@ window.addEventListener('scroll', () => {
 /* ═══════════════════════════════════════════════════════════════
    MOBILE MENU
 ═══════════════════════════════════════════════════════════════ */
+// Смужка «єВідновлення» веде до секції — якщо меню відкрите, згортаємо його,
+// бо інакше воно лишиться поверх того, куди людина щойно перейшла
+function closeMenuIfOpen() {
+  const menu = document.getElementById('mobileNav');
+  if (menu && menu.classList.contains('open')) toggleMenu();
+}
+
 function toggleMenu() {
   const menu = document.getElementById('mobileNav');
   const btn  = document.getElementById('hamburger');

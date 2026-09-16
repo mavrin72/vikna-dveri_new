@@ -1669,6 +1669,59 @@ textarea { resize:vertical; min-height:100px; }
 }
 .form-submit:hover { background:var(--accent-lt); transform:translateY(-2px); box-shadow:0 10px 30px rgba(200,169,110,0.25); }
 
+/* Смужка «єВідновлення» у шапці — тільки там, де меню згорнуте в бургер
+   і пункту «єВідновлення» не видно */
+.ev-bar { display:none; }
+@media (max-width:1000px) {
+  .ev-bar {
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    padding:9px 14px; text-decoration:none;
+    background:linear-gradient(90deg,#0a2657 0%,#14407f 50%,#0a2657 100%);
+    border-bottom:1px solid rgba(255,210,0,0.45);
+    position:relative; overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .ev-bar .ev-mark { position:relative; z-index:1; }
+  .ev-bar-text {
+    position:relative; z-index:1;
+    color:rgba(255,255,255,0.88); font-size:0.78rem;
+    letter-spacing:0.2px; white-space:nowrap;
+  }
+  .ev-bar-text strong { color:#ffd200; font-weight:600; }
+  .ev-bar-go {
+    position:relative; z-index:1;
+    color:#ffd200; font-size:0.8rem; line-height:1;
+    animation:evBarNudge 2.6s ease-in-out infinite;
+  }
+  /* Блік раз на кілька секунд — щоб смужка ловила око, але не миготіла */
+  .ev-bar::after {
+    content:''; position:absolute; top:0; bottom:0; left:0; width:40%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,0.14),transparent);
+    transform:translateX(-160%);
+    animation:evBarShine 7s ease-in-out infinite;
+  }
+  .ev-bar:active { background:linear-gradient(90deg,#0d2f6b 0%,#1a4c94 50%,#0d2f6b 100%); }
+
+  /* Шапка стала вищою — якір не має ховатись під нею */
+  [id] { scroll-margin-top:118px; }
+}
+@keyframes evBarShine {
+  0%, 74% { transform:translateX(-160%); }
+  100%    { transform:translateX(420%); }
+}
+@keyframes evBarNudge {
+  0%, 100% { transform:translateX(0); }
+  50%      { transform:translateX(3px); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .ev-bar::after { animation:none; opacity:0; }
+  .ev-bar-go { animation:none; }
+}
+@media (max-width:360px) {
+  .ev-bar { gap:7px; padding:8px 10px; }
+  .ev-bar-text { font-size:0.72rem; }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    ОСІННЄ ЛИСТЯ
    Шар над контентом, але під навігацією (500) і модалками (2000+),
@@ -1940,3 +1993,11 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   .hstat { padding:8px 6px; }
   .hstat-n { font-size:1.6rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Смужка «єВідновлення» робить шапку вищою — перший екран
+   не має ховатись під нею. Правила в кінці файлу, щоб перекрити
+   базові padding-и першого екрана.
+═══════════════════════════════════════════════════════════════ */
+@media (max-width:1000px) { .hero-body { padding-top:146px; } }
+@media (max-width:480px)  { .hero-body { padding-top:128px; } }
