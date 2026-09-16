@@ -1671,59 +1671,67 @@ textarea { resize:vertical; min-height:100px; }
 
 /* Смужка «єВідновлення» у шапці — тільки там, де меню згорнуте в бургер
    і пункту «єВідновлення» не видно */
-.ev-bar { display:none; }
 .evb-short { display:none; }
 
+.ev-bar {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 22px;
+  background:linear-gradient(90deg,#0a2657 0%,#14407f 50%,#0a2657 100%);
+  border-bottom:1px solid rgba(255,210,0,0.45);
+  position:relative; overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+.ev-bar-main {
+  flex:1; min-width:0;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  text-decoration:none; padding:2px 0;
+  position:relative; z-index:1;
+}
+.ev-bar-text {
+  color:rgba(255,255,255,0.88); font-size:0.82rem;
+  letter-spacing:0.3px; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis;
+  transition:color .25s;
+}
+.ev-bar-text strong { color:#ffd200; font-weight:600; }
+.ev-bar-main:hover .ev-bar-text { color:#fff; }
+
+.ev-bar-go {
+  color:#ffd200; font-size:0.85rem; line-height:1; flex-shrink:0;
+  animation:evBarNudge 2.6s ease-in-out infinite;
+}
+
+.ev-bar-close {
+  position:relative; z-index:1; flex-shrink:0;
+  background:none; border:none; cursor:pointer;
+  color:rgba(255,255,255,0.45); font-size:1.15rem; line-height:1;
+  /* Від'ємні поля лишають смужку тонкою, але дають пальцю нормальну ціль */
+  padding:11px 9px; margin:-9px -3px; font-family:'DM Sans',sans-serif;
+  transition:color .2s;
+}
+.ev-bar-close:hover, .ev-bar-close:active { color:#fff; }
+
+/* Блік раз на кілька секунд — щоб смужка ловила око, але не миготіла */
+.ev-bar::after {
+  content:''; position:absolute; top:0; bottom:0; left:0; width:40%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,0.14),transparent);
+  transform:translateX(-160%); pointer-events:none;
+  animation:evBarShine 7s ease-in-out infinite;
+}
+
+/* Шапка зі смужкою вища — якір не має ховатись під нею */
+[id] { scroll-margin-top:136px; }
+
 @media (max-width:1000px) {
-  .ev-bar {
-    display:flex; align-items:center; gap:8px;
-    padding:7px 8px 7px 12px;
-    background:linear-gradient(90deg,#0a2657 0%,#14407f 50%,#0a2657 100%);
-    border-bottom:1px solid rgba(255,210,0,0.45);
-    position:relative; overflow:hidden;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .ev-bar-main {
-    flex:1; min-width:0;
-    display:flex; align-items:center; justify-content:center; gap:9px;
-    text-decoration:none; padding:2px 0;
-    position:relative; z-index:1;
-  }
-  .ev-bar-text {
-    color:rgba(255,255,255,0.88); font-size:0.78rem;
-    letter-spacing:0.2px; white-space:nowrap;
-    overflow:hidden; text-overflow:ellipsis;
-  }
-  .ev-bar-text strong { color:#ffd200; font-weight:600; }
-
-  .ev-bar-go {
-    color:#ffd200; font-size:0.8rem; line-height:1; flex-shrink:0;
-    animation:evBarNudge 2.6s ease-in-out infinite;
-  }
-
-  .ev-bar-close {
-    position:relative; z-index:1; flex-shrink:0;
-    background:none; border:none; cursor:pointer;
-    color:rgba(255,255,255,0.45); font-size:1.15rem; line-height:1;
-    /* Від'ємні поля лишають смужку тонкою, але дають пальцю нормальну ціль */
-    padding:11px 9px; margin:-9px -3px; font-family:'DM Sans',sans-serif;
-  }
-  .ev-bar-close:active { color:#fff; }
-
-  /* Блік раз на кілька секунд — щоб смужка ловила око, але не миготіла */
-  .ev-bar::after {
-    content:''; position:absolute; top:0; bottom:0; left:0; width:40%;
-    background:linear-gradient(100deg,transparent,rgba(255,255,255,0.14),transparent);
-    transform:translateX(-160%); pointer-events:none;
-    animation:evBarShine 7s ease-in-out infinite;
-  }
-
-  /* Шапка стала вищою — якір не має ховатись під нею */
+  .ev-bar { gap:8px; padding:7px 8px 7px 12px; }
+  .ev-bar-text { font-size:0.78rem; letter-spacing:0.2px; }
+  .ev-bar-go { font-size:0.8rem; }
   [id] { scroll-margin-top:128px; }
 }
 
 /* Смужку закрили — прибираємо і компенсацію висоти разом з нею */
 html.ev-hidden .ev-bar { display:none; }
+html.ev-hidden [id] { scroll-margin-top:80px; }
 @media (max-width:1000px) {
   html.ev-hidden [id] { scroll-margin-top:84px; }
 }
@@ -2028,6 +2036,12 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
    не має ховатись під нею. Правила в кінці файлу, щоб перекрити
    базові padding-и першого екрана.
 ═══════════════════════════════════════════════════════════════ */
+.hero-body { padding-top:166px; }
+html.ev-hidden .hero-body { padding-top:124px; }
+@media (min-width:901px) and (max-height:1000px) {
+  .hero-body { padding-top:146px; }
+  html.ev-hidden .hero-body { padding-top:104px; }
+}
 @media (max-width:1000px) {
   .hero-body { padding-top:146px; }
   html.ev-hidden .hero-body { padding-top:110px; }
