@@ -287,7 +287,38 @@ CITIES = [
     },
 ]
 
-KIND_SCHEMA = {'місто': 'City', 'селище': 'Place', 'село': 'Place'}
+KIND_SCHEMA = {'місто': 'City', 'селище': 'Place', 'село': 'Place', 'район': 'AdministrativeArea'}
+
+# Сторінка району — «батьківська» для сторінок міст (хлібні крихти, посилання)
+DISTRICT = {
+    'slug': 'buchanskyi-raion', 'name': 'Бучанський район', 'loc': 'у Бучанському районі',
+    'gen': 'Бучанського району', 'kind': 'район', 'store': 'bucha', 'district': True,
+    'title': 'Вікна та двері в Бучанському районі Київської області — від 3200 ₴ з монтажем',
+    'desc': 'Металопластикові вікна, вхідні двері, балконні блоки та ролети по Бучанському району Київської області: Буча, Ірпінь, Бородянка, Гостомель, Білогородка, Дмитрівка, Мила. Два магазини, безкоштовний замір, гарантія 5–10 років, єВідновлення.',
+    'lead': 'Два магазини — у Бучі та Бородянці — і власні монтажні бригади, які виїжджають по всьому району.',
+    'intro': [
+        'Ми працюємо в Бучанському районі Київської області з 2018 року. Маємо два магазини — у Бучі на вул. Левка Лук\'яненка, 7 та в Бородянці на вул. Парковій, 2Б — і 4 власні монтажні бригади, тож замовлення з будь-якого куточка району обслуговує найближчий до вас магазин.',
+        'Виготовляємо та встановлюємо металопластикові вікна, вхідні двері, балконні блоки й захисні ролети в квартирах, новобудовах, приватних будинках і котеджах. Працюємо з профілями SALAMANDER, VEKA, WDS, GLASSO та VIKNAROFF і фурнітурою Maco, Siegenia, Axor.',
+        'Безкоштовний замір і доставка діють у Бучі, Ірпені, Бородянці, Гостомелі, Білогородці, Дмитрівці та селі Мила. В інші населені пункти району теж виїжджаємо — умови виїзду менеджер узгодить з вами телефоном.',
+    ],
+    'points': [
+        ('Два магазини в районі', 'Зразки профілів, фурнітури й ламінації можна подивитися в Бучі або Бородянці — обирайте, куди ближче.'),
+        ('Власні бригади', '4 монтажні бригади без субпідрядників. Одне вікно встановлюємо за 1,5–2 години, тому черга на монтаж коротка.'),
+        ('Відновлення житла', 'Район сильно постраждав у 2022 році. Працюємо з програмою єВідновлення: договір, безготівкова оплата, акт робіт і документи для звіту.'),
+    ],
+    'faq': [
+        ('У які населені пункти Бучанського району ви виїжджаєте?',
+         'Безкоштовний замір і доставка — у Бучі, Ірпені, Бородянці, Гостомелі, Білогородці, Дмитрівці та селі Мила. В інші населені пункти району теж виїжджаємо: напишіть свій населений пункт у формі або зателефонуйте, і менеджер узгодить виїзд.'),
+        ('Де ваші магазини?',
+         "У Бучі — вул. Левка Лук'яненка (Жовтнева), 7, тел. +38 (093) 833-58-60. У Бородянці — вул. Паркова, 2Б, тел. +38 (093) 468-00-51. Графік обох: пн–пт 9:00–17:00, сб 9:00–15:00, неділя — вихідний."),
+        ('Чи можна замовити вікна за програмою єВідновлення?',
+         'Так, по всьому району. Після безкоштовного заміру готуємо специфікацію, рахунок і договір, приймаємо безготівкову оплату з рахунку єВідновлення та видаємо акт виконаних робіт і документи для звіту.'),
+        ('Скільки коштують вікна та двері?',
+         'Стандартне вікно — від 3200 грн, вхідні двері — від 8200 грн, балконний блок — від 12 500 грн, монтаж — від 800 грн/м². Орієнтовну ціну можна порахувати в калькуляторі, точну — після заміру.'),
+        ('Яка гарантія?',
+         'Від 5 до 10 років на конструкції залежно від профілю та 1 рік на монтаж. Після гарантії теж обслуговуємо свої вікна.'),
+    ],
+}
 
 
 def url_of(c):
@@ -407,7 +438,8 @@ def city_schema(c):
                 "@id": url + '#breadcrumb',
                 "itemListElement": [
                     {"@type": "ListItem", "position": 1, "name": "Головна", "item": SITE + '/'},
-                    {"@type": "ListItem", "position": 2, "name": f"Вікна та двері {c['loc']}", "item": url},
+                    *([] if c.get('district') else [{"@type": "ListItem", "position": 2, "name": DISTRICT['name'], "item": url_of(DISTRICT)}]),
+                    {"@type": "ListItem", "position": 2 if c.get('district') else 3, "name": f"Вікна та двері {c['loc']}", "item": url},
                 ],
             },
             {
@@ -417,9 +449,12 @@ def city_schema(c):
                 "areaServed": {
                     "@type": KIND_SCHEMA[c['kind']],
                     "name": c['name'],
-                    "containedInPlace": {"@type": "AdministrativeArea", "name": "Київська область"},
+                    "containedInPlace": ({"@type": "AdministrativeArea", "name": "Київська область"} if c.get('district') else
+                                         {"@type": "AdministrativeArea", "name": DISTRICT['name'],
+                                          "containedInPlace": {"@type": "AdministrativeArea", "name": "Київська область"}}),
                 },
-                "provider": store_schema(store_key, [c['name']]),
+                "provider": ([store_schema('bucha', [c['name']]), store_schema('borodianka', [c['name']])]
+                             if c.get('district') else store_schema(store_key, [c['name']])),
                 "offers": {
                     "@type": "AggregateOffer",
                     "priceCurrency": "UAH",
@@ -491,10 +526,36 @@ def faq_html(c):
     </details>''' for q, a in c['faq'])
 
 
+def store_card(s):
+    return f'''      <div class="contact-item">
+        <div class="contact-item-header">
+          <div class="contact-item-icon">📍</div>
+          <div class="contact-item-label">{e(s['place'])}</div>
+        </div>
+        <div class="contact-item-text">
+          <div class="contact-item-value">{e(s['street'])}</div>
+          <a href="tel:{s['phone']}" class="call-btn" onclick="trackCall('{e(s['locality'])}')">
+            {PHONE_SVG}
+            {s['phone_h']}
+          </a>
+          <div class="store-hours">
+            <div class="hours-title">Графік роботи</div>
+            <div class="hours-row"><span>Пн – Пт</span><span>9:00 – 17:00</span></div>
+            <div class="hours-row"><span>Субота</span><span>9:00 – 15:00</span></div>
+            <div class="hours-row"><span>Неділя</span><span class="hours-closed">Вихідний</span></div>
+          </div>
+          <iframe src="{s['embed']}" class="contact-map-iframe" title="Магазин Вікна @ двері на карті — {e(s['place'])}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <a href="{s['map']}" target="_blank" rel="noopener" class="btn-outline" style="width:100%; text-align:center; padding:12px;">🗺 Прокласти маршрут</a>
+          <a href="{s['reviews']}" target="_blank" rel="noopener" class="ft-gl-link city-reviews">⭐ Відгуки про магазин у Google</a>
+        </div>
+      </div>'''
+
+
 def city_page(c):
     s = STORES[c['store']]
     other = STORES['borodianka' if c['store'] == 'bucha' else 'bucha']
     url = url_of(c)
+    stores_html = store_card(STORES['bucha']) + '\n' + store_card(STORES['borodianka']) if c.get('district') else store_card(s)
     intro = '\n      '.join(f'<p>{e(p)}</p>' for p in c['intro'])
     points = '\n'.join(
         f'''      <div class="why-card">
@@ -595,7 +656,7 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
   <div class="hero-body">
     <div class="hero-left">
       <nav class="crumbs" aria-label="Навігація">
-        <a href="/">Головна</a><span aria-hidden="true">/</span><span>Вікна та двері {e(c['loc'])}</span>
+        <a href="/">Головна</a><span aria-hidden="true">/</span>{'' if c.get('district') else f'<a href="{path_of(DISTRICT)}">{e(DISTRICT["name"])}</a><span aria-hidden="true">/</span>'}<span>Вікна та двері {e(c['loc'])}</span>
       </nav>
       <h1 class="hero-title">
         <span class="ht-line">Вікна та двері</span>
@@ -790,10 +851,11 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
 <section class="service-area" id="service-area">
   <div class="service-area-inner reveal">
     <div class="section-label">Географія обслуговування</div>
-    <h2 class="section-title">Працюємо і в сусідніх містах</h2>
+    <h2 class="section-title">{'Де ми працюємо в районі' if c.get('district') else 'Працюємо і в сусідніх містах'}</h2>
     <div class="area-grid">
       {city_links_html(c, 'area-pill')}
     </div>
+    {'' if c.get('district') else f'<p class="area-note"><a href="{path_of(DISTRICT)}">Усі населені пункти Бучанського району →</a></p>'}
     <p class="area-note">Не знайшли свій населений пункт? Напишіть його у формі або скажіть менеджеру — узгодимо виїзд індивідуально.</p>
   </div>
 </section>
@@ -801,31 +863,10 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
 <!-- ═══════════════════════════════ CONTACT ═══════════════════════════════ -->
 <section class="contact" id="contact">
   <div class="contact-left">
-    <div class="section-label reveal">Наш магазин</div>
-    <h2 class="section-title reveal">Замовлення {e(c['gen'])} веде магазин у {'Бучі' if c['store'] == 'bucha' else 'Бородянці'}</h2>
+    <div class="section-label reveal">{'Наші магазини' if c.get('district') else 'Наш магазин'}</div>
+    <h2 class="section-title reveal">{'Два магазини в Бучанському районі' if c.get('district') else f"Замовлення {e(c['gen'])} веде магазин у {'Бучі' if c['store'] == 'bucha' else 'Бородянці'}"}</h2>
     <div class="contact-info reveal">
-      <div class="contact-item">
-        <div class="contact-item-header">
-          <div class="contact-item-icon">📍</div>
-          <div class="contact-item-label">{e(s['place'])}</div>
-        </div>
-        <div class="contact-item-text">
-          <div class="contact-item-value">{e(s['street'])}</div>
-          <a href="tel:{s['phone']}" class="call-btn" onclick="trackCall('{e(s['locality'])}')">
-            {PHONE_SVG}
-            {s['phone_h']}
-          </a>
-          <div class="store-hours">
-            <div class="hours-title">Графік роботи</div>
-            <div class="hours-row"><span>Пн – Пт</span><span>9:00 – 17:00</span></div>
-            <div class="hours-row"><span>Субота</span><span>9:00 – 15:00</span></div>
-            <div class="hours-row"><span>Неділя</span><span class="hours-closed">Вихідний</span></div>
-          </div>
-          <iframe src="{s['embed']}" class="contact-map-iframe" title="Магазин Вікна @ двері на карті — {e(s['place'])}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-          <a href="{s['map']}" target="_blank" rel="noopener" class="btn-outline" style="width:100%; text-align:center; padding:12px;">🗺 Прокласти маршрут</a>
-          <a href="{s['reviews']}" target="_blank" rel="noopener" class="ft-gl-link city-reviews">⭐ Відгуки про магазин у Google</a>
-        </div>
-      </div>
+{stores_html}
     </div>
   </div>
 
@@ -843,7 +884,7 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
     </div>
     <div class="form-group">
       <label for="clientCity">Населений пункт</label>
-      <input type="text" id="clientCity" list="cityList" value="{e(c['name'] if c['kind'] != 'село' else 'с. ' + c['name'])}" placeholder="Оберіть зі списку або впишіть своє місто/село" required>
+      <input type="text" id="clientCity" list="cityList" value="{'' if c.get('district') else e(c['name'] if c['kind'] != 'село' else 'с. ' + c['name'])}" placeholder="Оберіть зі списку або впишіть своє місто/село" required>
     </div>
     <div class="form-group">
       <label for="clientProduct">Тип продукту</label>
@@ -935,7 +976,7 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
 
 
 def footer_cities_html():
-    return '\n      '.join(
+    return f'<a href="{path_of(DISTRICT)}" class="footer-phone-link">Весь Бучанський район</a>\n      ' + '\n      '.join(
         f'<a href="{path_of(c)}" class="footer-phone-link">Вікна та двері {e(c["loc"])}</a>' for c in CITIES)
 
 
@@ -962,7 +1003,7 @@ def sitemap(today):
     <priority>1.0</priority>
 {home_imgs}
   </url>''']
-    for c in CITIES:
+    for c in [DISTRICT] + CITIES:
         imgs = '\n'.join(img(PHOTOS[k][0], PHOTOS[k][2]) for k in list(PHOTOS)[:3])
         urls.append(f'''  <url>
     <loc>{url_of(c)}</loc>
@@ -980,7 +1021,7 @@ def sitemap(today):
 def main():
     today = date.today().isoformat()
 
-    for c in CITIES:
+    for c in [DISTRICT] + CITIES:
         d = os.path.join(ROOT, f'vikna-dveri-{c["slug"]}')
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, 'index.html'), 'w', encoding='utf-8') as f:
@@ -1000,7 +1041,7 @@ def main():
 
     with open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8') as f:
         f.write(sitemap(today))
-    print('sitemap ', len(CITIES) + 1, 'URL')
+    print('sitemap ', len(CITIES) + 2, 'URL')
 
 
 if __name__ == '__main__':
