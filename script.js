@@ -559,6 +559,7 @@ async function submitLead({ name, phone, city, product, comment, honeypot, quick
     // або явна помилка в тілі відповіді.
     const rejected = !res.ok
       || /^\s*</.test(reply)
+      || /^\s*"?error/i.test(reply)
       || /"?(result|status)"?\s*:\s*"?error/i.test(reply)
       || /"?(ok|success)"?\s*:\s*false/i.test(reply);
     if (rejected) throw new Error(_lastWebhookReply);
@@ -631,19 +632,24 @@ async function handleQuickSubmit(e) {
   const msg     = document.getElementById('quickMsg');
   if (msg) { msg.textContent = ''; msg.className = 'hq-msg'; }
 
+  // На сторінках міст місто відоме зі сторінки — передаємо його менеджеру
+  const pageCity = document.body.dataset.city || '';
   const ok = await submitLead({
     name:     'Швидка заявка',
     phone:    (phoneEl || {}).value,
-    city:     'Не вказано',
+    city:     pageCity || 'Не вказано',
     product:  'Потрібна консультація',
-    comment:  'Швидка заявка з головного екрана — вказано лише телефон, ім\'я та місто уточнити при дзвінку',
+    comment:  pageCity
+      ? 'Швидка заявка зі сторінки «' + pageCity + '» — вказано лише телефон, ім\'я уточнити при дзвінку'
+      : 'Швидка заявка з головного екрана — вказано лише телефон, ім\'я та місто уточнити при дзвінку',
     honeypot: (document.getElementById('_hpQuick') || {}).value || '',
     quick:    true
   }, btn, [phoneEl]);
 
   if (!msg) return;
   if (_leadDebug) {
-    msg.textContent = (ok ? 'OK · ' : 'ВІДМОВА · ') + _lastWebhookReply;
+    // Якщо до вебхука не дійшло (ліміт 60 с, невірний номер) — показуємо причину з сайту
+    msg.textContent = (ok ? 'OK · ' : 'ВІДМОВА · ') + (_lastWebhookReply || msg.textContent || 'заявку зупинив сайт');
     msg.className = 'hq-msg show ' + (ok ? 'ok' : 'error');
     return;
   }

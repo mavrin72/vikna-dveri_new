@@ -59,12 +59,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {
           "@type": "ListItem",
           "position": 2,
+          "name": "Київська область",
+          "item": "https://vikna-dveri.store/vikna-dveri-kyivska-oblast/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
           "name": "Бучанський район",
           "item": "https://vikna-dveri.store/vikna-dveri-buchanskyi-raion/"
         },
         {
           "@type": "ListItem",
-          "position": 3,
+          "position": 4,
           "name": "Вікна та двері у Гостомелі",
           "item": "https://vikna-dveri.store/vikna-dveri-hostomel/"
         }
@@ -82,7 +88,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           "name": "Бучанський район",
           "containedInPlace": {
             "@type": "AdministrativeArea",
-            "name": "Київська область"
+            "name": "Київська область",
+            "containedInPlace": {
+              "@type": "Country",
+              "name": "Україна"
+            }
           }
         }
       },
@@ -194,13 +204,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css?v=35">
+<link rel="stylesheet" href="/style.css?v=39">
 <script>
 if (history.scrollRestoration) history.scrollRestoration = 'manual';
 try { if (sessionStorage.getItem('_evBarClosed')) document.documentElement.classList.add('ev-hidden'); } catch (e) {}
 </script>
 </head>
-<body class="city-page">
+<body class="city-page" data-city="Гостомель">
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJZLFQLG"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -252,7 +262,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="hero-body">
     <div class="hero-left">
       <nav class="crumbs" aria-label="Навігація">
-        <a href="/">Головна</a><span aria-hidden="true">/</span><a href="/vikna-dveri-buchanskyi-raion/">Бучанський район</a><span aria-hidden="true">/</span><span>Вікна та двері у Гостомелі</span>
+        <a href="/">Головна</a><span aria-hidden="true">/</span><a href="/vikna-dveri-kyivska-oblast/">Київська область</a><span aria-hidden="true">/</span><a href="/vikna-dveri-buchanskyi-raion/">Бучанський район</a><span aria-hidden="true">/</span><span>Вікна та двері у Гостомелі</span>
       </nav>
       <h1 class="hero-title">
         <span class="ht-line">Вікна та двері</span>
@@ -557,8 +567,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <a class="area-pill" href="/vikna-dveri-bilohorodka/">Білогородка</a>
       <a class="area-pill" href="/vikna-dveri-dmytrivka/">Дмитрівка</a>
       <a class="area-pill" href="/vikna-dveri-myla/">Мила</a>
+      <a class="area-pill" href="/vikna-dveri-vorzel/">Ворзель</a>
+      <a class="area-pill" href="/vikna-dveri-nemishaieve/">Немішаєве</a>
+      <a class="area-pill" href="/vikna-dveri-babyntsi/">Бабинці</a>
+      <a class="area-pill" href="/vikna-dveri-klavdiievo-tarasove/">Клавдієво-Тарасове</a>
+      <a class="area-pill" href="/vikna-dveri-makariv/">Макарів</a>
+      <a class="area-pill" href="/vikna-dveri-kotsiubynske/">Коцюбинське</a>
+      <a class="area-pill" href="/vikna-dveri-vyshneve/">Вишневе</a>
+      <a class="area-pill" href="/vikna-dveri-petropavlivska-borshchahivka/">Петропавлівська Борщагівка</a>
+      <a class="area-pill" href="/vikna-dveri-sofiivska-borshchahivka/">Софіївська Борщагівка</a>
     </div>
-    <p class="area-note"><a href="/vikna-dveri-buchanskyi-raion/">Усі населені пункти Бучанського району →</a></p>
+    <p class="area-note"><a href="/vikna-dveri-buchanskyi-raion/">Вікна та двері у Бучанському районі →</a></p><p class="area-note"><a href="/vikna-dveri-kyivska-oblast/">Вікна та двері по Київській області →</a></p>
     <p class="area-note">Не знайшли свій населений пункт? Напишіть його у формі або скажіть менеджеру — узгодимо виїзд індивідуально.</p>
   </div>
 </section>
@@ -658,14 +677,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="footer-cities-col">
       <div class="footer-col-title">Міста</div>
-      <a href="/vikna-dveri-buchanskyi-raion/" class="footer-phone-link">Весь Бучанський район</a>
-      <a href="/vikna-dveri-bucha/" class="footer-phone-link">Вікна та двері у Бучі</a>
-      <a href="/vikna-dveri-irpin/" class="footer-phone-link">Вікна та двері в Ірпені</a>
-      <a href="/vikna-dveri-borodianka/" class="footer-phone-link">Вікна та двері у Бородянці</a>
-      <a href="/vikna-dveri-hostomel/" class="footer-phone-link">Вікна та двері у Гостомелі</a>
-      <a href="/vikna-dveri-bilohorodka/" class="footer-phone-link">Вікна та двері у Білогородці</a>
-      <a href="/vikna-dveri-dmytrivka/" class="footer-phone-link">Вікна та двері у Дмитрівці</a>
-      <a href="/vikna-dveri-myla/" class="footer-phone-link">Вікна та двері у селі Мила</a>
+      <a href="/vikna-dveri-kyivska-oblast/" class="footer-phone-link">Київська область</a>
+      <a href="/vikna-dveri-buchanskyi-raion/" class="footer-phone-link">Бучанський район</a>
+      <div class="footer-towns"><a href="/vikna-dveri-bucha/">Буча</a> <a href="/vikna-dveri-irpin/">Ірпінь</a> <a href="/vikna-dveri-borodianka/">Бородянка</a> <a href="/vikna-dveri-hostomel/">Гостомель</a> <a href="/vikna-dveri-bilohorodka/">Білогородка</a> <a href="/vikna-dveri-dmytrivka/">Дмитрівка</a> <a href="/vikna-dveri-myla/">Мила</a> <a href="/vikna-dveri-vorzel/">Ворзель</a> <a href="/vikna-dveri-nemishaieve/">Немішаєве</a> <a href="/vikna-dveri-babyntsi/">Бабинці</a> <a href="/vikna-dveri-klavdiievo-tarasove/">Клавдієво-Тарасове</a> <a href="/vikna-dveri-makariv/">Макарів</a> <a href="/vikna-dveri-kotsiubynske/">Коцюбинське</a> <a href="/vikna-dveri-vyshneve/">Вишневе</a> <a href="/vikna-dveri-petropavlivska-borshchahivka/">Петропавлівська Борщагівка</a> <a href="/vikna-dveri-sofiivska-borshchahivka/">Софіївська Борщагівка</a> <a href="/vikna-dveri-vyshhorod/">Вишгород</a></div>
     </div>
     <div class="footer-social-col">
       <div class="footer-col-title">Соціальні мережі</div>
@@ -704,8 +718,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <option value="с. Білогородка">
   <option value="с. Дмитрівка">
   <option value="с. Мила">
+  <option value="Ворзель">
+  <option value="Немішаєве">
+  <option value="Бабинці">
+  <option value="Клавдієво-Тарасове">
+  <option value="Макарів">
+  <option value="Коцюбинське">
+  <option value="Вишневе">
+  <option value="с. Петропавлівська Борщагівка">
+  <option value="с. Софіївська Борщагівка">
+  <option value="Вишгород">
 </datalist>
 
-<script src="/script.js?v=35"></script>
+<script src="/script.js?v=39"></script>
 </body>
 </html>
