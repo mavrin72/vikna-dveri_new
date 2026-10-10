@@ -342,9 +342,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <h2 class="section-title">Приклади виконаних робіт</h2>
     <p class="section-sub">Вікна, двері й ролети, які ми виготовили та встановили на об'єктах у Бучанському районі.</p>
   </div>
+  <div class="gallery-filters reveal">
+    <button class="gf-btn active" onclick="filterGallery('all',this)">Всі роботи <em>17</em></button>
+    <button class="gf-btn" onclick="filterGallery('vikna',this)">Вікна <em>8</em></button>
+    <button class="gf-btn" onclick="filterGallery('dveri',this)">Двері <em>7</em></button>
+    <button class="gf-btn" onclick="filterGallery('rolety',this)">Ролети <em>2</em></button>
+  </div>
   <div class="gallery-grid" id="galleryGrid">
+    <div class="gp gp-wide" data-cat="vikna">
+      <img src="/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg" alt="Скління балкона в багатоповерхівці металопластиковими вікнами" width="1200" height="540" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="vikna">
+      <img src="/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg" alt="Засклені балкони багатоповерхового будинку" width="900" height="1200" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="vikna">
+      <img src="/img/vikna/laminovani-vikna-sklinnia-terasy.jpg" alt="Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку" width="1200" height="900" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="vikna">
+      <img src="/img/vikna/sklinnia-verandy-z-dveryma.jpg" alt="Скління веранди ламінованими вікнами з металопластиковими дверима" width="1200" height="900" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
+    </div>
     <div class="gp" data-cat="vikna">
       <img src="/img/vikna/vikna-pryvatnyi-budynok-hazoblok.jpg" alt="Монтаж металопластикових вікон у приватному будинку з газоблоку" width="1200" height="900" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="vikna">
+      <img src="/img/vikna/laminovani-vikna-terasa-pid-derevo.jpg" alt="Тераса, засклена ламінованими вікнами під дерево" width="1200" height="900" loading="lazy" decoding="async">
       <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
     </div>
     <div class="gp" data-cat="vikna">
@@ -352,16 +378,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
     </div>
     <div class="gp" data-cat="vikna">
-      <img src="/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg" alt="Скління балкона в багатоповерхівці металопластиковими вікнами" width="1200" height="540" loading="lazy" decoding="async">
+      <img src="/img/vikna/sklinnia-lodzhii.jpg" alt="Скління лоджії металопластиковими вікнами — вигляд зсередини" width="900" height="1200" loading="lazy" decoding="async">
       <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="dveri">
+      <img src="/img/dveri/dvostulkovi-vkhidni-dveri-budynok.jpg" alt="Двостулкові металопластикові вхідні двері в приватний будинок" width="1200" height="900" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Двері</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="dveri">
+      <img src="/img/dveri/mizhkimnatni-dveri-bili.jpg" alt="Білі міжкімнатні двері після встановлення" width="900" height="1200" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Двері</span><span class="gp-zoom">↗</span></div>
     </div>
     <div class="gp" data-cat="dveri">
       <img src="/img/dveri/montazh-metaloplastykovykh-dverei.jpg" alt="Монтаж металопластикових вхідних дверей зі склом" width="898" height="1200" loading="lazy" decoding="async">
       <div class="gp-overlay"><span class="gp-cat">Двері</span><span class="gp-zoom">↗</span></div>
     </div>
-    <div class="gp" data-cat="vikna">
-      <img src="/img/vikna/sklinnia-verandy-z-dveryma.jpg" alt="Скління веранди ламінованими вікнами з металопластиковими дверима" width="1200" height="900" loading="lazy" decoding="async">
-      <div class="gp-overlay"><span class="gp-cat">Вікна</span><span class="gp-zoom">↗</span></div>
+    <div class="gp" data-cat="dveri">
+      <img src="/img/dveri/mizhkimnatni-dveri-dub.jpg" alt="Міжкімнатні двері під дуб зі скляною вставкою" width="900" height="1200" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Двері</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="dveri">
+      <img src="/img/dveri/vkhidni-metalevi-dveri-kovka.jpg" alt="Металеві вхідні двері під дерево з ковкою" width="900" height="1200" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Двері</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="dveri">
+      <img src="/img/dveri/mizhkimnatni-dveri-dub-kvartyra.jpg" alt="Міжкімнатні двері під дуб у квартирі" width="900" height="1200" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Двері</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="dveri">
+      <img src="/img/dveri/mizhkimnatni-dveri-bili-chorni-vstavky.jpg" alt="Білі міжкімнатні двері з чорними вставками" width="900" height="1200" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Двері</span><span class="gp-zoom">↗</span></div>
+    </div>
+    <div class="gp" data-cat="rolety">
+      <img src="/img/rolety/zakhysni-rolety-vitryny.jpg" alt="Захисні ролети на вітринах комерційного приміщення" width="1200" height="900" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">Ролети</span><span class="gp-zoom">↗</span></div>
     </div>
     <div class="gp" data-cat="rolety">
       <img src="/img/rolety/rolety-na-vikna-budynok.jpg" alt="Захисні ролети на вікнах приватного будинку" width="960" height="720" loading="lazy" decoding="async">

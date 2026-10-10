@@ -83,12 +83,16 @@ PHOTOS = {
     'terasa_lam':  ('img/vikna/laminovani-vikna-sklinnia-terasy.jpg', 'vikna', 'Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку'),
     'veranda':     ('img/vikna/sklinnia-verandy-z-dveryma.jpg', 'vikna', 'Скління веранди ламінованими вікнами з металопластиковими дверима'),
     'hazoblok':    ('img/vikna/vikna-pryvatnyi-budynok-hazoblok.jpg', 'vikna', 'Монтаж металопластикових вікон у приватному будинку з газоблоку'),
+    'terasa_lam2': ('img/vikna/laminovani-vikna-terasa-pid-derevo.jpg', 'vikna', 'Тераса, засклена ламінованими вікнами під дерево'),
     'terasa_bila': ('img/vikna/sklinnia-terasy-bili-vikna.jpg', 'vikna', 'Скління тераси приватного будинку білими металопластиковими вікнами'),
     'lodzhiia':    ('img/vikna/sklinnia-lodzhii.jpg', 'vikna', 'Скління лоджії металопластиковими вікнами — вигляд зсередини'),
     'dveri_dvi':   ('img/dveri/dvostulkovi-vkhidni-dveri-budynok.jpg', 'dveri', 'Двостулкові металопластикові вхідні двері в приватний будинок'),
-    'dveri_mp':    ('img/dveri/montazh-metaloplastykovykh-dverei.jpg', 'dveri', 'Монтаж металопластикових вхідних дверей зі склом'),
-    'dveri_met':   ('img/dveri/vkhidni-metalevi-dveri-kovka.jpg', 'dveri', 'Металеві вхідні двері під дерево з ковкою'),
     'dveri_bili':  ('img/dveri/mizhkimnatni-dveri-bili.jpg', 'dveri', 'Білі міжкімнатні двері після встановлення'),
+    'dveri_mp':    ('img/dveri/montazh-metaloplastykovykh-dverei.jpg', 'dveri', 'Монтаж металопластикових вхідних дверей зі склом'),
+    'dveri_dub':   ('img/dveri/mizhkimnatni-dveri-dub.jpg', 'dveri', 'Міжкімнатні двері під дуб зі скляною вставкою'),
+    'dveri_met':   ('img/dveri/vkhidni-metalevi-dveri-kovka.jpg', 'dveri', 'Металеві вхідні двері під дерево з ковкою'),
+    'dveri_dub2':  ('img/dveri/mizhkimnatni-dveri-dub-kvartyra.jpg', 'dveri', 'Міжкімнатні двері під дуб у квартирі'),
+    'dveri_chorni':('img/dveri/mizhkimnatni-dveri-bili-chorni-vstavky.jpg', 'dveri', 'Білі міжкімнатні двері з чорними вставками'),
     'rolety_vit':  ('img/rolety/zakhysni-rolety-vitryny.jpg', 'rolety', 'Захисні ролети на вітринах комерційного приміщення'),
     'rolety_dim':  ('img/rolety/rolety-na-vikna-budynok.jpg', 'rolety', 'Захисні ролети на вікнах приватного будинку'),
 }
@@ -124,7 +128,6 @@ CITIES = [
             ('Чи можна в Бучі замовити вікна за програмою єВідновлення?',
              'Так. Після заміру готуємо специфікацію, рахунок і договір, приймаємо безготівкову оплату з рахунку єВідновлення, а після монтажу видаємо акт виконаних робіт і видаткові документи для звіту.'),
         ],
-        'photos': ['terasa_bila', 'balkony', 'veranda', 'dveri_met', 'lodzhiia', 'rolety_dim'],
     },
     {
         'slug': 'irpin', 'name': 'Ірпінь', 'loc': 'в Ірпені', 'gen': 'Ірпеня', 'kind': 'місто',
@@ -151,7 +154,6 @@ CITIES = [
             ('Чи працюєте в Ірпені за програмою єВідновлення?',
              'Так. Готуємо специфікацію, рахунок і договір, приймаємо безготівкову оплату з рахунку єВідновлення та видаємо акт виконаних робіт і документи для звіту.'),
         ],
-        'photos': ['balkon', 'lodzhiia', 'balkony', 'dveri_bili', 'terasa_bila', 'dveri_met'],
     },
     {
         'slug': 'borodianka', 'name': 'Бородянка', 'loc': 'у Бородянці', 'gen': 'Бородянки', 'kind': 'селище',
@@ -178,7 +180,6 @@ CITIES = [
             ('Яка гарантія на вікна і монтаж?',
              'Від 5 до 10 років на конструкції залежно від профілю та 1 рік на монтаж. Після гарантії теж обслуговуємо свої вікна: регулювання, заміна фурнітури та ущільнювачів.'),
         ],
-        'photos': ['terasa_lam', 'hazoblok', 'dveri_dvi', 'veranda', 'dveri_met', 'rolety_dim'],
     },
     {
         'slug': 'hostomel', 'name': 'Гостомель', 'loc': 'у Гостомелі', 'gen': 'Гостомеля', 'kind': 'селище',
@@ -205,7 +206,6 @@ CITIES = [
             ('Чи можна розрахуватися частинами?',
              'Так, можлива розстрочка або оплата частинами — умови фіксуємо в договорі.'),
         ],
-        'photos': ['hazoblok', 'terasa_bila', 'balkon', 'dveri_mp', 'veranda', 'rolety_dim'],
     },
     {
         'slug': 'bilohorodka', 'name': 'Білогородка', 'loc': 'у Білогородці', 'gen': 'Білогородки', 'kind': 'село',
@@ -232,7 +232,6 @@ CITIES = [
             ('Яка гарантія?',
              'Від 5 до 10 років на конструкції залежно від профілю та 1 рік на монтаж.'),
         ],
-        'photos': ['terasa_bila', 'terasa_lam', 'hazoblok', 'dveri_dvi', 'dveri_met', 'rolety_dim'],
     },
     {
         'slug': 'dmytrivka', 'name': 'Дмитрівка', 'loc': 'у Дмитрівці', 'gen': 'Дмитрівки', 'kind': 'село',
@@ -259,7 +258,6 @@ CITIES = [
             ('Чи можна розрахуватися частинами?',
              'Так, можлива розстрочка або оплата частинами — умови фіксуємо в договорі.'),
         ],
-        'photos': ['hazoblok', 'terasa_bila', 'veranda', 'dveri_dvi', 'dveri_met', 'rolety_dim'],
     },
     {
         'slug': 'myla', 'name': 'Мила', 'loc': 'у селі Мила', 'gen': 'Милої', 'kind': 'село',
@@ -286,7 +284,6 @@ CITIES = [
             ('Яка гарантія?',
              'Від 5 до 10 років на конструкції залежно від профілю та 1 рік на монтаж.'),
         ],
-        'photos': ['terasa_lam', 'terasa_bila', 'lodzhiia', 'dveri_mp', 'dveri_met', 'rolety_vit'],
     },
 ]
 
@@ -472,12 +469,12 @@ def city_links_html(current, cls):
     return '\n      '.join(out)
 
 
-def gallery_html(c):
+def gallery_html():
     items = []
-    for i, key in enumerate(c['photos']):
+    for i, key in enumerate(PHOTOS):
         src, cat, alt = PHOTOS[key]
         w, h = Image.open(os.path.join(ROOT, src)).size
-        wide = ''
+        wide = ' gp-wide' if i == 0 else ''
         label = {'vikna': 'Вікна', 'dveri': 'Двері', 'rolety': 'Ролети'}[cat]
         items.append(f'''    <div class="gp{wide}" data-cat="{cat}">
       <img src="/{src}" alt="{e(alt)}" width="{w}" height="{h}" loading="lazy" decoding="async">
@@ -678,8 +675,14 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
     <h2 class="section-title">Приклади виконаних робіт</h2>
     <p class="section-sub">Вікна, двері й ролети, які ми виготовили та встановили на об'єктах у Бучанському районі.</p>
   </div>
+  <div class="gallery-filters reveal">
+    <button class="gf-btn active" onclick="filterGallery('all',this)">Всі роботи <em>{len(PHOTOS)}</em></button>
+    <button class="gf-btn" onclick="filterGallery('vikna',this)">Вікна <em>{sum(1 for p in PHOTOS.values() if p[1] == 'vikna')}</em></button>
+    <button class="gf-btn" onclick="filterGallery('dveri',this)">Двері <em>{sum(1 for p in PHOTOS.values() if p[1] == 'dveri')}</em></button>
+    <button class="gf-btn" onclick="filterGallery('rolety',this)">Ролети <em>{sum(1 for p in PHOTOS.values() if p[1] == 'rolety')}</em></button>
+  </div>
   <div class="gallery-grid" id="galleryGrid">
-{gallery_html(c)}
+{gallery_html()}
   </div>
   <div class="lightbox" id="lightbox">
     <div class="lb-backdrop" onclick="closeLb()"></div>
@@ -960,7 +963,7 @@ def sitemap(today):
 {home_imgs}
   </url>''']
     for c in CITIES:
-        imgs = '\n'.join(img(PHOTOS[k][0], PHOTOS[k][2]) for k in c['photos'][:3])
+        imgs = '\n'.join(img(PHOTOS[k][0], PHOTOS[k][2]) for k in list(PHOTOS)[:3])
         urls.append(f'''  <url>
     <loc>{url_of(c)}</loc>
     <lastmod>{today}</lastmod>
