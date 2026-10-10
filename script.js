@@ -631,12 +631,16 @@ async function handleQuickSubmit(e) {
   const msg     = document.getElementById('quickMsg');
   if (msg) { msg.textContent = ''; msg.className = 'hq-msg'; }
 
+  // На сторінках міст місто відоме зі сторінки — передаємо його менеджеру
+  const pageCity = document.body.dataset.city || '';
   const ok = await submitLead({
     name:     'Швидка заявка',
     phone:    (phoneEl || {}).value,
-    city:     'Не вказано',
+    city:     pageCity || 'Не вказано',
     product:  'Потрібна консультація',
-    comment:  'Швидка заявка з головного екрана — вказано лише телефон, ім\'я та місто уточнити при дзвінку',
+    comment:  pageCity
+      ? 'Швидка заявка зі сторінки «' + pageCity + '» — вказано лише телефон, ім\'я уточнити при дзвінку'
+      : 'Швидка заявка з головного екрана — вказано лише телефон, ім\'я та місто уточнити при дзвінку',
     honeypot: (document.getElementById('_hpQuick') || {}).value || '',
     quick:    true
   }, btn, [phoneEl]);
