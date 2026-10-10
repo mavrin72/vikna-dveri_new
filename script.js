@@ -559,6 +559,7 @@ async function submitLead({ name, phone, city, product, comment, honeypot, quick
     // або явна помилка в тілі відповіді.
     const rejected = !res.ok
       || /^\s*</.test(reply)
+      || /^\s*"?error/i.test(reply)
       || /"?(result|status)"?\s*:\s*"?error/i.test(reply)
       || /"?(ok|success)"?\s*:\s*false/i.test(reply);
     if (rejected) throw new Error(_lastWebhookReply);
@@ -647,7 +648,8 @@ async function handleQuickSubmit(e) {
 
   if (!msg) return;
   if (_leadDebug) {
-    msg.textContent = (ok ? 'OK · ' : 'ВІДМОВА · ') + _lastWebhookReply;
+    // Якщо до вебхука не дійшло (ліміт 60 с, невірний номер) — показуємо причину з сайту
+    msg.textContent = (ok ? 'OK · ' : 'ВІДМОВА · ') + (_lastWebhookReply || msg.textContent || 'заявку зупинив сайт');
     msg.className = 'hq-msg show ' + (ok ? 'ok' : 'error');
     return;
   }
