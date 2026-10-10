@@ -3,43 +3,220 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://vikna-dveri.store/</loc>
-    <lastmod>2026-07-27</lastmod>
+    <lastmod>2026-10-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://vikna-dveri.store/вікна/2023-12-16%20(1).jpg</image:loc>
-      <image:title>Металопластикові вікна в Бучі</image:title>
-      <image:caption>Металопластикові вікна в Бучі — вітальня</image:caption>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://vikna-dveri.store/вікна/2024-01-15.jpg</image:loc>
-      <image:title>Вікна Буча</image:title>
-      <image:caption>Вікна Буча — монтаж під ключ</image:caption>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://vikna-dveri.store/вікна/unnamed.jpg</image:loc>
-      <image:title>Вікна Буча</image:title>
-      <image:caption>Вікна Буча — готовий об'єкт</image:caption>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://vikna-dveri.store/двері/2023-12-16.jpg</image:loc>
-      <image:title>Вхідні двері в Бучі</image:title>
-      <image:caption>Вхідні двері в Бучі</image:caption>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-verandy-z-dveryma.jpg</image:loc>
+      <image:title>Скління веранди ламінованими вікнами з металопластиковими дверима</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://vikna-dveri.store/двері/2024-09-06.jpg</image:loc>
-      <image:title>Вхідні двері Буча</image:title>
-      <image:caption>Вхідні двері Буча — під'їзд</image:caption>
+      <image:loc>https://vikna-dveri.store/img/vikna/vikna-pryvatnyi-budynok-hazoblok.jpg</image:loc>
+      <image:title>Монтаж металопластикових вікон у приватному будинку з газоблоку</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://vikna-dveri.store/двері/unnamed%20(1).jpg</image:loc>
-      <image:title>Вхідні двері Буча</image:title>
-      <image:caption>Броньовані вхідні двері, Буча</image:caption>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-terasa-pid-derevo.jpg</image:loc>
+      <image:title>Тераса, засклена ламінованими вікнами під дерево</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://vikna-dveri.store/ролети/2023-11-22.jpg</image:loc>
-      <image:title>Ролети в Бучі</image:title>
-      <image:caption>Захисні ролети в Бучі</image:caption>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-terasy-bili-vikna.jpg</image:loc>
+      <image:title>Скління тераси приватного будинку білими металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-lodzhii.jpg</image:loc>
+      <image:title>Скління лоджії металопластиковими вікнами — вигляд зсередини</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/dveri/dvostulkovi-vkhidni-dveri-budynok.jpg</image:loc>
+      <image:title>Двостулкові металопластикові вхідні двері в приватний будинок</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/dveri/mizhkimnatni-dveri-bili.jpg</image:loc>
+      <image:title>Білі міжкімнатні двері після встановлення</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/dveri/montazh-metaloplastykovykh-dverei.jpg</image:loc>
+      <image:title>Монтаж металопластикових вхідних дверей зі склом</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/dveri/mizhkimnatni-dveri-dub.jpg</image:loc>
+      <image:title>Міжкімнатні двері під дуб зі скляною вставкою</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/dveri/vkhidni-metalevi-dveri-kovka.jpg</image:loc>
+      <image:title>Металеві вхідні двері під дерево з ковкою</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/dveri/mizhkimnatni-dveri-dub-kvartyra.jpg</image:loc>
+      <image:title>Міжкімнатні двері під дуб у квартирі</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/dveri/mizhkimnatni-dveri-bili-chorni-vstavky.jpg</image:loc>
+      <image:title>Білі міжкімнатні двері з чорними вставками</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/rolety/zakhysni-rolety-vitryny.jpg</image:loc>
+      <image:title>Захисні ролети на вітринах комерційного приміщення</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/rolety/rolety-na-vikna-budynok.jpg</image:loc>
+      <image:title>Захисні ролети на вікнах приватного будинку</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://vikna-dveri.store/vikna-dveri-buchanskyi-raion/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://vikna-dveri.store/vikna-dveri-bucha/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://vikna-dveri.store/vikna-dveri-irpin/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://vikna-dveri.store/vikna-dveri-borodianka/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://vikna-dveri.store/vikna-dveri-hostomel/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://vikna-dveri.store/vikna-dveri-bilohorodka/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://vikna-dveri.store/vikna-dveri-dmytrivka/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://vikna-dveri.store/vikna-dveri-myla/</loc>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg</image:loc>
+      <image:title>Скління балкона в багатоповерхівці металопластиковими вікнами</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg</image:loc>
+      <image:title>Засклені балкони багатоповерхового будинку</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://vikna-dveri.store/img/vikna/laminovani-vikna-sklinnia-terasy.jpg</image:loc>
+      <image:title>Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку</image:title>
     </image:image>
   </url>
 </urlset>

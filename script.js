@@ -85,25 +85,14 @@ resetFtTimer();
 /* ═══════════════════════════════════════════════════════════════
    GALLERY FILTER + LIGHTBOX
 ═══════════════════════════════════════════════════════════════ */
-const allPhotos = [
-  { src:'вікна/2023-11-29.jpg',                                               cat:'vikna',  label:'Вікна' },
-  { src:'вікна/2023-12-16%20(1).jpg',                                         cat:'vikna',  label:'Вікна' },
-  { src:'вікна/2024-01-15%20(1).jpg',                                         cat:'vikna',  label:'Вікна' },
-  { src:'вікна/2024-01-15.jpg',                                                cat:'vikna',  label:'Вікна' },
-  { src:'вікна/2024-09-07.jpg',                                                cat:'vikna',  label:'Вікна' },
-  { src:'вікна/unnamed.jpg',                                                    cat:'vikna',  label:'Вікна' },
-  { src:'вікна/unnamed1.jpg',                                                   cat:'vikna',  label:'Вікна' },
-  { src:'вікна/unnamed2.jpg',                                                   cat:'vikna',  label:'Вікна' },
-  { src:'двері/2023-12-16.jpg',                                                 cat:'dveri',  label:'Двері' },
-  { src:'двері/2024-09-06.jpg',                                                 cat:'dveri',  label:'Двері' },
-  { src:'двері/2024-10-24.jpg',                                                 cat:'dveri',  label:'Двері' },
-  { src:'двері/unnamed%20(1).jpg',                                              cat:'dveri',  label:'Двері' },
-  { src:'двері/unnamed%20(1)4.jpg',                                             cat:'dveri',  label:'Двері' },
-  { src:'двері/unnamed2.jpg',                                                    cat:'dveri',  label:'Двері' },
-  { src:'двері/unnamed3.jpg',                                                    cat:'dveri',  label:'Двері' },
-  { src:'ролети/2023-11-22.jpg',                                                 cat:'rolety', label:'Ролети' },
-  { src:'ролети/94030545_251778812869434_4568817305600917504_n.jpg',             cat:'rolety', label:'Ролети' },
-];
+// Список фото для лайтбокса збираємо з самої галереї — так він завжди
+// збігається з тим, що на сторінці (і на головній, і на сторінках міст)
+const galleryLabels = { vikna:'Вікна', dveri:'Двері', rolety:'Ролети' };
+const allPhotos = Array.from(document.querySelectorAll('.gp')).map(item => {
+  const img = item.querySelector('img');
+  const cat = item.dataset.cat;
+  return { src: img ? img.getAttribute('src') : '', cat, label: galleryLabels[cat] || '', alt: img ? img.alt : '' };
+});
 
 let lbPhotos = [...allPhotos];
 let lbIndex  = 0;
@@ -152,6 +141,7 @@ function renderLb() {
   const img = document.getElementById('lbImg');
   img.style.opacity = '0';
   img.src = p.src;
+  img.alt = p.alt || '';
   img.onload = () => { img.style.opacity = '1'; };
   const catEl = document.getElementById('lbCat');
   const cntEl = document.getElementById('lbCounter');
@@ -159,7 +149,8 @@ function renderLb() {
   if (cntEl) cntEl.textContent = (lbIndex + 1) + ' / ' + lbPhotos.length;
 }
 document.addEventListener('keydown', e => {
-  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  const lb = document.getElementById('lightbox');
+  if (!lb || !lb.classList.contains('open')) return;
   if (e.key === 'ArrowRight') lbNav(1);
   if (e.key === 'ArrowLeft')  lbNav(-1);
   if (e.key === 'Escape')     closeLb();
