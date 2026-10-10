@@ -553,7 +553,7 @@ async function submitLead({ name, phone, city, product, comment, honeypot, quick
   btn.disabled = true;
   btn.textContent = 'Відправка...';
 
-  const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzUkCwVKFYeAEk68F3S11OeoS-8I8OY8GSpHP1SCN7A1GfRkqrfCI75wpdN02oMzNKu/exec';
+  const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyXhUBowG76m_hBSDmK2jGnik3GGvbb3mQcAbKzynCDW9oIqtcgEyT3xW2gaB3-TidH/exec';
 
   try {
     const res = await fetch(WEBHOOK_URL, {
