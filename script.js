@@ -503,6 +503,19 @@ const _formLoadTime = Date.now();
 let _lastWebhookReply = '';
 const _leadDebug = /[?&]debug=1/.test(window.location.search);
 
+// Будь-який український номер приводимо до +380XXXXXXXXX:
+// «0968874658», «380968874658», «+38 (096) 887-46-58» і навіть «+380+380968874658»
+// (поле саме підставляє +380, а людина вставляє номер повністю).
+// Незнайомий формат лишаємо як є, щоб не зіпсувати.
+function normalizePhone(raw) {
+  let d = String(raw).replace(/\D/g, '');
+  while (d.startsWith('380380')) d = d.slice(3);
+  if (d.length === 10 && d.startsWith('0'))   return '+38' + d;
+  if (d.length === 9)                          return '+380' + d;
+  if (d.length === 12 && d.startsWith('380')) return '+' + d;
+  return String(raw).trim();
+}
+
 async function submitLead({ name, phone, city, product, comment, honeypot, quick }, btn, fieldsToClear) {
   // Honeypot: якщо бот заповнив приховане поле — ігноруємо
   if (honeypot) return false;
@@ -516,6 +529,7 @@ async function submitLead({ name, phone, city, product, comment, honeypot, quick
     notifyLead(btn, 'Вкажіть, будь ласка, коректний номер телефону.');
     return false;
   }
+  phone = normalizePhone(phone);
   if (!quick && (!name || !city)) {
     notifyLead(btn, 'Будь ласка, вкажіть ваше ім\'я та населений пункт.');
     return false;
