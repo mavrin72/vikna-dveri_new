@@ -1,0 +1,1004 @@
+#!/usr/bin/env python3
+"""
+Генератор SEO-сторінок міст, мікророзмітки головної та sitemap.xml.
+
+Запуск з кореня репозиторію:  python3 _tools/build_seo.py
+
+Що робить:
+  1. Створює сторінки /vikna-dveri-<місто>/index.html для кожного міста з CITIES.
+  2. Переписує блок мікророзмітки (магазини) на головній між маркерами
+     <!-- schema:stores:begin --> та <!-- schema:stores:end -->.
+  3. Перезаписує sitemap.xml.
+
+Тексти міст редагуються тут, у словнику CITIES. Після правок — запустити скрипт
+ще раз і закомітити результат. Папка _tools не публікується (GitHub Pages
+ігнорує папки, що починаються з «_»).
+"""
+import html
+import json
+import os
+import re
+from datetime import date
+
+from PIL import Image
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SITE = 'https://vikna-dveri.store'
+ASSET_V = '35'  # версія style.css / script.js для скидання кешу
+
+# ──────────────────────────────────────────────────────────────────────────
+# МАГАЗИНИ
+# ──────────────────────────────────────────────────────────────────────────
+HOURS = [
+    {"@type": "OpeningHoursSpecification",
+     "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+     "opens": "09:00", "closes": "17:00"},
+    {"@type": "OpeningHoursSpecification",
+     "dayOfWeek": "Saturday", "opens": "09:00", "closes": "15:00"},
+]
+
+STORES = {
+    'bucha': {
+        'id': SITE + '/#store-bucha',
+        'name': 'Вікна @ двері — Буча',
+        'place': 'м. Буча',
+        'street': "вул. Левка Лук'яненка (Жовтнева), 7",
+        'locality': 'Буча',
+        'postal': '08292',
+        'lat': 50.5503519, 'lng': 30.2222997,
+        'phone': '+380938335860',
+        'phone_h': '+38 (093) 833-58-60',
+        'phone_s': '093 833-58-60',
+        'map': 'https://maps.app.goo.gl/hNYfEPi6dvDniEXp9',
+        'reviews': 'https://share.google/Z1HyhIjjYfmIuHFQo',
+        'embed': 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2535.130026470886!2d30.2222997!3d50.5503519!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x472b31904ba9be5f%3A0x4a981d07361e4e2e!2z0JLRltC60L3QsCDQlNCy0LXRgNGWINCR0YPRh9CwIChCdWNoYSk!5e0!3m2!1suk!2sua!4v1774276506265!5m2!1suk!2sua',
+        'image': SITE + '/img/vikna/sklinnia-terasy-bili-vikna.jpg',
+    },
+    'borodianka': {
+        'id': SITE + '/#store-borodianka',
+        'name': 'Вікна @ двері — Бородянка',
+        'place': 'смт Бородянка',
+        'street': 'вул. Паркова, 2Б',
+        'locality': 'Бородянка',
+        'postal': '07801',
+        'lat': 50.6428082, 'lng': 29.9304925,
+        'phone': '+380934680051',
+        'phone_h': '+38 (093) 468-00-51',
+        'phone_s': '093 468-00-51',
+        'map': 'https://maps.app.goo.gl/zta6qSmTQbyXdxcg9',
+        'reviews': 'https://share.google/csGmHo0S8ngSTSCz0',
+        'embed': 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2530.1552286277642!2d29.9304925!3d50.6428082!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x472b3d13b72c31d7%3A0x996adb2c5fe7bea9!2z0JLRltC60L3QsCDQtNCy0LXRgNGW!5e0!3m2!1suk!2sua!4v1774276566552!5m2!1suk!2sua',
+        'image': SITE + '/img/vikna/laminovani-vikna-sklinnia-terasy.jpg',
+    },
+}
+
+FACEBOOK = 'https://www.facebook.com/share/1DU7kvaXvb/?mibextid=wwXIfr'
+
+# ──────────────────────────────────────────────────────────────────────────
+# ФОТО (шлях, категорія, alt)
+# ──────────────────────────────────────────────────────────────────────────
+PHOTOS = {
+    'balkon':      ('img/vikna/sklinnia-balkona-bahatopoverkhivka.jpg', 'vikna', 'Скління балкона в багатоповерхівці металопластиковими вікнами'),
+    'balkony':     ('img/vikna/zaskleni-balkony-bahatopoverkhivky.jpg', 'vikna', 'Засклені балкони багатоповерхового будинку'),
+    'terasa_lam':  ('img/vikna/laminovani-vikna-sklinnia-terasy.jpg', 'vikna', 'Ламіновані металопластикові вікна під дерево — скління тераси приватного будинку'),
+    'veranda':     ('img/vikna/sklinnia-verandy-z-dveryma.jpg', 'vikna', 'Скління веранди ламінованими вікнами з металопластиковими дверима'),
+    'hazoblok':    ('img/vikna/vikna-pryvatnyi-budynok-hazoblok.jpg', 'vikna', 'Монтаж металопластикових вікон у приватному будинку з газоблоку'),
+    'terasa_bila': ('img/vikna/sklinnia-terasy-bili-vikna.jpg', 'vikna', 'Скління тераси приватного будинку білими металопластиковими вікнами'),
+    'lodzhiia':    ('img/vikna/sklinnia-lodzhii.jpg', 'vikna', 'Скління лоджії металопластиковими вікнами — вигляд зсередини'),
+    'dveri_dvi':   ('img/dveri/dvostulkovi-vkhidni-dveri-budynok.jpg', 'dveri', 'Двостулкові металопластикові вхідні двері в приватний будинок'),
+    'dveri_mp':    ('img/dveri/montazh-metaloplastykovykh-dverei.jpg', 'dveri', 'Монтаж металопластикових вхідних дверей зі склом'),
+    'dveri_met':   ('img/dveri/vkhidni-metalevi-dveri-kovka.jpg', 'dveri', 'Металеві вхідні двері під дерево з ковкою'),
+    'dveri_bili':  ('img/dveri/mizhkimnatni-dveri-bili.jpg', 'dveri', 'Білі міжкімнатні двері після встановлення'),
+    'rolety_vit':  ('img/rolety/zakhysni-rolety-vitryny.jpg', 'rolety', 'Захисні ролети на вітринах комерційного приміщення'),
+    'rolety_dim':  ('img/rolety/rolety-na-vikna-budynok.jpg', 'rolety', 'Захисні ролети на вікнах приватного будинку'),
+}
+
+# ──────────────────────────────────────────────────────────────────────────
+# МІСТА
+#   name   — називний відмінок      loc — «у Бучі»       gen — «Бучі» (родовий)
+#   kind   — тип населеного пункту для розмітки/тексту
+# ──────────────────────────────────────────────────────────────────────────
+CITIES = [
+    {
+        'slug': 'bucha', 'name': 'Буча', 'loc': 'у Бучі', 'gen': 'Бучі', 'kind': 'місто',
+        'store': 'bucha',
+        'title': 'Вікна та двері в Бучі — металопластикові вікна від 3200 ₴ з монтажем',
+        'desc': "Металопластикові вікна, вхідні двері, балконні блоки та ролети в Бучі. Магазин на вул. Левка Лук'яненка, 7. Безкоштовний замір, власні монтажні бригади, гарантія 5–10 років, оплата за єВідновлення.",
+        'lead': "Магазин і власні монтажні бригади в самій Бучі — замір, виготовлення та встановлення без посередників.",
+        'intro': [
+            "Наш магазин у Бучі — на вул. Левка Лук'яненка (Жовтневій), 7. Тут можна побачити зразки профілів, фурнітури та ламінації, обговорити замовлення з менеджером і одразу домовитися про безкоштовний замір.",
+            "Виготовляємо та встановлюємо металопластикові вікна, вхідні двері, балконні блоки й захисні ролети по всій Бучі — у квартирах, новобудовах і приватних будинках. Працюємо з профілями SALAMANDER, VEKA, WDS, GLASSO та VIKNAROFF і фурнітурою Maco, Siegenia, Axor.",
+        ],
+        'points': [
+            ('Квартири та новобудови', 'Заміна старих вікон, скління балконів і лоджій, вхідні двері в квартиру. Профіль і склопакет підбираємо під бік будинку та шум з вулиці.'),
+            ('Приватні будинки', 'Вікна будь-якої конфігурації, ламінація під дерево, скління терас і веранд, металопластикові та металеві вхідні двері, захисні ролети.'),
+            ('Відновлення житла', 'Замінюємо вікна й двері в пошкодженому житлі та приймаємо оплату за програмою єВідновлення — з договором і повним пакетом документів.'),
+        ],
+        'faq': [
+            ('Де в Бучі можна подивитися зразки вікон і дверей?',
+             "У нашому магазині на вул. Левка Лук'яненка (Жовтневій), 7. Графік: пн–пт 9:00–17:00, сб 9:00–15:00, неділя — вихідний. Телефон: +38 (093) 833-58-60."),
+            ('Чи платний замір вікон у Бучі?',
+             'Ні. Замір по Бучі безкоштовний і ні до чого не зобов\'язує: замірник знімає розміри, підказує конфігурацію, а точну вартість ви бачите в розрахунку. Доставка по Бучі теж безкоштовна.'),
+            ('Скільки чекати на вікна після заміру?',
+             'Стандартні конструкції виготовляємо за 3–10 робочих днів, нестандартні форми (арки, трапеції) та ламінацію — 3–4 тижні. Монтаж одного вікна триває 1,5–2 години.'),
+            ('Чи можна в Бучі замовити вікна за програмою єВідновлення?',
+             'Так. Після заміру готуємо специфікацію, рахунок і договір, приймаємо безготівкову оплату з рахунку єВідновлення, а після монтажу видаємо акт виконаних робіт і видаткові документи для звіту.'),
+        ],
+        'photos': ['terasa_bila', 'balkony', 'veranda', 'dveri_met', 'lodzhiia', 'rolety_dim'],
+    },
+    {
+        'slug': 'irpin', 'name': 'Ірпінь', 'loc': 'в Ірпені', 'gen': 'Ірпеня', 'kind': 'місто',
+        'store': 'bucha',
+        'title': 'Вікна та двері в Ірпені — металопластикові вікна від 3200 ₴ з монтажем',
+        'desc': 'Металопластикові вікна, вхідні двері, балконні блоки та ролети в Ірпені. Безкоштовний замір і доставка, власні монтажні бригади, гарантія 5–10 років. Працюємо з єВідновлення.',
+        'lead': 'Ірпінь поруч із нашим магазином у Бучі — замір і доставка по Ірпеню безкоштовні.',
+        'intro': [
+            "Ірпінь межує з Бучею, тож замовлення з Ірпеня веде наш магазин на вул. Левка Лук'яненка, 7 у Бучі. Замірник і монтажна бригада приїжджають без окремої оплати за виїзд, а готові конструкції доставляємо безкоштовно.",
+            'Встановлюємо металопластикові вікна, вхідні двері, балконні блоки та захисні ролети в квартирах, новобудовах і приватних будинках Ірпеня. Працюють 4 власні бригади, тому черга на монтаж коротка.',
+        ],
+        'points': [
+            ('Квартири в новобудовах', 'У новобудовах часто стоять найпростіші вікна від забудовника. Замінюємо їх на тепліші профілі з енергозберігаючим склопакетом, засклюємо балкони й лоджії, ставимо вхідні двері.'),
+            ('Тиша і тепло', 'Для квартир біля жвавих вулиць радимо двокамерний склопакет: він тепліший і краще глушить шум, ніж однокамерний. Варіанти під ваш бюджет покажемо на замірі.'),
+            ('Приватні будинки', 'Вікна будь-якої форми, ламінація під дерево, скління терас, металопластикові та металеві вхідні двері, захисні ролети на вікна.'),
+        ],
+        'faq': [
+            ('Чи безкоштовний виїзд на замір в Ірпінь?',
+             'Так. Замір по Ірпеню безкоштовний і ні до чого не зобов\'язує, доставка готових конструкцій теж безкоштовна.'),
+            ('Коли краще міняти вікна в новобудові — до чи після ремонту?',
+             'Найзручніше — до чистового ремонту: після монтажу ще потрібно оздобити відкоси, і так не доведеться переробляти готову стіну. Але міняємо вікна й у квартирах з ремонтом — акуратно, з мінімумом пилу.'),
+            ('Скільки коштує монтаж вікон в Ірпені?',
+             'Монтаж — від 800 грн/м². Точна сума залежить від розміру конструкції та умов на об\'єкті, її ви бачите в розрахунку після заміру.'),
+            ('Чи працюєте в Ірпені за програмою єВідновлення?',
+             'Так. Готуємо специфікацію, рахунок і договір, приймаємо безготівкову оплату з рахунку єВідновлення та видаємо акт виконаних робіт і документи для звіту.'),
+        ],
+        'photos': ['balkon', 'lodzhiia', 'balkony', 'dveri_bili', 'terasa_bila', 'dveri_met'],
+    },
+    {
+        'slug': 'borodianka', 'name': 'Бородянка', 'loc': 'у Бородянці', 'gen': 'Бородянки', 'kind': 'селище',
+        'store': 'borodianka',
+        'title': 'Вікна та двері в Бородянці — металопластикові вікна від 3200 ₴ з монтажем',
+        'desc': 'Металопластикові вікна, вхідні двері, балконні блоки та ролети в Бородянці. Магазин на вул. Парковій, 2Б. Безкоштовний замір, монтаж, гарантія 5–10 років, оплата за єВідновлення.',
+        'lead': 'Окремий магазин у Бородянці на вул. Парковій, 2Б — менеджер, зразки й замір на місці.',
+        'intro': [
+            'У Бородянці працює наш другий магазин — на вул. Парковій, 2Б. Тут можна подивитися зразки профілів, фурнітури й ламінації, порахувати замовлення з менеджером і домовитися про безкоштовний замір.',
+            'Виготовляємо та встановлюємо металопластикові вікна, вхідні двері, балконні блоки й захисні ролети в Бородянці — у приватних будинках і квартирах. Якщо ви живете в селі неподалік, зателефонуйте — узгодимо виїзд.',
+        ],
+        'points': [
+            ('Відновлення житла', 'Бородянка дуже постраждала у 2022 році, і багато родин досі відновлюють домівки. Працюємо з програмою єВідновлення: договір, безготівкова оплата, акт робіт і документи для звіту.'),
+            ('Приватні будинки', 'Вікна будь-якої конфігурації, ламінація під дерево, скління терас і веранд, металопластикові й металеві вхідні двері, захисні ролети на вікна.'),
+            ('Свій магазин поруч', 'Не треба їхати по зразки в інше місто: усе можна подивитися й обговорити на Парковій, 2Б, а менеджер у Бородянці веде замовлення від заміру до монтажу.'),
+        ],
+        'faq': [
+            ('Де у Бородянці ваш магазин?',
+             'На вул. Парковій, 2Б. Графік: пн–пт 9:00–17:00, сб 9:00–15:00, неділя — вихідний. Телефон: +38 (093) 468-00-51.'),
+            ('Чи можна замінити вікна за програмою єВідновлення в Бородянці?',
+             'Так. Після безкоштовного заміру готуємо специфікацію, рахунок і договір, приймаємо оплату з рахунку єВідновлення, а після монтажу видаємо акт виконаних робіт. Якщо сертифіката ще немає — підкажемо, як подати заяву через «Дію» або ЦНАП.'),
+            ('Чи виїжджаєте на замір у села біля Бородянки?',
+             'Так, виїзд у сусідні села узгоджуємо індивідуально — зателефонуйте або напишіть свій населений пункт у формі заявки.'),
+            ('Яка гарантія на вікна і монтаж?',
+             'Від 5 до 10 років на конструкції залежно від профілю та 1 рік на монтаж. Після гарантії теж обслуговуємо свої вікна: регулювання, заміна фурнітури та ущільнювачів.'),
+        ],
+        'photos': ['terasa_lam', 'hazoblok', 'dveri_dvi', 'veranda', 'dveri_met', 'rolety_dim'],
+    },
+    {
+        'slug': 'hostomel', 'name': 'Гостомель', 'loc': 'у Гостомелі', 'gen': 'Гостомеля', 'kind': 'селище',
+        'store': 'bucha',
+        'title': 'Вікна та двері в Гостомелі — металопластикові вікна від 3200 ₴ з монтажем',
+        'desc': 'Металопластикові вікна, вхідні двері, балконні блоки та ролети в Гостомелі. Безкоштовний замір і доставка, монтаж власними бригадами, гарантія 5–10 років. Працюємо з єВідновлення.',
+        'lead': 'Гостомель обслуговує наш магазин у сусідній Бучі — замір і доставка безкоштовні.',
+        'intro': [
+            "Гостомель — сусід Бучі, тож замовлення звідси веде наш магазин на вул. Левка Лук'яненка, 7. Безкоштовно приїдемо на замір, порахуємо вартість і доставимо готові конструкції.",
+            'Ставимо металопластикові вікна, вхідні двері, балконні блоки та захисні ролети в приватних будинках, квартирах і новобудовах Гостомеля.',
+        ],
+        'points': [
+            ('Відновлення після 2022 року', 'Багато будинків у Гостомелі досі ремонтують. Замінюємо вікна й двері в пошкодженому житлі та приймаємо оплату за програмою єВідновлення з повним пакетом документів.'),
+            ('Приватні будинки', 'Вікна будь-якої форми й розміру, ламінація, скління терас і веранд, вхідні двері в будинок, захисні ролети.'),
+            ('Квартири', 'Заміна вікон, скління балконів і лоджій, енергозберігаючі склопакети, щоб узимку менше платити за опалення.'),
+        ],
+        'faq': [
+            ('Чи безкоштовний замір у Гостомелі?',
+             'Так, замір і доставка по Гостомелю безкоштовні. Замір ні до чого не зобов\'язує: якщо ціна чи терміни не підійдуть, ви просто не оформлюєте замовлення.'),
+            ('Чи працюєте в Гостомелі за програмою єВідновлення?',
+             'Так. Готуємо специфікацію, рахунок і договір, приймаємо безготівкову оплату з рахунку єВідновлення та видаємо акт виконаних робіт і видаткові документи для звітування.'),
+            ('Скільки часу займає виготовлення?',
+             'Стандартні вікна та двері — 3–10 робочих днів, нестандартні форми й ламінація — 3–4 тижні. Монтаж одного вікна — 1,5–2 години.'),
+            ('Чи можна розрахуватися частинами?',
+             'Так, можлива розстрочка або оплата частинами — умови фіксуємо в договорі.'),
+        ],
+        'photos': ['hazoblok', 'terasa_bila', 'balkon', 'dveri_mp', 'veranda', 'rolety_dim'],
+    },
+    {
+        'slug': 'bilohorodka', 'name': 'Білогородка', 'loc': 'у Білогородці', 'gen': 'Білогородки', 'kind': 'село',
+        'store': 'bucha',
+        'title': 'Вікна та двері в Білогородці — металопластикові вікна від 3200 ₴ з монтажем',
+        'desc': 'Металопластикові вікна, вхідні двері, балконні блоки та ролети в Білогородці. Безкоштовний замір і доставка, монтаж, гарантія 5–10 років. Вікна для котеджів і таунхаусів.',
+        'lead': 'Вікна й двері для котеджів, таунхаусів і квартир у Білогородці — з безкоштовним заміром.',
+        'intro': [
+            'Білогородка — одне з найбільших сіл під Києвом, де поруч стоять старі садиби, нові котеджі, таунхауси й житлові комплекси. Для кожного типу житла підбираємо своє рішення: від простої заміни вікна до скління всієї тераси.',
+            "Замовлення з Білогородки веде наш магазин у Бучі (вул. Левка Лук'яненка, 7). На замір приїжджаємо безкоштовно, готові конструкції доставляємо без окремої оплати.",
+        ],
+        'points': [
+            ('Котеджі й таунхауси', 'Великі вікна, балконні двері, скління терас і веранд. Ламінація під дерево чи антрацит, щоб вікна пасували до фасаду.'),
+            ('Новий будинок', 'Якщо будинок ще будується — підкажемо, як підготувати прорізи, щоб замір і монтаж пройшли без переробок.'),
+            ('Вхідні двері та ролети', 'Металопластикові й металеві вхідні двері в будинок, захисні ролети на вікна першого поверху.'),
+        ],
+        'faq': [
+            ('Чи виїжджаєте на замір у Білогородку безкоштовно?',
+             'Так, замір і доставка по Білогородці безкоштовні. Замір ні до чого не зобов\'язує.'),
+            ('Чи можна зробити вікна під колір фасаду?',
+             'Так, є великий вибір ламінації: під дерево, антрацит та інші кольори. Зразки можна подивитися в магазині або попросити замірника привезти їх із собою.'),
+            ('Скільки займає виготовлення нестандартних вікон?',
+             'Стандартні конструкції — 3–10 робочих днів, нестандартні форми (арки, трапеції) та ламінація — 3–4 тижні.'),
+            ('Яка гарантія?',
+             'Від 5 до 10 років на конструкції залежно від профілю та 1 рік на монтаж.'),
+        ],
+        'photos': ['terasa_bila', 'terasa_lam', 'hazoblok', 'dveri_dvi', 'dveri_met', 'rolety_dim'],
+    },
+    {
+        'slug': 'dmytrivka', 'name': 'Дмитрівка', 'loc': 'у Дмитрівці', 'gen': 'Дмитрівки', 'kind': 'село',
+        'store': 'bucha',
+        'title': 'Вікна та двері в Дмитрівці — металопластикові вікна від 3200 ₴ з монтажем',
+        'desc': 'Металопластикові вікна, вхідні двері, балконні блоки та ролети в Дмитрівці (Бучанський район). Безкоштовний замір і доставка, монтаж, гарантія 5–10 років.',
+        'lead': 'Вікна та двері для приватних будинків і нових котеджних містечок у Дмитрівці.',
+        'intro': [
+            'Дмитрівка Бучанського району активно забудовується: тут з\'являються нові котеджні містечка, таунхауси й приватні будинки. Ставимо вікна як у нові будинки, так і на заміну старих.',
+            "Замовлення з Дмитрівки веде наш магазин у Бучі (вул. Левка Лук'яненка, 7). Безкоштовно приїдемо на замір, порахуємо вартість і доставимо готові конструкції.",
+        ],
+        'points': [
+            ('Будинок з нуля', 'Вікна, балконні та вхідні двері на етапі будівництва. Підкажемо, як підготувати прорізи, щоб усе стало з першого разу.'),
+            ('Тепло взимку', 'Для приватного будинку радимо двокамерний енергозберігаючий склопакет: він помітно зменшує тепловтрати через вікна.'),
+            ('Захист будинку', 'Металеві вхідні двері з надійними замками й захисні ролети на вікна першого поверху.'),
+        ],
+        'faq': [
+            ('Чи безкоштовний замір у Дмитрівці?',
+             'Так, замір і доставка по Дмитрівці безкоштовні. Замір ні до чого не зобов\'язує.'),
+            ('Можна замовити вікна, поки будинок ще будується?',
+             'Так. Найкраще викликати замірника, коли прорізи вже готові: розміри знімаються по факту, і конструкції точно стануть на місце.'),
+            ('Скільки коштують вікна?',
+             'Стандартне вікно — від 3200 грн, вхідні двері — від 8200 грн, балконний блок — від 12 500 грн. Орієнтовну ціну можна порахувати в калькуляторі на сайті, точну — після заміру.'),
+            ('Чи можна розрахуватися частинами?',
+             'Так, можлива розстрочка або оплата частинами — умови фіксуємо в договорі.'),
+        ],
+        'photos': ['hazoblok', 'terasa_bila', 'veranda', 'dveri_dvi', 'dveri_met', 'rolety_dim'],
+    },
+    {
+        'slug': 'myla', 'name': 'Мила', 'loc': 'у селі Мила', 'gen': 'Милої', 'kind': 'село',
+        'store': 'bucha',
+        'title': 'Вікна та двері в селі Мила — металопластикові вікна від 3200 ₴ з монтажем',
+        'desc': 'Металопластикові вікна, вхідні двері, балконні блоки та ролети в селі Мила. Безкоштовний замір і доставка, монтаж власними бригадами, гарантія 5–10 років.',
+        'lead': 'Вікна, двері й ролети для будинків і таунхаусів у селі Мила — з безкоштовним заміром.',
+        'intro': [
+            'Мила — село під Києвом, де багато нових котеджів і таунхаусів. Виготовляємо та встановлюємо тут металопластикові вікна, вхідні двері, балконні блоки й захисні ролети.',
+            "Замовлення з Милої веде наш магазин у Бучі (вул. Левка Лук'яненка, 7). Замір і доставка — безкоштовні, монтаж виконують наші власні бригади.",
+        ],
+        'points': [
+            ('Таунхауси й котеджі', 'Заміна вікон від забудовника на тепліші, скління терас, балконні двері, ламінація в колір фасаду.'),
+            ('Великі прорізи', 'Виготовляємо конструкції будь-якої конфігурації й розміру, зокрема арки та трапеції.'),
+            ('Безпека', 'Металеві вхідні двері з надійними замками та захисні ролети на вікна — для будинку, де вдень нікого немає.'),
+        ],
+        'faq': [
+            ('Чи виїжджаєте в Милу на замір безкоштовно?',
+             'Так, замір і доставка в село Мила безкоштовні. Замір ні до чого не зобов\'язує.'),
+            ('Чи можна замінити вікна від забудовника в таунхаусі?',
+             'Так. Демонтуємо старі вікна, встановлюємо нові й підказуємо, як оздобити відкоси. Монтаж одного вікна триває 1,5–2 години.'),
+            ('Які профілі ви пропонуєте?',
+             'SALAMANDER, VEKA, WDS, GLASSO та VIKNAROFF, фурнітура Maco, Siegenia, Axor. На замірі порівняємо варіанти за ціною та теплом.'),
+            ('Яка гарантія?',
+             'Від 5 до 10 років на конструкції залежно від профілю та 1 рік на монтаж.'),
+        ],
+        'photos': ['terasa_lam', 'terasa_bila', 'lodzhiia', 'dveri_mp', 'dveri_met', 'rolety_vit'],
+    },
+]
+
+KIND_SCHEMA = {'місто': 'City', 'селище': 'Place', 'село': 'Place'}
+
+
+def url_of(c):
+    return f'{SITE}/vikna-dveri-{c["slug"]}/'
+
+
+def path_of(c):
+    return f'/vikna-dveri-{c["slug"]}/'
+
+
+def e(s):
+    return html.escape(s, quote=True)
+
+
+def jdump(obj):
+    return json.dumps(obj, ensure_ascii=False, indent=2)
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# SCHEMA.ORG
+# ──────────────────────────────────────────────────────────────────────────
+def store_schema(key, area_names):
+    s = STORES[key]
+    return {
+        "@type": "HomeAndConstructionBusiness",
+        "@id": s['id'],
+        "name": s['name'],
+        "url": SITE + '/',
+        "telephone": s['phone'],
+        "image": s['image'],
+        "priceRange": "₴₴",
+        "currenciesAccepted": "UAH",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": s['street'],
+            "addressLocality": s['locality'],
+            "postalCode": s['postal'],
+            "addressRegion": "Київська область",
+            "addressCountry": "UA",
+        },
+        "geo": {"@type": "GeoCoordinates", "latitude": s['lat'], "longitude": s['lng']},
+        "hasMap": s['map'],
+        "openingHoursSpecification": HOURS,
+        "areaServed": [{"@type": "City", "name": n} for n in area_names],
+        "parentOrganization": {"@id": SITE + '/#org'},
+        "sameAs": [s['reviews'], FACEBOOK],
+    }
+
+
+def offers_schema():
+    def offer(name, desc, price=None):
+        o = {"@type": "Offer",
+             "itemOffered": {"@type": "Service", "name": name, "description": desc}}
+        if price:
+            o["priceSpecification"] = {"@type": "PriceSpecification", "minPrice": price, "priceCurrency": "UAH"}
+        return o
+    return [
+        offer('Металопластикові вікна з монтажем', 'Вікна на профілях SALAMANDER, VEKA, WDS, GLASSO, VIKNAROFF з фурнітурою Maco, Siegenia, Axor.', 3200),
+        offer('Вхідні двері з монтажем', 'Металопластикові та металеві вхідні двері для будинків і квартир.', 8200),
+        offer('Балконні блоки та скління балконів', 'Балконні блоки з енергозберігаючими склопакетами.', 12500),
+        offer('Захисні ролети', 'Захисні ролети на вікна, двері та вітрини.'),
+        offer('Вікна та двері за програмою єВідновлення', 'Безготівкова оплата за програмою єВідновлення, договір і повний пакет документів для звіту.'),
+    ]
+
+
+def home_schema():
+    all_names = [c['name'] for c in CITIES]
+    graph = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": SITE + '/#website',
+                "url": SITE + '/',
+                "name": "Вікна @ двері",
+                "inLanguage": "uk",
+                "publisher": {"@id": SITE + '/#org'},
+            },
+            {
+                "@type": "Organization",
+                "@id": SITE + '/#org',
+                "name": "Вікна @ двері",
+                "url": SITE + '/',
+                "logo": SITE + '/og-image.png',
+                "foundingDate": "2018",
+                "description": "Металопластикові вікна, вхідні двері, балконні блоки та ролети з монтажем. Магазини в Бучі та Бородянці, працюємо з програмою єВідновлення.",
+                "telephone": [STORES['bucha']['phone'], STORES['borodianka']['phone']],
+                "sameAs": [FACEBOOK],
+                "areaServed": [{"@type": "City", "name": n} for n in all_names],
+                "makesOffer": offers_schema(),
+            },
+            store_schema('bucha', [n for n in all_names if n != 'Бородянка']),
+            store_schema('borodianka', ['Бородянка']),
+        ],
+    }
+    return graph
+
+
+def city_schema(c):
+    store_key = c['store']
+    url = url_of(c)
+    graph = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebPage",
+                "@id": url + '#webpage',
+                "url": url,
+                "name": c['title'],
+                "description": c['desc'],
+                "inLanguage": "uk",
+                "isPartOf": {"@id": SITE + '/#website'},
+                "breadcrumb": {"@id": url + '#breadcrumb'},
+            },
+            {
+                "@type": "BreadcrumbList",
+                "@id": url + '#breadcrumb',
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Головна", "item": SITE + '/'},
+                    {"@type": "ListItem", "position": 2, "name": f"Вікна та двері {c['loc']}", "item": url},
+                ],
+            },
+            {
+                "@type": "Service",
+                "name": f"Металопластикові вікна та двері {c['loc']}",
+                "serviceType": "Виготовлення та монтаж металопластикових вікон і дверей",
+                "areaServed": {
+                    "@type": KIND_SCHEMA[c['kind']],
+                    "name": c['name'],
+                    "containedInPlace": {"@type": "AdministrativeArea", "name": "Київська область"},
+                },
+                "provider": store_schema(store_key, [c['name']]),
+                "offers": {
+                    "@type": "AggregateOffer",
+                    "priceCurrency": "UAH",
+                    "lowPrice": 3200,
+                    "offerCount": 3,
+                },
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {"@type": "Question", "name": q,
+                     "acceptedAnswer": {"@type": "Answer", "text": a}}
+                    for q, a in c['faq']
+                ],
+            },
+        ],
+    }
+    return graph
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# HTML
+# ──────────────────────────────────────────────────────────────────────────
+PHONE_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.28-1.28a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>'
+FB_SVG = '<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.326v21.348C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.894-4.788 4.66-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.794.715-1.794 1.763v2.309h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.326V1.326C24 .593 23.407 0 22.675 0z"/></svg>'
+
+GTM_HEAD = """<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MJZLFQLG');</script>
+<!-- End Google Tag Manager -->"""
+
+GTM_BODY = """<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJZLFQLG"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->"""
+
+
+def city_links_html(current, cls):
+    out = []
+    for c in CITIES:
+        if c is current:
+            continue
+        out.append(f'<a class="{cls}" href="{path_of(c)}">{e(c["name"])}</a>')
+    return '\n      '.join(out)
+
+
+def gallery_html(c):
+    items = []
+    for i, key in enumerate(c['photos']):
+        src, cat, alt = PHOTOS[key]
+        w, h = Image.open(os.path.join(ROOT, src)).size
+        wide = ''
+        label = {'vikna': 'Вікна', 'dveri': 'Двері', 'rolety': 'Ролети'}[cat]
+        items.append(f'''    <div class="gp{wide}" data-cat="{cat}">
+      <img src="/{src}" alt="{e(alt)}" width="{w}" height="{h}" loading="lazy" decoding="async">
+      <div class="gp-overlay"><span class="gp-cat">{label}</span><span class="gp-zoom">↗</span></div>
+    </div>''')
+    return '\n'.join(items)
+
+
+def faq_html(c):
+    return '\n'.join(
+        f'''    <details class="faq-item">
+      <summary>{e(q)}</summary>
+      <div class="faq-answer"><p>{e(a)}</p></div>
+    </details>''' for q, a in c['faq'])
+
+
+def city_page(c):
+    s = STORES[c['store']]
+    other = STORES['borodianka' if c['store'] == 'bucha' else 'bucha']
+    url = url_of(c)
+    intro = '\n      '.join(f'<p>{e(p)}</p>' for p in c['intro'])
+    points = '\n'.join(
+        f'''      <div class="why-card">
+        <div class="why-num">{i + 1:02d}</div>
+        <h3>{e(h)}</h3>
+        <p>{e(p)}</p>
+      </div>''' for i, (h, p) in enumerate(c['points']))
+    points += f'''
+      <div class="why-card">
+        <div class="why-num">{len(c['points']) + 1:02d}</div>
+        <h3>Безкоштовний замір</h3>
+        <p>Замірник приїде {e(c['loc'])} у зручний для вас час, зніме розміри й порахує вартість. Виїзд і доставка — 0 ₴.</p>
+      </div>'''
+
+    return f'''<!DOCTYPE html>
+<html lang="uk">
+<head>
+{GTM_HEAD}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>{e(c['title'])}</title>
+<meta name="description" content="{e(c['desc'])}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="{url}">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="{url}">
+<meta property="og:title" content="{e(c['title'])}">
+<meta property="og:description" content="{e(c['desc'])}">
+<meta property="og:image" content="{SITE}/og-image.png">
+<meta property="og:locale" content="uk_UA">
+<meta property="og:site_name" content="Вікна @ двері">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{e(c['title'])}">
+<meta name="twitter:description" content="{e(c['desc'])}">
+<meta name="twitter:image" content="{SITE}/og-image.png">
+
+<script type="application/ld+json">
+{jdump(city_schema(c))}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css?v={ASSET_V}">
+<script>
+if (history.scrollRestoration) history.scrollRestoration = 'manual';
+try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.classList.add('ev-hidden'); }} catch (e) {{}}
+</script>
+</head>
+<body class="city-page">
+{GTM_BODY}
+
+<!-- Згенеровано _tools/build_seo.py — правте тексти там, а не тут -->
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="ev-bar">
+    <a href="#evidnovlennya" class="ev-bar-main" onclick="closeMenuIfOpen()">
+      <span class="ev-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="ev-bar-text"><span class="evb-long">Працюємо з програмою </span><span class="evb-short">Працюємо з </span><strong>єВідновлення</strong></span>
+      <span class="ev-bar-go" aria-hidden="true">→</span>
+    </a>
+    <button type="button" class="ev-bar-close" onclick="closeEvBar()" aria-label="Сховати повідомлення">×</button>
+  </div>
+  <div class="nav-inner">
+    <a href="/" class="logo" aria-label="Вікна @ двері — на головну">Вікна @<span> двері</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#products">Продукція</a></li>
+      <li><a href="#projects">Роботи</a></li>
+      <li><a href="#process">Процес</a></li>
+      <li><a href="/#calculator">Калькулятор</a></li>
+      <li class="nav-ev"><a href="#evidnovlennya">єВідновлення</a></li>
+      <li><a href="#faq">Питання</a></li>
+    </ul>
+    <a href="#order-form" class="nav-cta">Замовити</a>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="/" onclick="toggleMenu()">Головна</a>
+    <a href="#products" onclick="toggleMenu()">Продукція</a>
+    <a href="#projects" onclick="toggleMenu()">Роботи</a>
+    <a href="#process" onclick="toggleMenu()">Процес</a>
+    <a href="/#calculator" onclick="toggleMenu()">Калькулятор</a>
+    <a href="#evidnovlennya" class="mobile-ev" onclick="toggleMenu()">єВідновлення</a>
+    <a href="#faq" onclick="toggleMenu()">Питання</a>
+    <a href="#order-form" class="mobile-cta" onclick="toggleMenu()">Замовити →</a>
+    <a href="tel:{s['phone']}" class="mobile-phone">📞 {s['phone_h']} — {e(s['locality'])}</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+<section class="hero" id="home">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-body">
+    <div class="hero-left">
+      <nav class="crumbs" aria-label="Навігація">
+        <a href="/">Головна</a><span aria-hidden="true">/</span><span>Вікна та двері {e(c['loc'])}</span>
+      </nav>
+      <h1 class="hero-title">
+        <span class="ht-line">Вікна та двері</span>
+        <em class="ht-line">{e(c['loc'])}</em>
+      </h1>
+      <p class="hero-sub">{e(c['lead'])} Металопластикові вікна від 3200 ₴, вхідні двері від 8200 ₴, гарантія 5–10 років.</p>
+      <form class="hero-quick" id="heroQuick" onsubmit="handleQuickSubmit(event)" novalidate>
+        <div class="hq-title">Залиште номер — передзвонимо і порахуємо вартість</div>
+        <div class="hq-row">
+          <input type="tel" id="quickPhone" name="phone" inputmode="tel"
+                 autocomplete="tel" placeholder="+380 (XX) XXX-XX-XX" aria-label="Номер телефону">
+          <button type="submit" class="hq-btn" id="quickBtn">Отримати розрахунок</button>
+        </div>
+        <input type="text" id="_hpQuick" name="_hpQuick" class="hq-hp" tabindex="-1" autocomplete="off">
+        <div class="hq-msg" id="quickMsg" role="status" aria-live="polite"></div>
+      </form>
+      <ul class="hero-perks">
+        <li><span class="hp-ic">📏</span> Безкоштовний замір</li>
+        <li><span class="hp-ic">🚚</span> Безкоштовна доставка</li>
+        <li><span class="hp-ic">🛡</span> Гарантія 5–10 років</li>
+        <li class="hp-ev"><a href="#evidnovlennya"><span class="ev-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Працюємо з єВідновлення</a></li>
+      </ul>
+    </div>
+
+    <div class="hero-visual">
+      <div class="window-art">
+        <div class="wa-glow"></div>
+        <div class="wa-outer"></div>
+        <div class="wa-frame">
+          <div class="wa-cross-h"></div>
+          <div class="wa-cross-v"></div>
+          <div class="wa-pane p1"></div>
+          <div class="wa-pane p2"></div>
+          <div class="wa-pane p3"></div>
+          <div class="wa-pane p4"></div>
+          <div class="wa-shine"></div>
+        </div>
+        <div class="wa-tag tag-top">
+          <strong>SALAMANDER · VEKA · WDS · GLASSO</strong>
+          <span>Надійні профілі</span>
+        </div>
+        <div class="wa-tag tag-bot">
+          <strong>від 3 200 ₴</strong>
+          <span>за стандартне вікно</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ ПРО МІСТО ═══════════════════════════════ -->
+<section class="why-us city-about" id="products">
+  <div class="why-inner">
+    <div class="why-head reveal">
+      <div class="section-label">{e(c['name'])}</div>
+      <h2 class="section-title">Металопластикові вікна, двері й ролети {e(c['loc'])}</h2>
+      <div class="city-text">
+      {intro}
+      </div>
+    </div>
+    <div class="why-cards reveal">
+{points}
+    </div>
+    <div class="city-prices reveal">
+      <a href="/#products" class="city-price"><span>Металопластикові вікна</span><strong>від 3 200 ₴</strong></a>
+      <a href="/#products" class="city-price"><span>Вхідні двері</span><strong>від 8 200 ₴</strong></a>
+      <a href="/#products" class="city-price"><span>Балконні блоки</span><strong>від 12 500 ₴</strong></a>
+      <a href="/#calculator" class="city-price"><span>Порахувати свій варіант</span><strong>Калькулятор →</strong></a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ ГАЛЕРЕЯ ═══════════════════════════════ -->
+<section class="gallery-section" id="projects">
+  <div class="gallery-header reveal">
+    <div class="section-label">Наші роботи</div>
+    <h2 class="section-title">Приклади виконаних робіт</h2>
+    <p class="section-sub">Вікна, двері й ролети, які ми виготовили та встановили на об'єктах у Бучанському районі.</p>
+  </div>
+  <div class="gallery-grid" id="galleryGrid">
+{gallery_html(c)}
+  </div>
+  <div class="lightbox" id="lightbox">
+    <div class="lb-backdrop" onclick="closeLb()"></div>
+    <button class="lb-close" onclick="closeLb()" aria-label="Закрити">×</button>
+    <button class="lb-prev" onclick="lbNav(-1)" aria-label="Попереднє фото">&#8592;</button>
+    <div class="lb-stage">
+      <img class="lb-img" id="lbImg" src="" alt="">
+    </div>
+    <button class="lb-next" onclick="lbNav(1)" aria-label="Наступне фото">&#8594;</button>
+    <div class="lb-bar">
+      <span class="lb-cat" id="lbCat"></span>
+      <span class="lb-counter" id="lbCounter"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ PROCESS ═══════════════════════════════ -->
+<section class="process" id="process">
+  <div class="process-head reveal">
+    <div class="section-label">Як ми працюємо</div>
+    <h2 class="section-title">4 кроки до нових вікон</h2>
+    <p class="section-sub">Від дзвінка до встановлення {e(c['loc'])} — швидко і прозоро</p>
+  </div>
+  <div class="process-steps reveal">
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-num">01</div>
+      <h3>Консультація та замір</h3>
+      <p>Менеджер підбере рішення, а замірник приїде у зручний час, щоб зняти точні розміри. Безкоштовно.</p>
+    </div>
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-num">02</div>
+      <h3>Договір</h3>
+      <p>Фіксуємо вартість, терміни та деталі у договорі. Можлива розстрочка або оплата частинами.</p>
+    </div>
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-num">03</div>
+      <h3>Виготовлення</h3>
+      <p>3–10 робочих днів. Нестандартні конструкції або ламінація — 3–4 тижні.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>Монтаж</h3>
+      <p>Одне вікно — 1,5–2 години. Монтаж від 800 грн/м², гарантія на монтаж — 1 рік.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ єВІДНОВЛЕННЯ ═══════════════════════════════ -->
+<section class="evidn" id="evidnovlennya">
+  <div class="evidn-inner">
+    <div class="evidn-copy reveal">
+      <span class="evidn-badge">
+        <span class="ev-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="evidn-badge-text">єВідновлення</span>
+      </span>
+      <div class="section-label">Державна програма</div>
+      <h2 class="section-title">Вікна та двері за єВідновлення {e(c['loc'])}</h2>
+      <p class="section-sub">Встановлюємо вікна, двері, балконні блоки та ролети власникам пошкодженого житла й приймаємо безготівкову оплату за програмою. Працюємо за договором і готуємо повний пакет документів для звітування.</p>
+      <div class="evidn-actions">
+        <a href="#order-form" class="btn-primary">Порахувати за програмою</a>
+        <a href="tel:{s['phone']}" class="btn-outline evidn-call">📞 {s['phone_h']}</a>
+      </div>
+      <p class="evidn-note">Ще не маєте сертифіката? Заяву подають у застосунку «Дія» або в ЦНАП. Зателефонуйте — підкажемо, який обсяг робіт закласти в кошторис і які документи знадобляться.</p>
+    </div>
+    <ol class="evidn-steps reveal">
+      <li class="evidn-step">
+        <div class="evidn-step-n">01</div>
+        <h3>Безкоштовний замір</h3>
+        <p>Фіксуємо точні розміри та обсяг робіт — на цьому етапі ви нічого не платите.</p>
+      </li>
+      <li class="evidn-step">
+        <div class="evidn-step-n">02</div>
+        <h3>Кошторис і договір</h3>
+        <p>Специфікація, рахунок і договір з фіксованою ціною — саме той пакет, що потрібен для оплати за програмою.</p>
+      </li>
+      <li class="evidn-step">
+        <div class="evidn-step-n">03</div>
+        <h3>Безготівкова оплата</h3>
+        <p>Оплата з рахунку єВідновлення. Якщо сума сертифіката менша за вартість — доплату вносите окремо.</p>
+      </li>
+      <li class="evidn-step">
+        <div class="evidn-step-n">04</div>
+        <h3>Монтаж і документи</h3>
+        <p>Встановлюємо конструкції та видаємо акт виконаних робіт і видаткові документи для звіту.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FAQ ═══════════════════════════════ -->
+<section class="faq" id="faq">
+  <div class="faq-head reveal">
+    <div class="section-label">Питання та відповіді</div>
+    <h2 class="section-title">Вікна та двері {e(c['loc'])}: часті питання</h2>
+  </div>
+  <div class="faq-list reveal">
+{faq_html(c)}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ ІНШІ МІСТА ═══════════════════════════════ -->
+<section class="service-area" id="service-area">
+  <div class="service-area-inner reveal">
+    <div class="section-label">Географія обслуговування</div>
+    <h2 class="section-title">Працюємо і в сусідніх містах</h2>
+    <div class="area-grid">
+      {city_links_html(c, 'area-pill')}
+    </div>
+    <p class="area-note">Не знайшли свій населений пункт? Напишіть його у формі або скажіть менеджеру — узгодимо виїзд індивідуально.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ CONTACT ═══════════════════════════════ -->
+<section class="contact" id="contact">
+  <div class="contact-left">
+    <div class="section-label reveal">Наш магазин</div>
+    <h2 class="section-title reveal">Замовлення {e(c['gen'])} веде магазин у {'Бучі' if c['store'] == 'bucha' else 'Бородянці'}</h2>
+    <div class="contact-info reveal">
+      <div class="contact-item">
+        <div class="contact-item-header">
+          <div class="contact-item-icon">📍</div>
+          <div class="contact-item-label">{e(s['place'])}</div>
+        </div>
+        <div class="contact-item-text">
+          <div class="contact-item-value">{e(s['street'])}</div>
+          <a href="tel:{s['phone']}" class="call-btn" onclick="trackCall('{e(s['locality'])}')">
+            {PHONE_SVG}
+            {s['phone_h']}
+          </a>
+          <div class="store-hours">
+            <div class="hours-title">Графік роботи</div>
+            <div class="hours-row"><span>Пн – Пт</span><span>9:00 – 17:00</span></div>
+            <div class="hours-row"><span>Субота</span><span>9:00 – 15:00</span></div>
+            <div class="hours-row"><span>Неділя</span><span class="hours-closed">Вихідний</span></div>
+          </div>
+          <iframe src="{s['embed']}" class="contact-map-iframe" title="Магазин Вікна @ двері на карті — {e(s['place'])}" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <a href="{s['map']}" target="_blank" rel="noopener" class="btn-outline" style="width:100%; text-align:center; padding:12px;">🗺 Прокласти маршрут</a>
+          <a href="{s['reviews']}" target="_blank" rel="noopener" class="ft-gl-link city-reviews">⭐ Відгуки про магазин у Google</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-right reveal" id="order-form">
+    <div class="section-label" style="color: var(--accent); margin-bottom: 24px;">Форма замовлення</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="clientName">Ваше ім'я</label>
+        <input type="text" id="clientName" placeholder="Ваше ім'я" required>
+      </div>
+      <div class="form-group">
+        <label for="clientPhone">Номер телефону</label>
+        <input type="tel" id="clientPhone" placeholder="+380 (XX) XXX-XX-XX" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="clientCity">Населений пункт</label>
+      <input type="text" id="clientCity" list="cityList" value="{e(c['name'] if c['kind'] != 'село' else 'с. ' + c['name'])}" placeholder="Оберіть зі списку або впишіть своє місто/село" required>
+    </div>
+    <div class="form-group">
+      <label for="clientProduct">Тип продукту</label>
+      <select id="clientProduct">
+        <option value="">Оберіть тип...</option>
+        <option value="Металопластикові вікна">Металопластикові вікна</option>
+        <option value="Вхідні двері">Вхідні двері</option>
+        <option value="Балконний блок">Балконний блок / Скління</option>
+        <option value="Нестандартна форма">Нестандартна форма (арка, трапеція)</option>
+        <option value="Потрібна консультація">Не знаю — потрібна консультація</option>
+      </select>
+    </div>
+    <div class="form-group form-ev">
+      <label class="ev-check">
+        <input type="checkbox" id="clientEv">
+        <span class="ev-check-box" aria-hidden="true"></span>
+        <span class="ev-check-text">Оплачуватиму за програмою «єВідновлення»</span>
+      </label>
+    </div>
+    <div class="form-group">
+      <label for="clientComment">Коментар (необов'язково)</label>
+      <textarea id="clientComment" placeholder="Опишіть ваш запит..."></textarea>
+    </div>
+    <input type="text" id="_hp" name="_hp" style="display:none;" tabindex="-1" autocomplete="off">
+    <button class="form-submit" onclick="handleSubmit(this)">Надіслати заявку</button>
+    <p style="color: rgba(245,242,237,0.3); font-size: 0.78rem; margin-top: 16px; line-height: 1.5;">
+      Натискаючи кнопку, ви погоджуєтесь з обробкою персональних даних.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer>
+  <div class="footer-main">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">Вікна @<span> двері</span></a>
+      <p class="footer-tagline">Металопластикові вікна та двері<br>Буча, Ірпінь, Бородянка</p>
+      <a href="#evidnovlennya" class="footer-ev">
+        <span class="ev-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        Працюємо з програмою «єВідновлення»
+      </a>
+    </div>
+    <div class="footer-contacts-col">
+      <div class="footer-col-title">Телефони</div>
+      <a href="tel:{STORES['bucha']['phone']}" class="footer-phone-link">📞 {STORES['bucha']['phone_h']} — Буча</a>
+      <a href="tel:{STORES['borodianka']['phone']}" class="footer-phone-link">📞 {STORES['borodianka']['phone_h']} — Бородянка</a>
+    </div>
+    <div class="footer-cities-col">
+      <div class="footer-col-title">Міста</div>
+      {footer_cities_html()}
+    </div>
+    <div class="footer-social-col">
+      <div class="footer-col-title">Соціальні мережі</div>
+      <a href="{FACEBOOK}" target="_blank" rel="noopener" class="footer-fb-btn">
+        {FB_SVG}
+        Ми у Facebook
+      </a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© {date.today().year} Вікна @ двері. Всі права захищені.</div>
+  </div>
+</footer>
+
+<div class="leaves" id="leaves" aria-hidden="true"></div>
+
+<button type="button" class="to-top" id="toTop" onclick="scrollToTop()" aria-label="Піднятись на початок сторінки">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<div class="call-bar" id="callBar">
+  <a href="tel:{s['phone']}" class="call-bar-btn" onclick="trackCall('{e(s['locality'])}')">
+    <span class="cb-ic">📞</span>{s['phone_s']}
+  </a>
+  <a href="tel:{other['phone']}" class="call-bar-btn" onclick="trackCall('{e(other['locality'])}')">
+    <span class="cb-ic">📞</span>{other['phone_s']}
+  </a>
+  <button type="button" class="call-bar-cta" onclick="requestCall()">Замовити дзвінок</button>
+</div>
+
+<datalist id="cityList">
+{datalist_html()}
+</datalist>
+
+<script src="/script.js?v={ASSET_V}"></script>
+</body>
+</html>
+'''
+
+
+def footer_cities_html():
+    return '\n      '.join(
+        f'<a href="{path_of(c)}" class="footer-phone-link">Вікна та двері {e(c["loc"])}</a>' for c in CITIES)
+
+
+def datalist_html():
+    return '\n'.join(
+        f'  <option value="{e(c["name"] if c["kind"] != "село" else "с. " + c["name"])}">' for c in CITIES)
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# SITEMAP
+# ──────────────────────────────────────────────────────────────────────────
+def sitemap(today):
+    def img(src, title):
+        return f'''    <image:image>
+      <image:loc>{SITE}/{src}</image:loc>
+      <image:title>{e(title)}</image:title>
+    </image:image>'''
+
+    home_imgs = '\n'.join(img(src, alt) for src, _, alt in PHOTOS.values())
+    urls = [f'''  <url>
+    <loc>{SITE}/</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+{home_imgs}
+  </url>''']
+    for c in CITIES:
+        imgs = '\n'.join(img(PHOTOS[k][0], PHOTOS[k][2]) for k in c['photos'][:3])
+        urls.append(f'''  <url>
+    <loc>{url_of(c)}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+{imgs}
+  </url>''')
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n'
+            '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
+            + '\n'.join(urls) + '\n</urlset>\n')
+
+
+def main():
+    today = date.today().isoformat()
+
+    for c in CITIES:
+        d = os.path.join(ROOT, f'vikna-dveri-{c["slug"]}')
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, 'index.html'), 'w', encoding='utf-8') as f:
+            f.write(city_page(c))
+        print('page  ', path_of(c))
+
+    index_path = os.path.join(ROOT, 'index.html')
+    src = open(index_path, encoding='utf-8').read()
+    block = ('<!-- schema:stores:begin -->\n<script type="application/ld+json">\n'
+             + jdump(home_schema()) + '\n</script>\n<!-- schema:stores:end -->')
+    new, n = re.subn(r'<!-- schema:stores:begin -->.*?<!-- schema:stores:end -->',
+                     lambda _: block, src, flags=re.S)
+    if n != 1:
+        raise SystemExit('index.html: не знайдено маркери schema:stores')
+    open(index_path, 'w', encoding='utf-8').write(new)
+    print('schema  index.html')
+
+    with open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8') as f:
+        f.write(sitemap(today))
+    print('sitemap ', len(CITIES) + 1, 'URL')
+
+
+if __name__ == '__main__':
+    main()

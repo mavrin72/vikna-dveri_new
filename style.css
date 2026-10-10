@@ -54,7 +54,7 @@ nav.scrolled {
   font-family:'Cormorant Garamond',serif;
   font-size:1.55rem; font-weight:700;
   color:var(--white); letter-spacing:1px;
-  cursor:default;
+  cursor:pointer; text-decoration:none;
 }
 .logo span { color:var(--accent); }
 .nav-links {
@@ -1043,7 +1043,7 @@ nav.scrolled {
   font-size:3.5rem; color:rgba(200,169,110,0.2);
   line-height:1; font-weight:700; margin-bottom:12px;
 }
-.why-card h4 {
+.why-card h4, .why-card h3 {
   color:var(--navy); font-size:1rem;
   margin-bottom:10px; font-weight:600;
 }
@@ -1223,7 +1223,7 @@ nav.scrolled {
 }
 .measure-point:hover { background:#fffdf8; }
 .mp-ic { font-size:1.6rem; line-height:1; margin-bottom:16px; }
-.measure-point h4 {
+.measure-point h4, .measure-point h3 {
   font-family:'Cormorant Garamond',serif;
   font-size:1.3rem; font-weight:600; color:var(--navy);
   margin-bottom:10px; line-height:1.25;
@@ -1320,7 +1320,7 @@ nav.scrolled {
   font-size:2.6rem; line-height:1; font-weight:700;
   color:rgba(255,210,0,0.5); margin-bottom:12px;
 }
-.evidn-step h4 {
+.evidn-step h4, .evidn-step h3 {
   font-family:'Cormorant Garamond',serif;
   font-size:1.3rem; font-weight:600; color:var(--white);
   margin-bottom:10px; line-height:1.25;
@@ -1455,7 +1455,7 @@ label.ev-check input:focus-visible + .ev-check-box { outline:2px solid var(--acc
   font-size:4.5rem; color:rgba(200,169,110,0.15);
   line-height:1; font-weight:700; margin-bottom:24px;
 }
-.step h4 {
+.step h4, .step h3 {
   color:var(--white); font-size:1.02rem;
   margin-bottom:12px; font-weight:600;
 }
@@ -1807,9 +1807,10 @@ footer { background:#040c18; border-top:1px solid var(--border-d); }
   align-items:flex-start; flex-wrap:wrap;
 }
 .footer-brand { flex:1.5; display:flex; flex-direction:column; gap:14px; }
-.footer-contacts-col { flex:1; display:flex; flex-direction:column; gap:4px; }
+.footer-contacts-col, .footer-cities-col { flex:1; display:flex; flex-direction:column; gap:4px; }
 .footer-social-col { flex:1; display:flex; flex-direction:column; gap:0; }
 .footer-logo {
+  text-decoration:none;
   font-family:'Cormorant Garamond',serif;
   font-size:1.5rem; color:var(--white); font-weight:700;
 }
@@ -2049,4 +2050,51 @@ html.ev-hidden .hero-body { padding-top:124px; }
 @media (max-width:480px) {
   .hero-body { padding-top:128px; }
   html.ev-hidden .hero-body { padding-top:96px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   СТОРІНКИ МІСТ (/vikna-dveri-*/) і посилання на них
+═══════════════════════════════════════════════════════════════ */
+a.area-pill { text-decoration:none; }
+.ap-list a { color:inherit; text-decoration:none; }
+.ap-list a:hover { color:var(--accent); }
+
+.crumbs {
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  font-size:0.78rem; color:rgba(245,242,237,0.45);
+  margin-bottom:22px;
+}
+.crumbs a { color:var(--accent); text-decoration:none; }
+.crumbs a:hover { text-decoration:underline; }
+
+.city-page .hero-title .ht-line + .ht-line { color:var(--accent); }
+
+.city-text { max-width:760px; }
+.city-text p {
+  color:var(--muted); font-size:0.98rem; line-height:1.75;
+  margin-bottom:14px;
+}
+.city-about .why-head .section-title { margin-bottom:22px; }
+
+.city-prices {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+  margin-top:28px;
+}
+.city-price {
+  display:flex; flex-direction:column; gap:6px;
+  padding:18px 20px; background:var(--white);
+  border:1px solid var(--border-l); text-decoration:none;
+  transition:border-color .25s;
+}
+.city-price:hover { border-color:var(--accent); }
+.city-price span { color:var(--muted); font-size:0.82rem; }
+.city-price strong { color:var(--navy); font-size:1.05rem; }
+
+.city-reviews { display:inline-block; margin-top:12px; }
+
+@media (max-width:1100px) {
+  .city-prices { grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:480px) {
+  .city-prices { grid-template-columns:1fr; }
 }
