@@ -24,7 +24,7 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://vikna-dveri.store'
-ASSET_V = '41'  # версія style.css / script.js для скидання кешу
+ASSET_V = '42'  # версія style.css / script.js для скидання кешу
 
 # ──────────────────────────────────────────────────────────────────────────
 # МАГАЗИНИ
@@ -73,6 +73,7 @@ STORES = {
 }
 
 FACEBOOK = 'https://www.facebook.com/share/1DU7kvaXvb/?mibextid=wwXIfr'
+INSTAGRAM = 'https://www.instagram.com/vikna_dveri_bucha1/'
 
 # ──────────────────────────────────────────────────────────────────────────
 # ФОТО (шлях, категорія, alt)
@@ -650,7 +651,7 @@ def store_schema(key, area_names):
         "openingHoursSpecification": HOURS,
         "areaServed": [{"@type": "City", "name": n} for n in area_names],
         "parentOrganization": {"@id": SITE + '/#org'},
-        "sameAs": [s['reviews'], FACEBOOK],
+        "sameAs": [s['reviews'], FACEBOOK, INSTAGRAM],
     }
 
 
@@ -692,7 +693,7 @@ def home_schema():
                 "foundingDate": "2018",
                 "description": "Металопластикові вікна, вхідні двері, балконні блоки та ролети з монтажем. Магазини в Бучі та Бородянці, працюємо з програмою єВідновлення.",
                 "telephone": [STORES['bucha']['phone'], STORES['borodianka']['phone']],
-                "sameAs": [FACEBOOK],
+                "sameAs": [FACEBOOK, INSTAGRAM],
                 "areaServed": [{"@type": "City", "name": n} for n in all_names],
                 "makesOffer": offers_schema(),
             },
@@ -760,6 +761,7 @@ def city_schema(c):
 # HTML
 # ──────────────────────────────────────────────────────────────────────────
 PHONE_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.28-1.28a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>'
+IG_SVG = '<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.72 3.72 0 0 1-1.38-.9 3.72 3.72 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63a5.88 5.88 0 0 0-2.13 1.38A5.88 5.88 0 0 0 .63 4.14C.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.72 1.46 1.38 2.13a5.88 5.88 0 0 0 2.13 1.38c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.88 5.88 0 0 0 2.13-1.38 5.88 5.88 0 0 0 1.38-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.88 5.88 0 0 0-1.38-2.13A5.88 5.88 0 0 0 19.86.63C19.1.33 18.22.13 16.95.07 15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>'
 FB_SVG = '<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.326v21.348C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.894-4.788 4.66-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.794.715-1.794 1.763v2.309h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.326V1.326C24 .593 23.407 0 22.675 0z"/></svg>'
 
 GTM_HEAD = """<!-- Google Tag Manager -->
@@ -1250,6 +1252,10 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
       <a href="{FACEBOOK}" target="_blank" rel="noopener" class="footer-fb-btn">
         {FB_SVG}
         Ми у Facebook
+      </a>
+      <a href="{INSTAGRAM}" target="_blank" rel="noopener" class="footer-fb-btn footer-ig-btn">
+        {IG_SVG}
+        Ми в Instagram
       </a>
     </div>
   </div>
