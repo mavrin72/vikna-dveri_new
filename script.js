@@ -174,7 +174,18 @@ function promoDeadlineText() {
   return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
 }
 
-const promoEligible = window.location.hash === PROMO_HASH;
+// Попап бачать ті, хто прийшов з реклами: за посиланням з #advertising
+// або з кліку Google Ads (автопозначення додає gclid/gbraid/wbraid).
+// Позначку тримаємо в сесії, щоб вона не губилась при переході між сторінками.
+const promoEligible = (() => {
+  const params = new URLSearchParams(window.location.search);
+  const fromAds = window.location.hash === PROMO_HASH
+    || ['gclid', 'gbraid', 'wbraid'].some(p => params.has(p));
+  try {
+    if (fromAds) sessionStorage.setItem('_promoEligible', '1');
+    return fromAds || !!sessionStorage.getItem('_promoEligible');
+  } catch (e) { return fromAds; }
+})();
 
 function showPromoPill() {
   const pill = document.getElementById('promoPill');
@@ -188,6 +199,10 @@ function hidePromoPill() {
 function openPromo() {
   const modal = document.getElementById('promoModal');
   if (!modal) return;
+  // На сторінці міста підставляємо його в попап, як у головній формі
+  const promoCity = document.getElementById('promoCity');
+  const pageCity  = document.getElementById('clientCity');
+  if (promoCity && !promoCity.value && pageCity && pageCity.defaultValue) promoCity.value = pageCity.defaultValue;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
   hidePromoPill();
