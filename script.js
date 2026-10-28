@@ -518,6 +518,86 @@ const _formLoadTime = Date.now();
 let _lastWebhookReply = '';
 const _leadDebug = /[?&]debug=1/.test(window.location.search);
 
+/* ═══════════════════════════════════════════════════════════════
+   ДАНІ ПРО ВІЗИТ — дописуються в коментар заявки
+═══════════════════════════════════════════════════════════════ */
+// Звідки прийшла людина, скільки була на сайті, які сторінки відкрила
+// і на що натискала. Зберігаємо в sessionStorage, щоб дані не губились
+// при переході між сторінками. Вебхук не змінюється — усе йде в comment.
+const VISIT_KEY = '_visit';
+
+function visitSource() {
+  const p   = new URLSearchParams(location.search);
+  let ref = '';
+  try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) {}
+  if (['gclid', 'gbraid', 'wbraid'].some(k => p.has(k))) return 'Google Ads (клік по рекламі)';
+  if (p.get('utm_source')) {
+    return 'utm: ' + [p.get('utm_source'), p.get('utm_medium'), p.get('utm_campaign')].filter(Boolean).join(' / ');
+  }
+  if (location.hash === '#advertising') return 'Реклама (#advertising)';
+  if (p.has('fbclid') || /facebook|instagram/.test(ref)) return 'Facebook / Instagram';
+  if (/google\./.test(ref)) return 'Google пошук';
+  if (ref && ref !== location.hostname) return 'Перехід з ' + ref;
+  return 'Прямий захід';
+}
+
+function loadVisit() {
+  try { return JSON.parse(sessionStorage.getItem(VISIT_KEY)) || null; } catch (e) { return null; }
+}
+function saveVisit(v) {
+  try { sessionStorage.setItem(VISIT_KEY, JSON.stringify(v)); } catch (e) {}
+}
+
+(function initVisit() {
+  const v = loadVisit() || {
+    start:  Date.now(),
+    source: visitSource(),
+    pages:  [],
+    clicks: []
+  };
+  const path = location.pathname;
+  if (v.pages[v.pages.length - 1] !== path) v.pages.push(path);
+  v.pages = v.pages.slice(-10);
+  saveVisit(v);
+})();
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('a, button, summary, [onclick], [role="button"]');
+  if (!el) return;
+  let label = (el.getAttribute('aria-label') || el.textContent || '').replace(/\s+/g, ' ').trim();
+  if (!label) label = el.getAttribute('href') || el.tagName.toLowerCase();
+  if (label.length > 40) label = label.slice(0, 40) + '…';
+  const v = loadVisit();
+  if (!v) return;
+  if (v.clicks[v.clicks.length - 1] !== label) v.clicks.push(label);
+  v.clicks = v.clicks.slice(-15);
+  saveVisit(v);
+}, true);
+
+function formatDuration(ms) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  const m = Math.floor(s / 60);
+  return m ? m + ' хв ' + (s % 60) + ' с' : s + ' с';
+}
+
+function visitSummary(submitLabel) {
+  const v = loadVisit();
+  if (!v) return '';
+  const device = /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'телефон' : 'комп\'ютер';
+  // Сама кнопка відправки — не цікава менеджеру, прибираємо її з кінця
+  const clicks = v.clicks.slice();
+  if (clicks[clicks.length - 1] === submitLabel) clicks.pop();
+  return [
+    '———',
+    '🌐 Сайт: ' + location.hostname + location.pathname,
+    '📣 Джерело: ' + v.source,
+    '⏱ На сайті: ' + formatDuration(Date.now() - v.start),
+    '📄 Сторінки: ' + v.pages.join(' → '),
+    '👆 Натискав: ' + (clicks.length ? clicks.join(' → ') : 'нічого'),
+    '📱 Пристрій: ' + device
+  ].join('\n');
+}
+
 // Будь-який український номер приводимо до +380XXXXXXXXX:
 // «0968874658», «380968874658», «+38 (096) 887-46-58» і навіть «+380+380968874658»
 // (поле саме підставляє +380, а людина вставляє номер повністю).
@@ -565,6 +645,8 @@ async function submitLead({ name, phone, city, product, comment, honeypot, quick
 
   let ok = false;
   const originalText = btn.textContent;
+  const visit = visitSummary(originalText.replace(/\s+/g, ' ').trim());
+  comment = [(comment || '').trim(), visit].filter(Boolean).join('\n');
   btn.disabled = true;
   btn.textContent = 'Відправка...';
 
