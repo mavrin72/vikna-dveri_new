@@ -1079,7 +1079,16 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
 
     // Стан із попередньої сторінки: висоти в частках CAP, x — у частках ширини
     let saved = null;
-    try { saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
+    // Оновлення сторінки (F5) — чистий екран; перехід між сторінками сайту — купа лишається
+    let reload = false;
+    try {
+      const nav = performance.getEntriesByType('navigation')[0];
+      reload = nav ? nav.type === 'reload' : (performance.navigation && performance.navigation.type === 1);
+    } catch (e) {}
+    try {
+      if (reload) sessionStorage.removeItem(KEY);
+      else saved = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+    } catch (e) {}
 
     function resize() {
       const old = cols ? { h: Array.from(h, v => v / CAP), l: leaves.map(l => [l[0] / W, l[1] / CAP, l[2], l[3], l[4], l[5], l[6]]) } : saved;

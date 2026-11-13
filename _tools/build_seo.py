@@ -25,7 +25,7 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://vikna-dveri.store'
 ASSET_V = '45'  # версія style.css для скидання кешу
-JS_V = '47'     # версія script.js для скидання кешу
+JS_V = '48'     # версія script.js для скидання кешу
 
 # ──────────────────────────────────────────────────────────────────────────
 # МАГАЗИНИ
