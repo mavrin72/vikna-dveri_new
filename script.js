@@ -1082,7 +1082,7 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
     try { saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
 
     function resize() {
-      const old = cols ? { h: Array.from(h, v => v / CAP), l: leaves.map(l => [l[0] / W, l[1] / CAP, l[2], l[3], l[4], l[5]]) } : saved;
+      const old = cols ? { h: Array.from(h, v => v / CAP), l: leaves.map(l => [l[0] / W, l[1] / CAP, l[2], l[3], l[4], l[5], l[6]]) } : saved;
       W = window.innerWidth;
       CAP = W < 768 ? 30 : 46;
       H = CAP + 60;                                   // запас над купою — для валу перед відвалом
@@ -1094,7 +1094,7 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
       leaves = [];
       if (old && old.h && old.h.length) {
         for (let c = 0; c < cols; c++) h[c] = (old.h[Math.min(old.h.length - 1, Math.floor(c / cols * old.h.length))] || 0) * CAP;
-        if (old.l) leaves = old.l.map(l => [l[0] * W, l[1] * CAP, l[2], l[3], l[4], l[5]]);
+        if (old.l) leaves = old.l.map(l => [l[0] * W, l[1] * CAP, l[2], l[3], l[4], l[5], l[6] || 0.8]);
       }
       draw();
     }
@@ -1132,7 +1132,12 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
         bump(x, 12 + size * 1.4, 2.4 + size * 0.35);
         settle(Math.floor(x / STEP) - 12, Math.ceil(x / STEP) + 12);
       } else {
-        leaves.push([x, h[c] + size * 0.25, Math.random() * 6.28, +el.dataset.s || 0, +el.dataset.c || 0, size * 0.8]);
+        // Лягає точно так, як летів: той самий кут, розмір і прозорість — без «підміни»
+        const m = getComputedStyle(el.firstChild).transform;
+        let ang = Math.random() * 6.28;
+        if (m && m.startsWith('matrix(')) { const v = m.slice(7, -1).split(','); ang = Math.atan2(+v[1], +v[0]); }
+        const op = parseFloat(el.style.getPropertyValue('--leaf-op')) || 0.8;
+        leaves.push([x, h[c] + size * 0.35, ang, +el.dataset.s || 0, +el.dataset.c || 0, size, op]);
         if (leaves.length > 900) leaves.shift();
         bump(x, size * 0.6, size * 0.45);
       }
@@ -1140,8 +1145,15 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
       updateButton();
       scheduleSave();
     }
+    // Кожен листок/сніжинка падає приблизно в тому ж місці — тож наступного
+    // разу хай приземляється на поверхню купи під собою, а не провалюється в неї
+    function aim(el) {
+      const r = el.firstChild.getBoundingClientRect();
+      const c = Math.max(0, Math.min(cols - 1, Math.round((r.left + r.width / 2) / STEP)));
+      el.style.setProperty('--pile-h', h[c].toFixed(1) + 'px');
+    }
     layer.addEventListener('animationiteration', e => {
-      if (e.target.parentNode === layer) deposit(e.target);
+      if (e.target.parentNode === layer) { deposit(e.target); aim(e.target); }
     });
 
     // ── Малювання ──
@@ -1182,6 +1194,7 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
           ctx.save();
           ctx.translate(l[0], H - l[1]);
           ctx.rotate(l[2]);
+          ctx.globalAlpha = l[6] || 0.8;
           ctx.scale(l[5] / 64, l[5] / 64);
           ctx.translate(-32, -32);
           ctx.fillStyle = COLORS[l[4]] || COLORS[0];
@@ -1200,7 +1213,7 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
       try {
         sessionStorage.setItem(KEY, JSON.stringify({
           h: Array.from(h, v => +(v / CAP).toFixed(3)),
-          l: leaves.map(l => [+(l[0] / W).toFixed(4), +(l[1] / CAP).toFixed(3), +l[2].toFixed(2), l[3], l[4], +l[5].toFixed(1)])
+          l: leaves.map(l => [+(l[0] / W).toFixed(4), +(l[1] / CAP).toFixed(3), +l[2].toFixed(2), l[3], l[4], +l[5].toFixed(1), +(l[6] || 0.8).toFixed(2)])
         }));
       } catch (e) {}
     }
@@ -1211,7 +1224,8 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tractor-call';
-    btn.innerHTML = '<span aria-hidden="true">🚜</span> Викликати трактор';
+    btn.innerHTML = '<span class="tc-ic" aria-hidden="true">🚜</span> Почистити';
+    btn.setAttribute('aria-label', 'Почистити: викликати трактор');
     document.body.appendChild(btn);
     function fill() { let s = 0; for (let c = 0; c < cols; c++) s += h[c]; return s / cols / CAP; }
     function updateButton() { btn.classList.toggle('show', !driving && fill() > (snow ? 0.18 : 0.12)); }
@@ -1289,11 +1303,11 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
         mound = Math.min(CAP * 0.9, Math.sqrt(carried) * 0.9);
         if (!snow) {
           for (const l of leaves) {
-            if (l[6] === undefined && l[0] < plowX) {
-              l[6] = Math.random() * (10 + mound);    // зсув перед відвалом
+            if (l[7] === undefined && l[0] < plowX) {
+              l[7] = Math.random() * (10 + mound);    // зсув перед відвалом
               l[1] = Math.random() * mound * 0.9 + 3;
             }
-            if (l[6] !== undefined) l[0] = plowX + l[6];
+            if (l[7] !== undefined) l[0] = plowX + l[7];
           }
         }
         draw();
@@ -1303,7 +1317,7 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
       function finish() {
         tr.remove();
         plowX = -1; mound = 0;
-        leaves = leaves.filter(l => l[6] === undefined);
+        leaves = leaves.filter(l => l[7] === undefined);
         draw();
         save();
         driving = false;

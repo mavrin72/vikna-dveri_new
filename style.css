@@ -1785,8 +1785,7 @@ html.ev-hidden [id] { scroll-margin-top:80px; }
 @keyframes leafFall {
   0%   { transform:translateY(0);     opacity:0; }
   7%   { opacity:var(--leaf-op,0.6); }
-  95%  { opacity:var(--leaf-op,0.6); }
-  100% { transform:translateY(calc(112vh - var(--pile-bottom, 0px) - 100%)); opacity:0; }
+  100% { transform:translateY(calc(112vh - var(--pile-bottom, 0px) - 100% - var(--pile-h, 0px))); opacity:var(--leaf-op,0.6); }
 }
 /* Кут і розмах гойдання — теж змінні, щоб кожен листок падав по-своєму */
 @keyframes leafSway {
@@ -1821,7 +1820,20 @@ html.ev-hidden [id] { scroll-margin-top:80px; }
 }
 .tractor-call.show { opacity:1; visibility:visible; transform:translate(-50%, 0); }
 .tractor-call:hover { background:var(--navy-3); }
-.tractor-call span { font-size:1.15rem; line-height:1; }
+.tractor-call .tc-ic {
+  display:inline-block; font-size:1.15rem; line-height:1;
+  transform-origin:50% 90%;
+  animation:tcHop 2.4s ease-in-out infinite;
+}
+.tractor-call:hover .tc-ic { animation-duration:.6s; }
+/* Тракторець час від часу «підстрибує» на місці — ніби заводиться */
+@keyframes tcHop {
+  0%, 70%, 100% { transform:translate(0,0) rotate(0); }
+  76% { transform:translate(-1px,-3px) rotate(-8deg); }
+  82% { transform:translate(1px,0) rotate(3deg); }
+  88% { transform:translate(0,-1.5px) rotate(-3deg); }
+  94% { transform:translate(0,0) rotate(0); }
+}
 .tractor {
   position:fixed; left:0; bottom:var(--pile-bottom); z-index:1890;
   width:240px; height:80px; pointer-events:none; will-change:transform;
