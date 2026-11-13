@@ -1793,6 +1793,13 @@ html.ev-hidden [id] { scroll-margin-top:80px; }
   to   { transform:translateX(var(--sway,24px))            rotate(var(--rot-b,40deg)); }
 }
 
+/* Сніг: той самий шар і ті самі анімації, лише інші «листочки» */
+.leaves.is-snow .leaf-inner { color:#f4f7fb; }
+.flake-dot {
+  display:block; width:100%; height:100%; border-radius:50%;
+  background:radial-gradient(circle, #fff 0%, rgba(240,246,255,0.85) 45%, rgba(240,246,255,0) 72%);
+}
+
 /* Якщо в системі вимкнено анімації — шару взагалі немає (див. також script.js) */
 @media (prefers-reduced-motion:reduce) {
   .leaves { display:none; }

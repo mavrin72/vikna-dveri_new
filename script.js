@@ -890,94 +890,34 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAreas(); });
 
 /* ═══════════════════════════════════════════════════════════════
-   ОСІННЄ ЛИСТЯ
-   Вмикається саме восени (вересень–листопад) і вимикається саме.
-   AUTUMN_MONTHS — місяці, 0 = січень. Щоб показувати цілий рік,
-   впишіть [0,1,2,3,4,5,6,7,8,9,10,11]; щоб вимкнути — [].
+   СЕЗОННИЙ ШАР: ОСІННЄ ЛИСТЯ І СНІГ
+   Вмикаються самі за місяцем і самі ж вимикаються.
+   Місяці: 0 = січень … 11 = грудень. Щоб вимкнути сезон — [].
+   Подивитися будь-який режим зараз: додайте до адреси
+   ?season=snow або ?season=leaves (?season=off — без нічого).
 ═══════════════════════════════════════════════════════════════ */
-const AUTUMN_MONTHS = [8, 9, 10];
+const AUTUMN_MONTHS = [8, 9, 10];   // вересень–листопад — листя
+const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
 
-(function initLeaves() {
+(function initSeason() {
   const layer = document.getElementById('leaves');
   if (!layer) return;
 
   // Поважаємо системне «зменшити рух» — людині з вестибулярними
-  // порушеннями падаюче листя робить сайт непридатним
+  // порушеннями падаюче листя чи сніг роблять сайт непридатним
   const calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (calm || !AUTUMN_MONTHS.includes(new Date().getMonth())) return;
+  if (calm) return;
 
-  // На вузьких екранах листя менше — і щоб не з'їдало батарею, і щоб не заважало читати
-  const w = window.innerWidth;
-  const count = w < 768 ? 9 : (w < 1200 ? 15 : 22);
-
-  // Силуети в системі координат 64×64: клен, дуб, береза, тополя, горобина
-  const SHAPES = [
-    { // клен — п'ять лопатей
-      blade: 'M32 3 37 16 48 10 44 23 58 25 48 33 56 43 42 40 43 51 32 43 21 51 22 40 8 43 16 33 6 25 20 23 16 10 27 16Z',
-      veins: 'M32 43V60 M32 43 44 23 M32 43 20 23 M32 43 32 8'
-    },
-    { // дуб — хвилясті лопаті
-      blade: 'M32 4c8 3 11 9 8 15 7-1 11 5 6 11 7 2 7 9 0 12 4 7-2 13-9 10-2 6-8 6-10 0-7 3-13-3-9-10-7-3-7-10 0-12-5-6-1-12 6-11-3-6 0-12 8-15z',
-      veins: 'M32 52v9 M32 52V8 M32 30 44 21 M32 30 20 21 M32 40 46 34 M32 40 18 34'
-    },
-    { // береза — загострений овал
-      blade: 'M32 3c13 11 19 24 15 36-3 10-9 17-15 22-6-5-12-12-15-22-4-12 2-25 15-36z',
-      veins: 'M32 61V6 M32 22 44 30 M32 22 20 30 M32 36 43 42 M32 36 21 42'
-    },
-    { // тополя — серцеподібний
-      blade: 'M32 5c14 12 24 23 24 33 0 10-10 17-24 17S8 48 8 38C8 28 18 17 32 5z',
-      veins: 'M32 55V8 M32 30 50 24 M32 30 14 24 M32 42 48 40 M32 42 16 40'
-    },
-    { // горобина — вузький листочок
-      blade: 'M32 3c8 13 12 27 8 41-2 8-5 15-8 19-3-4-6-11-8-19-4-14 0-28 8-41z',
-      veins: 'M32 62V6 M32 20 40 27 M32 20 24 27 M32 34 39 41 M32 34 25 41'
-    }
-  ];
-
-  // Осінні кольори: золото сайту плюс вохра, мідь, іржа, багрянець
-  const COLORS = ['#c8a96e', '#e0b866', '#cf8f3c', '#b5652c', '#9c3f26', '#d9a441'];
+  const month = new Date().getMonth();
+  let mode = WINTER_MONTHS.includes(month) ? 'snow' : (AUTUMN_MONTHS.includes(month) ? 'leaves' : null);
+  const forced = new URLSearchParams(location.search).get('season');
+  if (forced === 'snow' || forced === 'leaves') mode = forced;
+  if (forced === 'off') mode = null;
+  if (!mode) return;
 
   const rand = (min, max) => min + Math.random() * (max - min);
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-  const frag = document.createDocumentFragment();
-
-  for (let i = 0; i < count; i++) {
-    const shape = SHAPES[i % SHAPES.length];   // рівномірно по формах, а не випадково
-    const size  = rand(20, 40);
-
-    const leaf = document.createElement('span');
-    leaf.className = 'leaf';
-    leaf.style.left   = rand(-2, 99) + '%';
-    leaf.style.width  = size + 'px';
-    leaf.style.height = size + 'px';
-    leaf.style.setProperty('--leaf-op', rand(0.5, 0.9).toFixed(2));
-    leaf.style.animationDuration = rand(12, 22).toFixed(1) + 's';
-    // Від'ємна затримка — листя вже в польоті на момент завантаження,
-    // інакше перші секунд п'ятнадцять екран порожній
-    leaf.style.animationDelay = '-' + rand(0, 22).toFixed(1) + 's';
-    // Найдрібніше злегка розмите — читається як глибина
-    if (size < 26) leaf.style.filter = 'blur(' + ((26 - size) / 18).toFixed(2) + 'px)';
-
-    const inner = document.createElement('span');
-    inner.className = 'leaf-inner';
-    inner.style.color = pick(COLORS);
-    inner.style.setProperty('--sway',  rand(14, 40).toFixed(0) + 'px');
-    inner.style.setProperty('--rot-a', rand(-180, 0).toFixed(0) + 'deg');
-    inner.style.setProperty('--rot-b', rand(0, 200).toFixed(0) + 'deg');
-    inner.style.animationDuration = rand(3, 7).toFixed(1) + 's';
-    inner.style.animationDelay    = '-' + rand(0, 7).toFixed(1) + 's';
-    inner.innerHTML =
-      '<svg viewBox="0 0 64 64" aria-hidden="true">' +
-        '<path fill="currentColor" d="' + shape.blade + '"/>' +
-        '<path d="' + shape.veins + '" fill="none" stroke="rgba(0,0,0,0.25)" ' +
-              'stroke-width="1.6" stroke-linecap="round"/>' +
-      '</svg>';
-
-    leaf.appendChild(inner);
-    frag.appendChild(leaf);
-  }
-
-  layer.appendChild(frag);
+  const w = window.innerWidth;
 
   // У фоновій вкладці анімації не крутимо
   document.addEventListener('visibilitychange', () => {
@@ -985,4 +925,125 @@ const AUTUMN_MONTHS = [8, 9, 10];
       el.style.animationPlayState = document.hidden ? 'paused' : 'running';
     });
   });
+
+  if (mode === 'snow') return initSnow();
+  initLeaves();
+
+  /* ── Сніг: м'які пластівці-крапки плюс зрідка шестипроменеві сніжинки ── */
+  function initSnow() {
+    layer.classList.add('is-snow');
+    const count = w < 768 ? 22 : (w < 1200 ? 38 : 55);
+    // Сніжинка 64×64: три осі й «гілочки» на кожному промені
+    const CRYSTAL =
+      'M32 4V60 M7.8 18 56.2 46 M7.8 46 56.2 18 ' +
+      'M32 14 26 9 M32 14 38 9 M32 50 26 55 M32 50 38 55 ' +
+      'M16.4 23 9.6 24.6 M16.4 23 14.4 16.4 M47.6 41 54.4 39.4 M47.6 41 49.6 47.6 ' +
+      'M16.4 41 9.6 39.4 M16.4 41 14.4 47.6 M47.6 23 54.4 24.6 M47.6 23 49.6 16.4';
+    const frag = document.createDocumentFragment();
+
+    for (let i = 0; i < count; i++) {
+      const crystal = i % 6 === 0;                 // кожна шоста — візерункова
+      const size = crystal ? rand(14, 24) : rand(3, 9);
+
+      const flake = document.createElement('span');
+      flake.className = 'leaf flake';
+      flake.style.left   = rand(-2, 99) + '%';
+      flake.style.width  = size + 'px';
+      flake.style.height = size + 'px';
+      flake.style.setProperty('--leaf-op', rand(crystal ? 0.55 : 0.4, crystal ? 0.85 : 0.9).toFixed(2));
+      // Дрібне падає повільніше — так виглядає далі
+      flake.style.animationDuration = (crystal ? rand(14, 22) : rand(10, 24)).toFixed(1) + 's';
+      flake.style.animationDelay = '-' + rand(0, 24).toFixed(1) + 's';
+      if (!crystal && size < 5) flake.style.filter = 'blur(1px)';
+
+      const inner = document.createElement('span');
+      inner.className = 'leaf-inner';
+      inner.style.setProperty('--sway',  rand(8, 28).toFixed(0) + 'px');
+      inner.style.setProperty('--rot-a', (crystal ? rand(-90, 0) : 0).toFixed(0) + 'deg');
+      inner.style.setProperty('--rot-b', (crystal ? rand(0, 90) : 0).toFixed(0) + 'deg');
+      inner.style.animationDuration = rand(3, 6).toFixed(1) + 's';
+      inner.style.animationDelay    = '-' + rand(0, 6).toFixed(1) + 's';
+      inner.innerHTML = crystal
+        ? '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="' + CRYSTAL + '" fill="none" ' +
+          'stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>'
+        : '<i class="flake-dot"></i>';
+
+      flake.appendChild(inner);
+      frag.appendChild(flake);
+    }
+    layer.appendChild(frag);
+  }
+
+  function initLeaves() {
+
+    // На вузьких екранах листя менше — і щоб не з'їдало батарею, і щоб не заважало читати
+    const count = w < 768 ? 9 : (w < 1200 ? 15 : 22);
+
+    // Силуети в системі координат 64×64: клен, дуб, береза, тополя, горобина
+    const SHAPES = [
+      { // клен — п'ять лопатей
+        blade: 'M32 3 37 16 48 10 44 23 58 25 48 33 56 43 42 40 43 51 32 43 21 51 22 40 8 43 16 33 6 25 20 23 16 10 27 16Z',
+        veins: 'M32 43V60 M32 43 44 23 M32 43 20 23 M32 43 32 8'
+      },
+      { // дуб — хвилясті лопаті
+        blade: 'M32 4c8 3 11 9 8 15 7-1 11 5 6 11 7 2 7 9 0 12 4 7-2 13-9 10-2 6-8 6-10 0-7 3-13-3-9-10-7-3-7-10 0-12-5-6-1-12 6-11-3-6 0-12 8-15z',
+        veins: 'M32 52v9 M32 52V8 M32 30 44 21 M32 30 20 21 M32 40 46 34 M32 40 18 34'
+      },
+      { // береза — загострений овал
+        blade: 'M32 3c13 11 19 24 15 36-3 10-9 17-15 22-6-5-12-12-15-22-4-12 2-25 15-36z',
+        veins: 'M32 61V6 M32 22 44 30 M32 22 20 30 M32 36 43 42 M32 36 21 42'
+      },
+      { // тополя — серцеподібний
+        blade: 'M32 5c14 12 24 23 24 33 0 10-10 17-24 17S8 48 8 38C8 28 18 17 32 5z',
+        veins: 'M32 55V8 M32 30 50 24 M32 30 14 24 M32 42 48 40 M32 42 16 40'
+      },
+      { // горобина — вузький листочок
+        blade: 'M32 3c8 13 12 27 8 41-2 8-5 15-8 19-3-4-6-11-8-19-4-14 0-28 8-41z',
+        veins: 'M32 62V6 M32 20 40 27 M32 20 24 27 M32 34 39 41 M32 34 25 41'
+      }
+    ];
+
+    // Осінні кольори: золото сайту плюс вохра, мідь, іржа, багрянець
+    const COLORS = ['#c8a96e', '#e0b866', '#cf8f3c', '#b5652c', '#9c3f26', '#d9a441'];
+
+    const frag = document.createDocumentFragment();
+
+    for (let i = 0; i < count; i++) {
+      const shape = SHAPES[i % SHAPES.length];   // рівномірно по формах, а не випадково
+      const size  = rand(20, 40);
+
+      const leaf = document.createElement('span');
+      leaf.className = 'leaf';
+      leaf.style.left   = rand(-2, 99) + '%';
+      leaf.style.width  = size + 'px';
+      leaf.style.height = size + 'px';
+      leaf.style.setProperty('--leaf-op', rand(0.5, 0.9).toFixed(2));
+      leaf.style.animationDuration = rand(12, 22).toFixed(1) + 's';
+      // Від'ємна затримка — листя вже в польоті на момент завантаження,
+      // інакше перші секунд п'ятнадцять екран порожній
+      leaf.style.animationDelay = '-' + rand(0, 22).toFixed(1) + 's';
+      // Найдрібніше злегка розмите — читається як глибина
+      if (size < 26) leaf.style.filter = 'blur(' + ((26 - size) / 18).toFixed(2) + 'px)';
+
+      const inner = document.createElement('span');
+      inner.className = 'leaf-inner';
+      inner.style.color = pick(COLORS);
+      inner.style.setProperty('--sway',  rand(14, 40).toFixed(0) + 'px');
+      inner.style.setProperty('--rot-a', rand(-180, 0).toFixed(0) + 'deg');
+      inner.style.setProperty('--rot-b', rand(0, 200).toFixed(0) + 'deg');
+      inner.style.animationDuration = rand(3, 7).toFixed(1) + 's';
+      inner.style.animationDelay    = '-' + rand(0, 7).toFixed(1) + 's';
+      inner.innerHTML =
+        '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+          '<path fill="currentColor" d="' + shape.blade + '"/>' +
+          '<path d="' + shape.veins + '" fill="none" stroke="rgba(0,0,0,0.25)" ' +
+                'stroke-width="1.6" stroke-linecap="round"/>' +
+        '</svg>';
+
+      leaf.appendChild(inner);
+      frag.appendChild(leaf);
+    }
+
+    layer.appendChild(frag);
+  }
 })();
