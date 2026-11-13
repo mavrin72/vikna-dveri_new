@@ -1107,6 +1107,19 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
         if (d > -1 && d < 1) h[c] = Math.min(CAP, h[c] + amp * (1 - d * d));
       }
     }
+    // Сніг осипається: різкий перепад між сусідніми стовпчиками згладжується,
+    // тож замість голок виходять плавні кучугури
+    function settle(c0, c1) {
+      const MAX = STEP * 0.45;
+      for (let pass = 0; pass < 6; pass++) {
+        for (let c = Math.max(1, c0); c <= Math.min(cols - 1, c1); c++) {
+          const d = h[c] - h[c - 1];
+          if (d > MAX)       { const m = (d - MAX) / 2; h[c] -= m; h[c - 1] += m; }
+          else if (d < -MAX) { const m = (-d - MAX) / 2; h[c - 1] -= m; h[c] += m; }
+        }
+        c0 -= 2; c1 += 2;
+      }
+    }
     function deposit(el) {
       if (driving) return;
       const r = el.firstChild.getBoundingClientRect();
@@ -1117,10 +1130,11 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
       if (h[c] >= CAP - 1) return;
       if (snow) {
         bump(x, 12 + size * 1.4, 2.4 + size * 0.35);
+        settle(Math.floor(x / STEP) - 12, Math.ceil(x / STEP) + 12);
       } else {
         leaves.push([x, h[c] + size * 0.25, Math.random() * 6.28, +el.dataset.s || 0, +el.dataset.c || 0, size * 0.8]);
         if (leaves.length > 900) leaves.shift();
-        bump(x, size * 0.5, size * 0.3);
+        bump(x, size * 0.6, size * 0.45);
       }
       draw();
       updateButton();
@@ -1141,11 +1155,11 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
     }
     function moundPath() {
       if (plowX < 0 || mound < 1) return false;
-      const w = 18 + mound * 1.6;
+      const w = 14 + mound * 1.3;
       ctx.beginPath();
       ctx.moveTo(plowX - 2, H);
       ctx.lineTo(plowX - 2, H - mound);
-      ctx.quadraticCurveTo(plowX + w * 0.35, H - mound * 1.05, plowX + w, H);
+      ctx.bezierCurveTo(plowX + w * 0.45, H - mound, plowX + w * 0.7, H - mound * 0.4, plowX + w, H);
       ctx.closePath();
       return true;
     }
@@ -1200,11 +1214,28 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
     btn.innerHTML = '<span aria-hidden="true">🚜</span> Викликати трактор';
     document.body.appendChild(btn);
     function fill() { let s = 0; for (let c = 0; c < cols; c++) s += h[c]; return s / cols / CAP; }
-    function updateButton() { btn.classList.toggle('show', !driving && fill() > 0.18); }
+    function updateButton() { btn.classList.toggle('show', !driving && fill() > (snow ? 0.18 : 0.12)); }
 
     // ── Трактор ──
     const TRACTOR_SVG =
-      '<svg viewBox="0 0 132 80" aria-hidden="true">' +
+      '<svg viewBox="-108 0 240 80" aria-hidden="true">' +
+        // Причіп із замовленням: металопластикове вікно і вхідні двері
+        '<path d="M-6 57H22" stroke="#5b6576" stroke-width="3"/>' +                   // зчіпка
+        '<rect x="-104" y="52" width="100" height="7" rx="2" fill="#5b6576"/>' +
+        '<g class="tr-wheel"><circle cx="-54" cy="68" r="10" fill="#141b28"/><circle cx="-54" cy="68" r="4" fill="#c8a96e"/>' +
+          '<path d="M-54 59V62 M-54 74V77 M-63 68H-60 M-48 68H-45" stroke="#2f394b" stroke-width="2.4"/></g>' +
+        '<rect x="-98" y="14" width="42" height="38" rx="1.5" fill="#f2f4f7"/>' +     // вікно
+        '<rect x="-94" y="18" width="16" height="30" fill="#7fb2d9"/>' +
+        '<rect x="-76" y="18" width="16" height="30" fill="#7fb2d9"/>' +
+        '<path d="M-92 20-86 30 M-74 20-68 30" stroke="#fff" stroke-width="2" opacity=".7"/>' +
+        '<rect x="-81" y="31" width="2" height="6" rx="1" fill="#9aa4b2"/>' +
+        '<rect x="-50" y="6" width="28" height="46" rx="1.5" fill="#7a4a2a"/>' +      // двері
+        '<rect x="-46" y="10" width="20" height="18" rx="1" fill="#93603a"/>' +
+        '<rect x="-46" y="31" width="20" height="17" rx="1" fill="#93603a"/>' +
+        '<rect x="-42" y="13" width="12" height="12" rx="1" fill="#7fb2d9" opacity=".85"/>' +
+        '<rect x="-27" y="28" width="2.5" height="8" rx="1" fill="#c8a96e"/>' +
+        '<path d="M-100 30H-20" stroke="#c8a96e" stroke-width="1.6" opacity=".9"/>' + // стяжка
+
         '<g class="tr-puff"><circle cx="88" cy="16" r="4"/><circle cx="84" cy="8" r="3"/></g>' +
         '<rect x="86" y="22" width="4" height="20" rx="1" fill="#2a3344"/>' +
         '<path d="M104 52 118 46 V77 H104Z" fill="#8f99a8"/>' +                     // відвал
@@ -1238,7 +1269,7 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
       tr.innerHTML = TRACTOR_SVG;
       document.body.appendChild(tr);
       const tw = tr.getBoundingClientRect().width;
-      const blade = tw * 0.93;                        // де відвал відносно лівого краю трактора
+      const blade = tw * (230 / 240);                 // де відвал відносно лівого краю (viewBox -108…132)
       const speed = W < 768 ? 170 : 260;              // px/с
       const total = W + tw * 2;
       let carried = 0, start = 0, cleared = -1;
@@ -1255,7 +1286,7 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
           h[c] = snow ? Math.min(h[c], 1.5) : 0;      // на снігу лишається слід
         }
         if (upto > cleared) cleared = upto;
-        mound = Math.min(CAP + 14, Math.sqrt(carried) * 1.1);
+        mound = Math.min(CAP * 0.9, Math.sqrt(carried) * 0.9);
         if (!snow) {
           for (const l of leaves) {
             if (l[6] === undefined && l[0] < plowX) {
