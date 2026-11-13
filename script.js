@@ -916,7 +916,6 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
   if (!mode) return;
 
   const rand = (min, max) => min + Math.random() * (max - min);
-  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const w = window.innerWidth;
 
   // У фоновій вкладці анімації не крутимо
@@ -926,8 +925,35 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
     });
   });
 
-  if (mode === 'snow') return initSnow();
-  initLeaves();
+  // Силуети в системі координат 64×64: клен, дуб, береза, тополя, горобина
+  const SHAPES = [
+    { // клен — п'ять лопатей
+      blade: 'M32 3 37 16 48 10 44 23 58 25 48 33 56 43 42 40 43 51 32 43 21 51 22 40 8 43 16 33 6 25 20 23 16 10 27 16Z',
+      veins: 'M32 43V60 M32 43 44 23 M32 43 20 23 M32 43 32 8'
+    },
+    { // дуб — хвилясті лопаті
+      blade: 'M32 4c8 3 11 9 8 15 7-1 11 5 6 11 7 2 7 9 0 12 4 7-2 13-9 10-2 6-8 6-10 0-7 3-13-3-9-10-7-3-7-10 0-12-5-6-1-12 6-11-3-6 0-12 8-15z',
+      veins: 'M32 52v9 M32 52V8 M32 30 44 21 M32 30 20 21 M32 40 46 34 M32 40 18 34'
+    },
+    { // береза — загострений овал
+      blade: 'M32 3c13 11 19 24 15 36-3 10-9 17-15 22-6-5-12-12-15-22-4-12 2-25 15-36z',
+      veins: 'M32 61V6 M32 22 44 30 M32 22 20 30 M32 36 43 42 M32 36 21 42'
+    },
+    { // тополя — серцеподібний
+      blade: 'M32 5c14 12 24 23 24 33 0 10-10 17-24 17S8 48 8 38C8 28 18 17 32 5z',
+      veins: 'M32 55V8 M32 30 50 24 M32 30 14 24 M32 42 48 40 M32 42 16 40'
+    },
+    { // горобина — вузький листочок
+      blade: 'M32 3c8 13 12 27 8 41-2 8-5 15-8 19-3-4-6-11-8-19-4-14 0-28 8-41z',
+      veins: 'M32 62V6 M32 20 40 27 M32 20 24 27 M32 34 39 41 M32 34 25 41'
+    }
+  ];
+
+  // Осінні кольори: золото сайту плюс вохра, мідь, іржа, багрянець
+  const COLORS = ['#c8a96e', '#e0b866', '#cf8f3c', '#b5652c', '#9c3f26', '#d9a441'];
+
+  if (mode === 'snow') initSnow(); else initLeaves();
+  initPile();
 
   /* ── Сніг: м'які пластівці-крапки плюс зрідка шестипроменеві сніжинки ── */
   function initSnow() {
@@ -947,6 +973,7 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
 
       const flake = document.createElement('span');
       flake.className = 'leaf flake';
+      flake.dataset.size = size.toFixed(1);
       flake.style.left   = rand(-2, 99) + '%';
       flake.style.width  = size + 'px';
       flake.style.height = size + 'px';
@@ -979,32 +1006,6 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
     // На вузьких екранах листя менше — і щоб не з'їдало батарею, і щоб не заважало читати
     const count = w < 768 ? 9 : (w < 1200 ? 15 : 22);
 
-    // Силуети в системі координат 64×64: клен, дуб, береза, тополя, горобина
-    const SHAPES = [
-      { // клен — п'ять лопатей
-        blade: 'M32 3 37 16 48 10 44 23 58 25 48 33 56 43 42 40 43 51 32 43 21 51 22 40 8 43 16 33 6 25 20 23 16 10 27 16Z',
-        veins: 'M32 43V60 M32 43 44 23 M32 43 20 23 M32 43 32 8'
-      },
-      { // дуб — хвилясті лопаті
-        blade: 'M32 4c8 3 11 9 8 15 7-1 11 5 6 11 7 2 7 9 0 12 4 7-2 13-9 10-2 6-8 6-10 0-7 3-13-3-9-10-7-3-7-10 0-12-5-6-1-12 6-11-3-6 0-12 8-15z',
-        veins: 'M32 52v9 M32 52V8 M32 30 44 21 M32 30 20 21 M32 40 46 34 M32 40 18 34'
-      },
-      { // береза — загострений овал
-        blade: 'M32 3c13 11 19 24 15 36-3 10-9 17-15 22-6-5-12-12-15-22-4-12 2-25 15-36z',
-        veins: 'M32 61V6 M32 22 44 30 M32 22 20 30 M32 36 43 42 M32 36 21 42'
-      },
-      { // тополя — серцеподібний
-        blade: 'M32 5c14 12 24 23 24 33 0 10-10 17-24 17S8 48 8 38C8 28 18 17 32 5z',
-        veins: 'M32 55V8 M32 30 50 24 M32 30 14 24 M32 42 48 40 M32 42 16 40'
-      },
-      { // горобина — вузький листочок
-        blade: 'M32 3c8 13 12 27 8 41-2 8-5 15-8 19-3-4-6-11-8-19-4-14 0-28 8-41z',
-        veins: 'M32 62V6 M32 20 40 27 M32 20 24 27 M32 34 39 41 M32 34 25 41'
-      }
-    ];
-
-    // Осінні кольори: золото сайту плюс вохра, мідь, іржа, багрянець
-    const COLORS = ['#c8a96e', '#e0b866', '#cf8f3c', '#b5652c', '#9c3f26', '#d9a441'];
 
     const frag = document.createDocumentFragment();
 
@@ -1014,6 +1015,8 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
 
       const leaf = document.createElement('span');
       leaf.className = 'leaf';
+      leaf.dataset.s = i % SHAPES.length;
+      leaf.dataset.size = size.toFixed(1);
       leaf.style.left   = rand(-2, 99) + '%';
       leaf.style.width  = size + 'px';
       leaf.style.height = size + 'px';
@@ -1027,7 +1030,9 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
 
       const inner = document.createElement('span');
       inner.className = 'leaf-inner';
-      inner.style.color = pick(COLORS);
+      const ci = Math.floor(Math.random() * COLORS.length);
+      leaf.dataset.c = ci;
+      inner.style.color = COLORS[ci];
       inner.style.setProperty('--sway',  rand(14, 40).toFixed(0) + 'px');
       inner.style.setProperty('--rot-a', rand(-180, 0).toFixed(0) + 'deg');
       inner.style.setProperty('--rot-b', rand(0, 200).toFixed(0) + 'deg');
@@ -1045,5 +1050,298 @@ const WINTER_MONTHS = [11, 0, 1];   // грудень–лютий — сніг
     }
 
     layer.appendChild(frag);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ЗАМЕТ І ТРАКТОР
+     Сніжинка чи листок, долетівши донизу, лягає в купу на дні екрана
+     (canvas, малюється лише коли щось змінилось). Купа обмежена за
+     висотою, щоб не закривати текст, і живе в sessionStorage — росте,
+     поки людина ходить сторінками. Коли намете — з'являється кнопка
+     «Викликати трактор»: він проїжджає екраном і згортає все відвалом.
+  ═══════════════════════════════════════════════════════════════ */
+  function initPile() {
+    const snow  = mode === 'snow';
+    const STEP  = 4;                                  // ширина «стовпчика» висот, px
+    const KEY   = 'vd-pile-' + mode;
+    const dpr   = Math.min(window.devicePixelRatio || 1, 2);
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'pile';
+    canvas.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    let W = 0, H = 0, CAP = 0, cols = 0;
+    let h = new Float32Array(0);                      // висота купи по стовпчиках
+    let leaves = [];                                  // [x, y, кут, форма, колір, розмір]
+    const paths = SHAPES.map(s => ({ blade: new Path2D(s.blade), veins: new Path2D(s.veins) }));
+
+    // Стан із попередньої сторінки: висоти в частках CAP, x — у частках ширини
+    let saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
+
+    function resize() {
+      const old = cols ? { h: Array.from(h, v => v / CAP), l: leaves.map(l => [l[0] / W, l[1] / CAP, l[2], l[3], l[4], l[5]]) } : saved;
+      W = window.innerWidth;
+      CAP = W < 768 ? 30 : 46;
+      H = CAP + 60;                                   // запас над купою — для валу перед відвалом
+      cols = Math.ceil(W / STEP) + 1;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      h = new Float32Array(cols);
+      leaves = [];
+      if (old && old.h && old.h.length) {
+        for (let c = 0; c < cols; c++) h[c] = (old.h[Math.min(old.h.length - 1, Math.floor(c / cols * old.h.length))] || 0) * CAP;
+        if (old.l) leaves = old.l.map(l => [l[0] * W, l[1] * CAP, l[2], l[3], l[4], l[5]]);
+      }
+      draw();
+    }
+
+    // ── Нове поповнення купи ──
+    function bump(x, r, amp) {
+      const c0 = Math.max(0, Math.floor((x - r) / STEP)), c1 = Math.min(cols - 1, Math.ceil((x + r) / STEP));
+      for (let c = c0; c <= c1; c++) {
+        const d = (c * STEP - x) / r;
+        if (d > -1 && d < 1) h[c] = Math.min(CAP, h[c] + amp * (1 - d * d));
+      }
+    }
+    // Сніг осипається: різкий перепад між сусідніми стовпчиками згладжується,
+    // тож замість голок виходять плавні кучугури
+    function settle(c0, c1) {
+      const MAX = STEP * 0.45;
+      for (let pass = 0; pass < 6; pass++) {
+        for (let c = Math.max(1, c0); c <= Math.min(cols - 1, c1); c++) {
+          const d = h[c] - h[c - 1];
+          if (d > MAX)       { const m = (d - MAX) / 2; h[c] -= m; h[c - 1] += m; }
+          else if (d < -MAX) { const m = (-d - MAX) / 2; h[c - 1] -= m; h[c] += m; }
+        }
+        c0 -= 2; c1 += 2;
+      }
+    }
+    function deposit(el) {
+      if (driving) return;
+      const r = el.firstChild.getBoundingClientRect();
+      const x = r.left + r.width / 2;
+      if (x < -20 || x > W + 20) return;
+      const size = +el.dataset.size || 6;
+      const c = Math.max(0, Math.min(cols - 1, Math.round(x / STEP)));
+      if (h[c] >= CAP - 1) return;
+      if (snow) {
+        bump(x, 12 + size * 1.4, 2.4 + size * 0.35);
+        settle(Math.floor(x / STEP) - 12, Math.ceil(x / STEP) + 12);
+      } else {
+        leaves.push([x, h[c] + size * 0.25, Math.random() * 6.28, +el.dataset.s || 0, +el.dataset.c || 0, size * 0.8]);
+        if (leaves.length > 900) leaves.shift();
+        bump(x, size * 0.6, size * 0.45);
+      }
+      draw();
+      updateButton();
+      scheduleSave();
+    }
+    layer.addEventListener('animationiteration', e => {
+      if (e.target.parentNode === layer) deposit(e.target);
+    });
+
+    // ── Малювання ──
+    let plowX = -1, mound = 0;                        // положення відвала і розмір валу перед ним
+    function surface() {
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for (let c = 0; c < cols; c++) ctx.lineTo(c * STEP, H - h[c]);
+      ctx.lineTo(W, H);
+      ctx.closePath();
+    }
+    function moundPath() {
+      if (plowX < 0 || mound < 1) return false;
+      const w = 14 + mound * 1.3;
+      ctx.beginPath();
+      ctx.moveTo(plowX - 2, H);
+      ctx.lineTo(plowX - 2, H - mound);
+      ctx.bezierCurveTo(plowX + w * 0.45, H - mound, plowX + w * 0.7, H - mound * 0.4, plowX + w, H);
+      ctx.closePath();
+      return true;
+    }
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      if (snow) {
+        const g = ctx.createLinearGradient(0, H - CAP - 20, 0, H);
+        g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#c9d6e8');
+        ctx.fillStyle = g;
+        surface(); ctx.fill();
+        if (moundPath()) ctx.fill();
+        // Блиск по верхньому краю
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1;
+        surface(); ctx.stroke();
+      } else {
+        ctx.fillStyle = 'rgba(70,40,20,0.55)';      // «тіло» купи під листям
+        surface(); ctx.fill();
+        if (moundPath()) ctx.fill();
+        for (const l of leaves) {
+          ctx.save();
+          ctx.translate(l[0], H - l[1]);
+          ctx.rotate(l[2]);
+          ctx.scale(l[5] / 64, l[5] / 64);
+          ctx.translate(-32, -32);
+          ctx.fillStyle = COLORS[l[4]] || COLORS[0];
+          ctx.fill(paths[l[3]].blade);
+          ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1.6;
+          ctx.stroke(paths[l[3]].veins);
+          ctx.restore();
+        }
+      }
+    }
+
+    // ── Збереження між сторінками ──
+    let saveTimer = 0;
+    function save() {
+      saveTimer = 0;
+      try {
+        sessionStorage.setItem(KEY, JSON.stringify({
+          h: Array.from(h, v => +(v / CAP).toFixed(3)),
+          l: leaves.map(l => [+(l[0] / W).toFixed(4), +(l[1] / CAP).toFixed(3), +l[2].toFixed(2), l[3], l[4], +l[5].toFixed(1)])
+        }));
+      } catch (e) {}
+    }
+    function scheduleSave() { if (!saveTimer) saveTimer = setTimeout(save, 3000); }
+    window.addEventListener('pagehide', save);
+
+    // ── Кнопка виклику ──
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tractor-call';
+    btn.innerHTML = '<span aria-hidden="true">🚜</span> Викликати трактор';
+    document.body.appendChild(btn);
+    function fill() { let s = 0; for (let c = 0; c < cols; c++) s += h[c]; return s / cols / CAP; }
+    function updateButton() { btn.classList.toggle('show', !driving && fill() > (snow ? 0.18 : 0.12)); }
+
+    // ── Трактор ──
+    const TRACTOR_SVG =
+      '<svg viewBox="-108 0 240 80" aria-hidden="true">' +
+        // Причіп із замовленням: металопластикове вікно і вхідні двері
+        '<path d="M-6 57H22" stroke="#5b6576" stroke-width="3"/>' +                   // зчіпка
+        '<rect x="-104" y="52" width="100" height="7" rx="2" fill="#5b6576"/>' +
+        '<g class="tr-wheel"><circle cx="-54" cy="68" r="10" fill="#141b28"/><circle cx="-54" cy="68" r="4" fill="#c8a96e"/>' +
+          '<path d="M-54 59V62 M-54 74V77 M-63 68H-60 M-48 68H-45" stroke="#2f394b" stroke-width="2.4"/></g>' +
+        '<rect x="-98" y="14" width="42" height="38" rx="1.5" fill="#f2f4f7"/>' +     // вікно
+        '<rect x="-94" y="18" width="16" height="30" fill="#7fb2d9"/>' +
+        '<rect x="-76" y="18" width="16" height="30" fill="#7fb2d9"/>' +
+        '<path d="M-92 20-86 30 M-74 20-68 30" stroke="#fff" stroke-width="2" opacity=".7"/>' +
+        '<rect x="-81" y="31" width="2" height="6" rx="1" fill="#9aa4b2"/>' +
+        '<rect x="-50" y="6" width="28" height="46" rx="1.5" fill="#7a4a2a"/>' +      // двері
+        '<rect x="-46" y="10" width="20" height="18" rx="1" fill="#93603a"/>' +
+        '<rect x="-46" y="31" width="20" height="17" rx="1" fill="#93603a"/>' +
+        '<rect x="-42" y="13" width="12" height="12" rx="1" fill="#7fb2d9" opacity=".85"/>' +
+        '<rect x="-27" y="28" width="2.5" height="8" rx="1" fill="#c8a96e"/>' +
+        '<path d="M-100 30H-20" stroke="#c8a96e" stroke-width="1.6" opacity=".9"/>' + // стяжка
+
+        '<g class="tr-puff"><circle cx="88" cy="16" r="4"/><circle cx="84" cy="8" r="3"/></g>' +
+        '<rect x="86" y="22" width="4" height="20" rx="1" fill="#2a3344"/>' +
+        '<path d="M104 52 118 46 V77 H104Z" fill="#8f99a8"/>' +                     // відвал
+        '<path d="M118 46 122 44 V77 H118Z" fill="#c3cad4"/>' +
+        '<rect x="96" y="56" width="10" height="5" fill="#5b6576"/>' +
+        '<rect x="48" y="40" width="52" height="24" rx="4" fill="#c8a96e"/>' +       // капот
+        '<rect x="20" y="10" width="34" height="54" rx="3" fill="#c8a96e"/>' +       // кабіна
+        '<rect x="26" y="16" width="22" height="22" rx="2" fill="#0e1a2e"/>' +
+        '<rect x="28" y="18" width="8" height="18" rx="1" fill="#e4c99a" opacity=".35"/>' +
+        '<rect x="18" y="6" width="38" height="5" rx="2" fill="#a88a52"/>' +
+        '<circle class="tr-beacon" cx="37" cy="4" r="3.2" fill="#ffb02e"/>' +
+        '<g class="tr-wheel"><circle cx="34" cy="62" r="16" fill="#141b28"/><circle cx="34" cy="62" r="6" fill="#c8a96e"/>' +
+          '<path d="M34 48V54 M34 70V76 M20 62H26 M42 62H48" stroke="#2f394b" stroke-width="3"/></g>' +
+        '<g class="tr-wheel"><circle cx="88" cy="68" r="10" fill="#141b28"/><circle cx="88" cy="68" r="4" fill="#c8a96e"/>' +
+          '<path d="M88 59V62 M88 74V77 M79 68H82 M94 68H97" stroke="#2f394b" stroke-width="2.4"/></g>' +
+      '</svg>';
+    let driving = false;
+
+    btn.addEventListener('click', () => {
+      if (driving) return;
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: 'tractor_call', season: mode });
+      drive();
+    });
+
+    function drive() {
+      driving = true;
+      updateButton();
+      const tr = document.createElement('div');
+      tr.className = 'tractor';
+      tr.innerHTML = TRACTOR_SVG;
+      document.body.appendChild(tr);
+      const tw = tr.getBoundingClientRect().width;
+      const blade = tw * (230 / 240);                 // де відвал відносно лівого краю (viewBox -108…132)
+      const speed = W < 768 ? 170 : 260;              // px/с
+      const total = W + tw * 2;
+      let carried = 0, start = 0, cleared = -1;
+
+      function frame(t) {
+        if (!start) start = t;
+        const tx = -tw + (t - start) / 1000 * speed;
+        tr.style.transform = 'translateX(' + tx.toFixed(1) + 'px)';
+        plowX = tx + blade;
+        // Усе, що позаду відвала, згрібаємо у вал
+        const upto = Math.min(cols - 1, Math.floor(plowX / STEP));
+        for (let c = cleared + 1; c <= upto; c++) {
+          carried += h[c];
+          h[c] = snow ? Math.min(h[c], 1.5) : 0;      // на снігу лишається слід
+        }
+        if (upto > cleared) cleared = upto;
+        mound = Math.min(CAP * 0.9, Math.sqrt(carried) * 0.9);
+        if (!snow) {
+          for (const l of leaves) {
+            if (l[6] === undefined && l[0] < plowX) {
+              l[6] = Math.random() * (10 + mound);    // зсув перед відвалом
+              l[1] = Math.random() * mound * 0.9 + 3;
+            }
+            if (l[6] !== undefined) l[0] = plowX + l[6];
+          }
+        }
+        draw();
+        if (tx < total - tw) requestAnimationFrame(frame);
+        else finish();
+      }
+      function finish() {
+        tr.remove();
+        plowX = -1; mound = 0;
+        leaves = leaves.filter(l => l[6] === undefined);
+        draw();
+        save();
+        driving = false;
+        updateButton();
+        toast();
+      }
+      requestAnimationFrame(frame);
+    }
+
+    // Після проїзду — підказка із заявкою на дзвінок-консультацію
+    function toast() {
+      const old = document.querySelector('.tractor-toast');
+      if (old) old.remove();
+      const t = document.createElement('div');
+      t.className = 'tractor-toast';
+      t.setAttribute('role', 'status');
+      t.innerHTML =
+        '<button type="button" class="tt-close" aria-label="Закрити">×</button>' +
+        '<b>' + (snow ? 'Розчищено! ❄️' : 'Прибрано! 🍂') + '</b>' +
+        '<span>Маєте питання про вікна, двері чи ролети? Залиште номер — передзвонимо й проконсультуємо.</span>' +
+        '<button type="button" class="tt-cta">Замовити дзвінок</button>';
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      const close = () => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); };
+      const timer = setTimeout(close, 8000);
+      t.querySelector('.tt-close').onclick = () => { clearTimeout(timer); close(); };
+      t.querySelector('.tt-cta').onclick = () => {
+        clearTimeout(timer); close();
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'tractor_cta_click', season: mode });
+        if (typeof requestCall === 'function' && document.getElementById('heroQuick')) requestCall();
+        else { const f = document.getElementById('order-form'); if (f) f.scrollIntoView({ behavior: 'smooth' }); }
+      };
+    }
+
+    let rt = 0;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (!driving && window.innerWidth !== W) resize(); }, 200); });
+    resize();
+    updateButton();
   }
 })();
