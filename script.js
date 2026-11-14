@@ -312,14 +312,116 @@ if (statsBar) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PHONE AUTO-FILL
+   ПОЛЯ ТЕЛЕФОНУ: маска +38 (0XX) XXX-XX-XX
+   +38 і перший нуль підставляються самі, більше 10 цифр ввести
+   не можна, а коротший чи неіснуючий номер не пройде перевірку.
+   Вставлений номер у будь-якому вигляді — 0968874658, 380968874658,
+   +38 (096) 887-46-58 — приводиться до маски.
 ═══════════════════════════════════════════════════════════════ */
-const phoneInput = document.getElementById('clientPhone');
-if (phoneInput) {
-  phoneInput.addEventListener('focus', function() {
-    if (!this.value) this.value = '+380';
-  });
+const PHONE_PREFIX = '+38 (0';
+// Коди: міські 03x–06x, мобільні 073/075/077, 089, 091–099 (і 080 — безкоштовні)
+const PHONE_CODE_RE = /^0(3\d|4\d|5\d|6\d|7[357]|8[09]|9[1-9])\d{7}$/;
+
+// З будь-якого введення — 10 цифр національного номера, що починається з 0
+function phoneNational(raw) {
+  let d = String(raw || '').replace(/\D/g, '');
+  while (d.startsWith('380380')) d = d.slice(3);   // +38 (0 у полі + вставлений повний номер
+  if (d.startsWith('38')) d = d.slice(2);
+  while (d.startsWith('00')) d = d.slice(1);       // «0» з маски + «0» від людини
+  if (d && !d.startsWith('0')) d = '0' + d;
+  return d.slice(0, 10);
 }
+function formatPhone(n) {
+  if (!n) return '';
+  let out = '+38 (' + n.slice(0, 3);
+  if (n.length > 3) out += ') ' + n.slice(3, 6);
+  if (n.length > 6) out += '-' + n.slice(6, 8);
+  if (n.length > 8) out += '-' + n.slice(8, 10);
+  return out;
+}
+function isValidPhone(raw) { return PHONE_CODE_RE.test(phoneNational(raw)); }
+
+// Позиція курсора одразу після k-ї цифри номера
+function caretAfterDigits(str, k) {
+  if (k <= 0) return Math.min(str.length, PHONE_PREFIX.length);
+  let seen = 0;
+  for (let i = 5; i < str.length; i++) {
+    if (/\d/.test(str[i]) && ++seen === k) return i + 1;
+  }
+  return str.length;
+}
+
+function setPhoneHint(el, text) {
+  el.classList.toggle('phone-invalid', !!text);
+  el.setAttribute('aria-invalid', text ? 'true' : 'false');
+  if (el.id === 'quickPhone') return;               // у короткій формі є свій рядок повідомлення
+  let hint = el.parentNode.querySelector('.phone-hint');
+  if (!hint && text) {
+    hint = document.createElement('div');
+    hint.className = 'phone-hint';
+    hint.setAttribute('role', 'alert');
+    el.insertAdjacentElement('afterend', hint);
+  }
+  if (hint) hint.textContent = text || '';
+}
+
+function phoneProblem(raw) {
+  const n = phoneNational(raw);
+  if (n.length < 10) return 'Номер неповний: потрібно 10 цифр, наприклад +38 (096) 123-45-67.';
+  if (!PHONE_CODE_RE.test(n)) return 'Перевірте код оператора — такого номера в Україні немає.';
+  return '';
+}
+
+// Скільки цифр номера стоїть перед курсором (курсор усередині «+38 (» — нуль)
+function digitsBefore(v, pos) {
+  if (v.startsWith('+38') && pos < PHONE_PREFIX.length) return 0;
+  return phoneNational(v.slice(0, pos)).length;
+}
+
+function setupPhoneInput(el) {
+  el.setAttribute('placeholder', '+38 (0XX) XXX-XX-XX');
+  el.setAttribute('inputmode', 'tel');
+  el.setAttribute('autocomplete', 'tel');
+
+  const apply = (n, k) => {
+    el.value = n.length ? formatPhone(n) : PHONE_PREFIX;
+    const pos = caretAfterDigits(el.value, k);
+    if (document.activeElement === el) el.setSelectionRange(pos, pos);
+  };
+
+  el.addEventListener('focus', () => {
+    if (!el.value) el.value = PHONE_PREFIX;
+    setTimeout(() => { const p = el.value.length; el.setSelectionRange(p, p); }, 0);
+  });
+  el.addEventListener('blur', () => {
+    if (phoneNational(el.value).length <= 1) { el.value = ''; setPhoneHint(el, ''); return; }
+    setPhoneHint(el, phoneProblem(el.value));
+  });
+
+  // Стирання: дужки, пробіли й дефіси пропускаємо — видаляється цифра,
+  // а +38 (0 не стирається взагалі
+  el.addEventListener('beforeinput', e => {
+    if (e.inputType !== 'deleteContentBackward' && e.inputType !== 'deleteContentForward') return;
+    if (el.selectionStart !== el.selectionEnd) return;
+    e.preventDefault();
+    const n = phoneNational(el.value);
+    const k = digitsBefore(el.value, el.selectionStart);
+    const idx = e.inputType === 'deleteContentBackward' ? k - 1 : k;
+    if (idx < 1 || idx >= n.length) return;        // нуль з маски лишається
+    apply(n.slice(0, idx) + n.slice(idx + 1), idx);
+  });
+
+  el.addEventListener('input', () => {
+    const pos = el.selectionStart == null ? el.value.length : el.selectionStart;
+    const k = digitsBefore(el.value, pos);
+    const n = phoneNational(el.value);
+    apply(n, Math.min(k, n.length));
+    if (el.classList.contains('phone-invalid') && !phoneProblem(el.value)) setPhoneHint(el, '');
+  });
+
+  if (el.value) el.value = formatPhone(phoneNational(el.value));
+}
+document.querySelectorAll('input[type="tel"]').forEach(setupPhoneInput);
 
 /* ═══════════════════════════════════════════════════════════════
    CALCULATOR
@@ -598,18 +700,8 @@ function visitSummary(submitLabel) {
   ].join('\n');
 }
 
-// Будь-який український номер приводимо до +380XXXXXXXXX:
-// «0968874658», «380968874658», «+38 (096) 887-46-58» і навіть «+380+380968874658»
-// (поле саме підставляє +380, а людина вставляє номер повністю).
-// Незнайомий формат лишаємо як є, щоб не зіпсувати.
-function normalizePhone(raw) {
-  let d = String(raw).replace(/\D/g, '');
-  while (d.startsWith('380380')) d = d.slice(3);
-  if (d.length === 10 && d.startsWith('0'))   return '+38' + d;
-  if (d.length === 9)                          return '+380' + d;
-  if (d.length === 12 && d.startsWith('380')) return '+' + d;
-  return String(raw).trim();
-}
+// У заявку номер іде як +380XXXXXXXXX (розбір — у phoneNational вище)
+function normalizePhone(raw) { return '+38' + phoneNational(raw); }
 
 async function submitLead({ name, phone, city, product, comment, honeypot, quick }, btn, fieldsToClear) {
   // Honeypot: якщо бот заповнив приховане поле — ігноруємо
@@ -619,9 +711,11 @@ async function submitLead({ name, phone, city, product, comment, honeypot, quick
   phone = (phone || '').trim();
   city  = (city  || '').trim();
 
-  const digits = phone.replace(/\D/g, '');
-  if (!phone || digits.length < 9) {
-    notifyLead(btn, 'Вкажіть, будь ласка, коректний номер телефону.');
+  const phoneEl = (fieldsToClear || []).find(el => el && el.type === 'tel');
+  const problem = phoneNational(phone).length <= 1 ? 'Вкажіть, будь ласка, номер телефону.' : phoneProblem(phone);
+  if (problem) {
+    if (phoneEl) { setPhoneHint(phoneEl, problem); phoneEl.focus(); }
+    if (!phoneEl || phoneEl.id === 'quickPhone') notifyLead(btn, problem);
     return false;
   }
   phone = normalizePhone(phone);
