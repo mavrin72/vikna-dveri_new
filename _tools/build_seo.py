@@ -24,8 +24,8 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://vikna-dveri.store'
-ASSET_V = '45'  # версія style.css для скидання кешу
-JS_V = '48'     # версія script.js для скидання кешу
+ASSET_V = '46'  # версія style.css для скидання кешу
+JS_V = '49'     # версія script.js для скидання кешу
 
 # ──────────────────────────────────────────────────────────────────────────
 # МАГАЗИНИ
@@ -818,7 +818,7 @@ PROMO_HTML = '''<!-- ═══════════════════�
     </div>
     <div class="form-group">
       <label>Номер телефону</label>
-      <input type="tel" id="promoPhone" placeholder="+380 (XX) XXX-XX-XX" required>
+      <input type="tel" id="promoPhone" placeholder="+38 (0XX) XXX-XX-XX" required>
     </div>
     <div class="form-group">
       <label>Населений пункт</label>
@@ -1068,7 +1068,7 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
         <div class="hq-title">Залиште номер — передзвонимо і порахуємо вартість</div>
         <div class="hq-row">
           <input type="tel" id="quickPhone" name="phone" inputmode="tel"
-                 autocomplete="tel" placeholder="+380 (XX) XXX-XX-XX" aria-label="Номер телефону">
+                 autocomplete="tel" placeholder="+38 (0XX) XXX-XX-XX" aria-label="Номер телефону">
           <button type="submit" class="hq-btn" id="quickBtn">Отримати розрахунок</button>
         </div>
         <input type="text" id="_hpQuick" name="_hpQuick" class="hq-hp" tabindex="-1" autocomplete="off">
@@ -1276,7 +1276,7 @@ try {{ if (sessionStorage.getItem('_evBarClosed')) document.documentElement.clas
       </div>
       <div class="form-group">
         <label for="clientPhone">Номер телефону</label>
-        <input type="tel" id="clientPhone" placeholder="+380 (XX) XXX-XX-XX" required>
+        <input type="tel" id="clientPhone" placeholder="+38 (0XX) XXX-XX-XX" required>
       </div>
     </div>
     <div class="form-group">

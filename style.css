@@ -1658,6 +1658,9 @@ input, textarea, select {
 }
 input::placeholder, textarea::placeholder { color:rgba(245,242,237,0.22); }
 input:focus, textarea:focus, select:focus { border-color:var(--accent); background:rgba(200,169,110,0.08); }
+/* Неправильний номер телефону */
+input.phone-invalid, .hero-quick input.phone-invalid { border-color:#e07a72 !important; }
+.phone-hint { margin-top:6px; font-size:0.78rem; line-height:1.4; color:#f0a5a0; }
 select option { background:var(--navy-2); }
 textarea { resize:vertical; min-height:100px; }
 .form-submit {
